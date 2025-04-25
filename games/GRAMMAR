@@ -1,0 +1,70 @@
+<name>
+
+$cards
+DECK <count> <suits>
+
+$initial
+[DRAW <count> <draw_def>]
+<initial_rule><nl>*
+
+$moves
+<move_rule><nl>*
+<move_stack_rule><nl>*
+<draw_rule>
+
+$auto
+<move_rule><nl>*
+<move_stack_rule><nl>*
+
+$win
+<win_conds>
+
+<nl> -> newline
+<tab> -> \t
+<name> -> str
+<count> -> positive number
+<card> -> <suit_short><rank>
+<cards> -> <card> | {<cardset>}
+<cardset> -> <card> | <card>, <cardset>
+<count_or_u> -> <count> | U # a positive number, or U for unlimited
+<suits> -> <suit> | {<suitset>}
+<suitset> -> <suit> | <suit>, <suitset>
+<suit> -> SPADES | HEARTS | CLUBS | DIAMONDS
+<suit_short> -> S | H | C | D
+<rank> -> 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | J | Q | K
+<draw_def> -> DEAL <piles> | ROTATE <rotate_rule>
+<rotate_rule> -> ROTATE <count> <count_or_u> <count_or_u> # How many at a time, how big of a stack, how many redeals
+<piles> -> <pile> | {<pileset>}
+<pileset> -> <pile> | <pile>, <pileset>
+<pile> -> COLUMN | FOUNDATION | str # any name would work, but COLUMN/FOUNDATION is recommended
+<piles_or_D> -> <pile_or_D>  | {<pileset_or_D>} # set of pile, possibly including DRAW
+<pileset_or_D> -> <pile_or_D> | <pile_or_D>, <pileset_or_D>
+<pile_or_D> -> <pile> | DRAW
+<initial_rule> -> <pile> <count> <[pile_face]> <[cards]> #optionally, include a pile_face, or a set of starting cards (which should be the same number as count)
+<pile_face> -> FACE_LAST | FACE_ALL | FACE_ALTERNATE_LAST
+<draw_rule> -> DRAW<nl><draw_conds>
+<move_rule> -> MOVE <piles_or_D> <piles><nl><move_conds> # you can move from a DRAW, but not to a DRAW
+<move_stack_rule> -> MOVE_STACK <piles> <piles><nl><stack_conds> # you cannpt move a stack from a DRAW or to a DRAW
+
+* conditions (MOVE/MOVE_STACK)
+DEST Empty
+DEST Size <op> <count>
+SRC Suit <suits>
+SRC Rank <ranks>
+DESTSRC Suit alternate_color
+DESTSRC Suit match
+DESTSRC Rank ascending
+DESTSRC Rank descending
+* conditions (MOVE_STACK)
+SRCSTACK Suit alternate_color
+SRCSTACK Suit match
+SRCSTACK Rank ascending
+SRCSTACK Rank descending
+SRCSTACK Size <op> <count>
+* conditions (DRAW) # can be defined for move/move_stack, but doesn't make sense
+PILE ALL <pileset> Size <op> <count>
+PILE ANY <pileset> Size <op> <count>
+* conditions (WIN)
+Empty <pile>
+
+<conds> -> <cond> | AND<<nl><tab><conds>>+ | OR<<nl><tab><conds>>+
