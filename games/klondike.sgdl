@@ -1,0 +1,52 @@
+Klondike
+
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 24 ROTATE 3 3 U # 3 at a time, stack of 3, unlimited redeals
+FOUNDATION 0
+FOUNDATION 0
+FOUNDATION 0
+FOUNDATION 0
+COLUMN 1 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 4 FACE_LAST
+COLUMN 5 FACE_LAST
+COLUMN 6 FACE_LAST
+COLUMN 7 FACE_LAST
+
+$moves
+MOVE {DRAW, COLUMN, FOUNDATION} COLUMN
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank descending
+    AND
+        DEST Empty
+        SRC Rank K
+MOVE {COLUMN, DRAW, FOUNDATION} FOUNDATION
+OR
+    AND
+        DEST Empty
+        SRC Rank 1 # the card you’re moving is Ace
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank ascending
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Suit alternate_color
+    SRCSTACK Rank descending
+    OR
+        AND
+            DESTSRC Suit alternate_color
+            DESTSRC Rank descending
+        AND
+            DEST Empty
+            SRC Rank K
+
+$win
+AND
+    Empty COLUMN
+    Empty DRAW
