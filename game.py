@@ -58,7 +58,10 @@ class Game(Viewable):
         return False # TODO
     
     def draw(self, perform: bool=True) -> bool:
-        return self.draw_func(perform)
+        valid = self.draw_func(perform)
+        if valid and perform:
+            self.check_auto_moves()
+        return valid
 
     def define_deal_draw(self, count: int, targets: list[str]) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
@@ -107,15 +110,18 @@ class Game(Viewable):
             raise Exception(f"Pile Position type not recognized {pos}")
 
     # Invalid syntax is getting an exception, while invalid move is getting False
-    def move(self, src_pos: PilePos, dest_pos: StackPilePos, perform: bool=True) -> bool:
+    def move(self, src_pos: PilePos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         src_pile = self._get_pile(src_pos)
         assert src_pile is not None, f"Cannot move from non-existent pile: {src_pos}"
         dest_pile = self._get_stack(dest_pos)
         assert dest_pile is not None, f"Cannot move to non-existent or non-stack pile: {dest_pos}"
         if (src_pos.pilename, dest_pos.pilename) not in self.move_conditions:
             return False
-        condition: cond.Condition[cond.MoveCardComponents] = self.move_conditions[src_pos.pilename, dest_pos.pilename]
-        if src_pile.empty() or src_pile.peak().face_down:
+        if auto:
+            condition: cond.Condition[cond.MoveCardComponents]|None = self.auto_move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
+        else:
+            condition: cond.Condition[cond.MoveCardComponents]|None = self.move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
+        if condition is None or src_pile.empty() or src_pile.peak().face_down:
             return False
         components: cond.MoveCardComponents = cond.MoveCardComponents(src_pile.peak(), dest_pile)
         self.logger.info(condition.summary(components))
@@ -125,17 +131,19 @@ class Game(Viewable):
         self.logger.info(TextUtil.get_colored_text("EVALUATED: TRUE", TextUtil.TEXT_COLOR.Green))
         if perform:
             dest_pile.add([src_pile.get()])
+            self.check_auto_moves()
         return True
     
-    def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool = True) -> bool:
+    def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         src_pile = self._get_stack(src_pos.stack_pos)
         assert src_pile is not None, f"Cannot move stack from non-existent pile: {src_pos}"
         dest_pile = self._get_stack(dest_pos)
         assert dest_pile is not None, f"Cannot move stack to non-existent pile: {dest_pos}"
-        if (src_pos.stack_pos.pilename, dest_pos.pilename) not in self.move_stack_conditions:
-            return False
-        condition: cond.Condition[cond.MoveStackComponents] = self.move_stack_conditions[src_pos.stack_pos.pilename, dest_pos.pilename]
-        if src_pos.from_ind >= src_pile.len() or any([card.face_down for card in src_pile.peak_many(src_pos.from_ind)]):
+        if auto:
+            condition: cond.Condition[cond.MoveStackComponents]|None = self.auto_move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
+        else:
+            condition: cond.Condition[cond.MoveStackComponents]|None = self.move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
+        if condition is None or src_pos.from_ind >= src_pile.len() or any([card.face_down for card in src_pile.peak_many(src_pos.from_ind)]):
             return False
         components: cond.MoveStackComponents = cond.MoveStackComponents(src_pile.peak_many(src_pos.from_ind), dest_pile)
         self.logger.info(condition.summary(components))
@@ -145,6 +153,7 @@ class Game(Viewable):
         self.logger.info(TextUtil.get_colored_text("EVALUATED: TRUE", TextUtil.TEXT_COLOR.Green))
         if perform:
             dest_pile.add(src_pile.get_many(src_pos.from_ind))
+            self.check_auto_moves()
         return True
     
     def _check_pilename(self, name: str, stack_only: bool) -> bool:
@@ -173,14 +182,44 @@ class Game(Viewable):
         assert self._check_pilename(src_pilename, True), f"Cannot define auto stack move from non-existent or non-stack pile {src_pilename}"
         assert self._check_pilename(dest_pilename, True), f"Cannot define auto stack move to non-existent or non-stack pile {dest_pilename}"
         self.auto_move_stack_conditions[(src_pilename, dest_pilename)] = condition
+    
+    def check_auto_moves(self):
+        actions = []
+        while(True):
+            actions: list[tuple[Callable[..., bool], dict]] = []
+            for src_pilename, dest_pilename in self.auto_move_conditions.keys():
+                actions += self._get_move_actions(src_pilename, dest_pilename)
+            for src_pilename, dest_pilename in self.auto_move_stack_conditions.keys():
+                actions += self._get_move_stack_actions(src_pilename, dest_pilename)
+            print(f"auto moves: {len(actions)} possible actions found")
+            for move_func, args in actions:
+                action_str = f"{move_func.__name__} {' '.join([str(value) for value in args.values()])}"
+                if "move_stack COLUMN[5]:4 FOUNDATION[0]" == action_str:
+                    print(action_str)
+                    move_func(**args, perform=False, auto=True)
+            # print(actions_str)
+            actions = self._filter_valid(actions, auto=True)
+            print(f"auto moves: {len(actions)} valid actions found")
+            if len(actions) == 0:
+                break
+            actions[0][0](**actions[0][1], perform=True, auto=True)
 
     def _get_stack_pile_positions(self, pilename) -> Sequence[StackPilePos]:
         return [StackPilePos(pilename, pile.ind) for pile in self.name_to_piles.get(pilename, [])]
-
+    
     def _get_pile_positions(self, pilename) -> Sequence[PilePos]:
         if pilename == 'DRAW':
             return [DrawPilePos()]
         return self._get_stack_pile_positions(pilename)
+    
+    def _filter_valid(self, actions: list[tuple[Callable[..., bool], dict]], auto: bool=False) -> list[tuple[Callable[..., bool], dict]]:
+        self.logger.temp_deactivate()
+        if auto:
+            actions = [action for action in actions if action[0](**action[1], perform=False, auto=auto)]
+        else: # some non-auto action (draw) can't get auto as input
+            actions = [action for action in actions if action[0](**action[1], perform=False)]
+        self.logger.revert_activation()
+        return actions
     
     def _get_move_actions(self, src_pilename: str, dest_pilename: str) -> list[tuple[Callable[[PilePos, StackPilePos], bool], dict]]:
         actions: list[tuple[Callable[[PilePos, StackPilePos], bool], dict]] = []
@@ -211,9 +250,7 @@ class Game(Viewable):
                 actions += self._get_move_actions(src_pilename, dest_pilename)
                 actions += self._get_move_stack_actions(src_pilename, dest_pilename)
         if only_valid:
-            self.logger.temp_deactivate()
-            actions = [action for action in actions if action[0](**action[1], perform=False)]
-            self.logger.revert_activation()
+            return self._filter_valid(actions)
         return actions
 
     def get_game_view(self) -> str:
@@ -392,7 +429,7 @@ class Parser:
                 cards: list[Card]|None = None
                 if len(parts) > 2 and parts[2] in Stack.Face:
                     Parser.parse_pile_face(parts[2])
-                if len(parts) > 2 and face is None or len(parts) > 3:
+                if len(parts) > 2 and (parts[2] not in Stack.Face or len(parts) > 3):
                     cards = Parser.parse_items(parts[-1], Parser.parse_card)
                 game.define_pile(pile_name, count, face, cards)
 
@@ -422,6 +459,8 @@ class Parser:
                             game.define_auto_stack_move(src_pilename, dst_pilename, cond)
                         else:
                             game.define_stack_move(src_pilename, dst_pilename, cond)
+            elif move_def[0] == 'DRAW':
+                pass # TODO
             else:
                 raise Exception(f"Cannot recognize move type of {move_def}")
     
@@ -545,8 +584,8 @@ class Parser:
             return False
 
 if __name__ == '__main__':
-    with open('games/klondike.sgdl', 'r') as f:
-    # with open('games/spider.sgdl', 'r') as f:
+    # with open('games/klondike.sgdl', 'r') as f:
+    with open('games/spider.sgdl', 'r') as f:
         game = Parser.parse(f.read(), 42)
     print("CONDITIONS")
     for move, condition in game.move_conditions.items():

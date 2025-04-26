@@ -10,7 +10,7 @@ $initial
 $moves
 <move_rule><nl>*
 <move_stack_rule><nl>*
-<draw_rule>
+[<draw_rule>]
 
 $auto
 <move_rule><nl>*
@@ -40,7 +40,7 @@ $win
 <piles_or_D> -> <pile_or_D>  | {<pileset_or_D>} # set of pile, possibly including DRAW
 <pileset_or_D> -> <pile_or_D> | <pile_or_D>, <pileset_or_D>
 <pile_or_D> -> <pile> | DRAW
-<initial_rule> -> <pile> <count> <[pile_face]> <[cards]> #optionally, include a pile_face, or a set of starting cards (which should be the same number as count)
+<initial_rule> -> <pile> <count> [<pile_face>] [<cards>] #optionally, include a pile_face, or a set of starting cards (which should be the same number as count)
 <pile_face> -> FACE_LAST | FACE_ALL | FACE_ALTERNATE_LAST
 <draw_rule> -> DRAW<nl><draw_conds>
 <move_rule> -> MOVE <piles_or_D> <piles><nl><move_conds> # you can move from a DRAW, but not to a DRAW
