@@ -13,11 +13,10 @@ if __name__ == '__main__':
         logger.info(f"{len(game.get_possible_actions(False))} actions")
         valid_actions = game.get_possible_actions(True)
         logger.info(f"{len(valid_actions)} valid actions:")
-        valid_actions_str = [f"{move_func.__name__} {' '.join([str(value) for value in args.values()])}" for move_func, args in valid_actions]
-        for i, valid_action_str in enumerate(valid_actions_str):
-            logger.info(f"{i}: {valid_action_str}")
+        for i, valid_action in enumerate(valid_actions):
+            logger.info(f"{i}: {valid_action}")
         action: str = input()
         action_int = util.cast(action, int)
         if action_int is not None:
-            action = valid_actions_str[action_int]
+            action = str(valid_actions[action_int])
         Parser.perform_action_in_game(action, game)

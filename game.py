@@ -1,4 +1,4 @@
-from typing import Callable, Sequence, Protocol
+from typing import Callable, Sequence, Protocol, ParamSpec, Generic
 from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
 import condition as cond
 from utility import Logger
@@ -31,9 +31,30 @@ class RunPos:
     def __str__(self) -> str:
         return f'{self.stack_pos}:{self.from_ind}'
 
+# type DrawCallable = Callable[[bool], bool] # Python 3.12 or newer
 class DrawCallable(Protocol):
     def __call__(self, perform: bool = True) -> bool:
         ...
+
+P = ParamSpec('P')
+# R = TypeVar('R') # return type is always bool
+# class GameAction(Generic[P, R]):
+#     def __init__(self, func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> None:
+class GameAction(Generic[P]):
+    def __init__(self, func: Callable[P, bool], *args: P.args, **kwargs: P.kwargs) -> None:
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    def act(self, perform: bool, **kwargs) -> bool:
+        kwargs['perform'] = perform
+        for arg, val in self.kwargs.items():
+            kwargs[arg] = val
+        return self.func(*self.args, **kwargs)
+
+    def __str__(self) -> str:
+        all_args = list(self.args) + list(self.kwargs.values())
+        return f"{self.func.__name__} {' '.join([str(arg) for arg in all_args])}"
 
 class Game(Viewable):
     class MoveType(Enum):
@@ -200,9 +221,8 @@ class Game(Viewable):
         self.auto_move_stack_conditions[(src_pilename, dest_pilename)] = condition
     
     def check_auto_moves(self):
-        actions = []
         while(True):
-            actions: list[tuple[Callable[..., bool], dict]] = []
+            actions: list[GameAction] = []
             for src_pilename, dest_pilename in self.auto_move_conditions.keys():
                 actions += self._get_move_actions(src_pilename, dest_pilename)
             for src_pilename, dest_pilename in self.auto_move_stack_conditions.keys():
@@ -210,9 +230,8 @@ class Game(Viewable):
             actions = self._filter_valid(actions, auto=True)
             if len(actions) == 0:
                 break
-            action_str = f"{actions[0][0].__name__} {' '.join([str(value) for value in actions[0][1].values()])}"
-            self.logger.info(f"valid auto-action found: {action_str}")
-            actions[0][0](**actions[0][1], perform=True, auto=True)
+            self.logger.info(f"valid auto-action found: {actions[0]}")
+            actions[0].act(perform=True, auto=True)
 
     def _get_stack_pile_positions(self, pilename) -> Sequence[StackPilePos]:
         return [StackPilePos(pilename, pile.ind) for pile in self.name_to_piles.get(pilename, [])]
@@ -222,25 +241,25 @@ class Game(Viewable):
             return [DrawPilePos()]
         return self._get_stack_pile_positions(pilename)
     
-    def _filter_valid(self, actions: list[tuple[Callable[..., bool], dict]], auto: bool=False) -> list[tuple[Callable[..., bool], dict]]:
+    def _filter_valid(self, actions: list[GameAction], auto: bool=False) -> list[GameAction]:
         self.logger.temp_deactivate()
         if auto:
-            actions = [action for action in actions if action[0](**action[1], perform=False, auto=auto)]
+            actions = [action for action in actions if action.act(perform=False, auto=auto)]
         else: # some non-auto action (draw) can't get auto as input
-            actions = [action for action in actions if action[0](**action[1], perform=False)]
+            actions = [action for action in actions if action.act(perform=False)]
         self.logger.revert_activation()
         return actions
     
-    def _get_move_actions(self, src_pilename: str, dest_pilename: str) -> list[tuple[Callable[[PilePos, StackPilePos], bool], dict]]:
-        actions: list[tuple[Callable[[PilePos, StackPilePos], bool], dict]] = []
+    def _get_move_actions(self, src_pilename: str, dest_pilename: str) -> list[GameAction[PilePos, StackPilePos, bool, bool]]:
+        actions: list[GameAction[PilePos, StackPilePos, bool, bool]] = []
         for src_pos in self._get_pile_positions(src_pilename):
             for dest_pos in self._get_stack_pile_positions(dest_pilename):
                 if str(src_pos) != str(dest_pos):
-                    actions.append((self.move, {'src_pos': src_pos, 'dest_pos': dest_pos}))
+                    actions.append(GameAction(self.move, src_pos=src_pos, dest_pos=dest_pos))
         return actions
 
-    def _get_move_stack_actions(self, src_pilename: str, dest_pilename: str) -> list[tuple[Callable[[RunPos, StackPilePos], bool], dict]]:
-        actions: list[tuple[Callable[[RunPos, StackPilePos], bool], dict]] = []
+    def _get_move_stack_actions(self, src_pilename: str, dest_pilename: str) -> list[GameAction[RunPos, StackPilePos, bool, bool]]:
+        actions: list[GameAction[RunPos, StackPilePos, bool, bool]] = []
         for src_pos in self._get_stack_pile_positions(src_pilename):
             src_pile = self._get_stack(src_pos)
             if src_pile is None:
@@ -248,13 +267,13 @@ class Game(Viewable):
             for dest_pos in self._get_stack_pile_positions(dest_pilename):
                 for i in range(src_pile.len() - 1): # stack should have a size of at least 2
                     if str(src_pos) != str(dest_pos):
-                        actions.append((self.move_stack, {'src_pos': RunPos(src_pos, i), 'dest_pos': dest_pos}))
+                        actions.append(GameAction(self.move_stack, src_pos=RunPos(src_pos, i), dest_pos=dest_pos))
         return actions
 
-    def get_possible_actions(self, only_valid: bool) -> list[tuple[Callable[..., bool], dict]]:
-        actions: list[tuple[Callable[..., bool], dict]] = []
+    def get_possible_actions(self, only_valid: bool) -> list[GameAction]:
+        actions: list[GameAction] = []
         if self.draw_pile is not None:
-            actions.append((self.draw, {}))
+            actions.append(GameAction(self.draw))
         for src_pilename in list(self.name_to_piles.keys()) + ['DRAW']:
             for dest_pilename in self.name_to_piles.keys():
                 actions += self._get_move_actions(src_pilename, dest_pilename)
@@ -276,7 +295,7 @@ class Game(Viewable):
     def get_state_view(self) -> str:
         ret = self.name + '\n'
         if self.draw_pile is not None:
-            ret += self.draw_pile.get_state_view()
+            ret += self.draw_pile.get_state_view() + '\n'
         for piles in self.name_to_piles.values():
             for pile in piles:
                 ret += pile.get_state_view() + '\n'
