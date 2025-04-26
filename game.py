@@ -58,11 +58,13 @@ class Game(Viewable):
 
     def is_win(self):
         assert self.win_conditions is not None, "No win condition defined for the game"
-        return self.win_conditions.evaluate(cond.GeneralConditionComponents(self.name_to_piles))
+        components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
+        self.logger.info(self.win_conditions.summary(components))
+        return self.win_conditions.evaluate(components)
     
     def draw(self, perform: bool=True) -> bool:
         if self.draw_conditions is not None:
-            components = cond.GeneralConditionComponents(self.name_to_piles)
+            components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
             self.logger.info(self.draw_conditions.summary(components))
             if not self.draw_conditions.evaluate(components):
                 return False
@@ -463,7 +465,7 @@ class Parser:
                             game.define_stack_move(src_pilename, dst_pilename, cond)
             elif move_def[0] == 'DRAW':
                 assert len(move_def) == 1, f"DRAW argument extra: {moves_desc[0]}"
-                cond, moves_desc = Parser.extract_general_cond(moves_desc[1:])
+                cond, moves_desc = Parser.extract_general_cond(moves_desc[1:], game)
                 game.define_draw_cond(cond)
             else:
                 raise Exception(f"Cannot recognize move type of {move_def}")
@@ -505,17 +507,17 @@ class Parser:
             return Parser.parse_move_stack_condition(moves_desc[0]), moves_desc[1:]
         
     @staticmethod
-    def extract_general_cond(moves_desc: list[str]) -> tuple[cond.Condition[cond.GeneralConditionComponents], list[str]]:
+    def extract_general_cond(moves_desc: list[str], game: Game) -> tuple[cond.Condition[cond.GeneralConditionComponents], list[str]]:
         if moves_desc[0] in ['AND', 'OR']:
             ret: cond.ConditionTree[cond.GeneralConditionComponents] = \
                 cond.AndSubTree() if moves_desc[0] == 'AND' else cond.OrSubTree()
             sub_desc, moves_desc = Parser.extract_block(moves_desc[1:])
             while len(sub_desc) > 0:
-                subtree, sub_desc = Parser.extract_general_cond(sub_desc)
+                subtree, sub_desc = Parser.extract_general_cond(sub_desc, game)
                 ret.add_subtree(subtree)
             return ret, moves_desc
         else:
-            return Parser.parse_general_condition(moves_desc[0]), moves_desc[1:]
+            return Parser.parse_general_condition(moves_desc[0], game), moves_desc[1:]
         
     @staticmethod
     def parse_move_condition(s: str) -> cond.MoveCondition:
@@ -548,12 +550,17 @@ class Parser:
             return Parser.parse_move_condition(s)
         
     @staticmethod
-    def parse_general_condition(s: str) -> cond.GeneralCondition:
+    def parse_general_condition(s: str, game: Game) -> cond.GeneralCondition:
         parts = Parser.split_line(s)
         if parts[0] == 'PILE':
             assert parts[1] in cond.PileCondition.MODE, f"Unrecognized PileCondition MODE: {parts[1]}"
             mode: cond.PileCondition.MODE = cond.PileCondition.MODE(parts[1])
             pilenames: list[str] = Parser.parse_items(parts[2], Parser.parse_str)
+            for pilename in pilenames:
+                if pilename == 'DRAW':
+                    assert game.draw_pile is not None, "Cannot define pile condition on non-existent draw pile"
+                else:
+                    assert pilename in game.name_to_piles.keys(), f"Cannot define pile conditions on non_existent pile {pilename}"
             if parts[3] == 'Empty':
                 return cond.PileEmptyCondition(pilenames, mode)
             elif parts[3] == 'Size':
@@ -569,7 +576,7 @@ class Parser:
 
     @staticmethod
     def apply_win(win_desc: list[str], game: Game):
-        cond, win_desc = Parser.extract_general_cond(win_desc)
+        cond, win_desc = Parser.extract_general_cond(win_desc, game)
         assert len(win_desc) == 0, f"Extra lines remained after extracting win conditions: {win_desc}"
         game.define_win_cond(cond)
 

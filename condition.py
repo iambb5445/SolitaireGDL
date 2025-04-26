@@ -22,8 +22,9 @@ class ConditionComponents(ABC):
     pass
 
 class GeneralConditionComponents(ConditionComponents):
-    def __init__(self, name_to_piles: dict[str, list[Stack]]) -> None:
+    def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile|None) -> None:
         self.name_to_piles = name_to_piles
+        self.draw_pile = draw_pile
 
 class MoveCardComponents(ConditionComponents):
     def __init__(self, source: Card, destination: Stack) -> None:
@@ -149,11 +150,13 @@ class PileCondition(GeneralCondition):
         self.mode = mode
 
     @abstractmethod
-    def _pile_comp(self, pile: Stack):
+    def _pile_comp(self, pile: Pile):
         raise NotImplementedError
 
     def evaluate(self, components: GeneralConditionComponents) -> bool:
-        comps = [self._pile_comp(pile) for pilename in self.pilenames for pile in components.name_to_piles[pilename]]
+        comps = [self._pile_comp(pile) for pilename in self.pilenames if pilename != 'DRAW' for pile in components.name_to_piles[pilename]]
+        if 'DRAW' in self.pilenames:
+            comps.append(components.draw_pile is not None and self._pile_comp(components.draw_pile))
         if self.mode == PileCondition.MODE.ALL:
             return all(comps)
         elif self.mode == PileCondition.MODE.ANY:
@@ -346,7 +349,7 @@ class PileEmptyCondition(PileCondition):
     def unsigned_summary(self) -> str:
         return f'{self.mode} {"and".join(self.pilenames)} piles should be empty'
     
-    def _pile_comp(self, pile: Stack):
+    def _pile_comp(self, pile: Pile):
         return pile.empty()
     
 class PileSizeCondition(PileCondition, SizeCondition):
@@ -357,5 +360,5 @@ class PileSizeCondition(PileCondition, SizeCondition):
     def unsigned_summary(self) -> str:
         return f'{self.mode} {"and".join(self.pilenames)} piles should have a size {self.comp_to_str()}'
     
-    def _pile_comp(self, pile: Stack):
+    def _pile_comp(self, pile: Pile):
         return self.comp(pile.len())
