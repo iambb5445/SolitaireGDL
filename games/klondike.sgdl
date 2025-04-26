@@ -48,5 +48,5 @@ AND
 
 $win
 AND
-    Empty COLUMN
-    Empty DRAW
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty
