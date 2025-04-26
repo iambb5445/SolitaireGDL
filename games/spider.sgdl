@@ -30,13 +30,18 @@ COLUMN 5 FACE_LAST
 
 $moves
 MOVE COLUMN COLUMN
-AND
-    DESTSRC Suit match
-    DESTSRC Rank descending
+OR
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank descending
+    DEST Empty # empty destination won't pass DESTSRC rules, to prevent problems in games such as klondike
 MOVE_STACK COLUMN COLUMN
 AND
-    DESTSRC Suit match
-    DESTSRC Rank descending
+    OR
+        DEST Empty
+        AND
+            DESTSRC Suit match
+            DESTSRC Rank descending
     SRCSTACK Suit match
     SRCSTACK Rank descending
 DRAW
@@ -50,6 +55,7 @@ AND
     SRCSTACK Size == 13
 
 $win
+# alternatively, can be defined with PILE ALL FOUNDATION Size == 13
 AND
-    Empty COLUMN
-    Empty DRAW
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

@@ -53,10 +53,12 @@ class Game(Viewable):
         self.auto_move_stack_conditions: dict[tuple[str, str], cond.Condition[cond.MoveStackComponents]] = {}
         self.draw_func: DrawCallable
         self.draw_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
+        self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
 
     def is_win(self):
-        return False # TODO
+        assert self.win_conditions is not None, "No win condition defined for the game"
+        return self.win_conditions.evaluate(cond.GeneralConditionComponents(self.name_to_piles))
     
     def draw(self, perform: bool=True) -> bool:
         if self.draw_conditions is not None:
@@ -64,6 +66,8 @@ class Game(Viewable):
             self.logger.info(self.draw_conditions.summary(components))
             if not self.draw_conditions.evaluate(components):
                 return False
+        if self.draw_pile is None:
+            return False # no draw pile, action invalid
         valid = self.draw_func(perform)
         if valid and perform:
             self.check_auto_moves()
@@ -163,6 +167,10 @@ class Game(Viewable):
             return True
         return False
     
+    def define_win_cond(self, condition: cond.Condition[cond.GeneralConditionComponents]):
+        assert self.win_conditions is None, f"Cannot define win conditiosn twice, use AND or OR to combine the rules"
+        self.win_conditions = condition
+    
     def define_draw_cond(self, condition: cond.Condition[cond.GeneralConditionComponents]):
         assert self.draw_pile is not None, f"Cannot define draw conditions for non-existent draw pile"
         assert self.draw_conditions is None, f"Cannot define draw conditions twice, use AND or OR to combine the rules"
@@ -258,16 +266,9 @@ class Game(Viewable):
         ret = self.name + '\n'
         if self.draw_pile is not None:
             ret += self.draw_pile.get_game_view() + '\n'
-        for pilename, piles in self.name_to_piles.items():
+        for piles in self.name_to_piles.values():
             for pile in piles:
                 ret += pile.get_game_view() + '\n'
-        # ret += "Possible Moves:\n"
-        # if hasattr(self, 'draw'):
-        #     ret += 'draw\n'
-        # for src_pilename, dest_pilename in self.move_conditions.keys():
-        #     ret += f'move {src_pilename} {dest_pilename}\n'
-        # for src_pilename, dest_pilename in self.move_stack_conditions.keys():
-        #     ret += f'move_stack {src_pilename} {dest_pilename}\n'
         return ret
     
     # TODO remove duplicate code (get_state_view/get_game_view)
@@ -275,7 +276,7 @@ class Game(Viewable):
         ret = self.name + '\n'
         if self.draw_pile is not None:
             ret += self.draw_pile.get_state_view()
-        for pilename, piles in self.name_to_piles.items():
+        for piles in self.name_to_piles.values():
             for pile in piles:
                 ret += pile.get_state_view() + '\n'
         return ret
@@ -567,8 +568,10 @@ class Parser:
         Parser.apply_moves(auto_desc, game, True)
 
     @staticmethod
-    def apply_win(deck_desc: list[str], game: Game):
-        pass # TODO
+    def apply_win(win_desc: list[str], game: Game):
+        cond, win_desc = Parser.extract_general_cond(win_desc)
+        assert len(win_desc) == 0, f"Extra lines remained after extracting win conditions: {win_desc}"
+        game.define_win_cond(cond)
 
     @staticmethod
     def parse(game_desc: str, seed: int|None = None) -> Game:
@@ -603,10 +606,7 @@ class Parser:
     def perform_action_in_game(s: str, game: Game) -> bool:
         parts = s.split()
         if parts[0] == 'draw':
-            if hasattr(game, 'draw'):
-                game.draw(True)
-                return True
-            return False
+            return game.draw()
         elif parts[0] == 'move':
             return game.move(Parser.parse_pile_position(parts[1]), Parser.parse_stack_position(parts[2]))
         elif parts[0] == 'move_stack':
