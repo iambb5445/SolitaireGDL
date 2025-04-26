@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
-from base import BaseStrEnum, Card, Stack, Suit
+from base import BaseStrEnum, Card, Stack, Suit, Pile
 from utility import TextUtil
 
 # GENERAL CONDITIONS
@@ -20,6 +20,10 @@ class MathOp(BaseStrEnum):
 
 class ConditionComponents(ABC):
     pass
+
+class GeneralConditionComponents(ConditionComponents):
+    def __init__(self, name_to_piles: dict[str, list[Stack]]) -> None:
+        self.name_to_piles = name_to_piles
 
 class MoveCardComponents(ConditionComponents):
     def __init__(self, source: Card, destination: Stack) -> None:
@@ -129,6 +133,33 @@ class MoveCondition(PlainCondition[MoveCardComponents]):
     @abstractmethod
     def evaluate(self, components: MoveCardComponents) -> bool:
         raise NotImplementedError
+    
+class GeneralCondition(PlainCondition[GeneralConditionComponents]):
+    @abstractmethod
+    def evaluate(self, components: GeneralConditionComponents) -> bool:
+        raise NotImplementedError
+    
+class PileCondition(GeneralCondition):
+    class MODE(BaseStrEnum):
+        ALL = "ALL"
+        ANY = "ANY"
+
+    def __init__(self, pilenames: list[str], mode: MODE) -> None:
+        self.pilenames = pilenames
+        self.mode = mode
+
+    @abstractmethod
+    def _pile_comp(self, pile: Stack):
+        raise NotImplementedError
+
+    def evaluate(self, components: GeneralConditionComponents) -> bool:
+        comps = [self._pile_comp(pile) for pilename in self.pilenames for pile in components.name_to_piles[pilename]]
+        if self.mode == PileCondition.MODE.ALL:
+            return all(comps)
+        elif self.mode == PileCondition.MODE.ANY:
+            return any(comps)
+        else:
+            raise Exception(f"Unrecodgnized pile condition mode: {self.mode}")
 
 class SizeCondition(Condition[T]):
     def __init__(self, math_op: MathOp, threshold: int) -> None:
@@ -310,3 +341,21 @@ class StackSizeCondition(SizeCondition, MoveStackCondition):
     
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp(len(components.stack))
+    
+class PileEmptyCondition(PileCondition):
+    def unsigned_summary(self) -> str:
+        return f'{self.mode} {"and".join(self.pilenames)} piles should be empty'
+    
+    def _pile_comp(self, pile: Stack):
+        return pile.empty()
+    
+class PileSizeCondition(PileCondition, SizeCondition):
+    def __init__(self, pilenames: list[str], mode: PileCondition.MODE, math_op: MathOp, threshold: int) -> None:
+        PileCondition.__init__(self, pilenames, mode)
+        SizeCondition.__init__(self, math_op, threshold)
+
+    def unsigned_summary(self) -> str:
+        return f'{self.mode} {"and".join(self.pilenames)} piles should have a size {self.comp_to_str()}'
+    
+    def _pile_comp(self, pile: Stack):
+        return self.comp(pile.len())

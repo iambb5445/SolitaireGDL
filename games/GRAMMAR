@@ -47,7 +47,7 @@ $win
 <move_stack_rule> -> MOVE_STACK <piles> <piles><nl><stack_conds> # you cannpt move a stack from a DRAW or to a DRAW
 
 * conditions (MOVE/MOVE_STACK)
-DEST Empty
+DEST Empty # empty conditions are redundant, since they can be created with a size condition, but will look nicer
 DEST Size <op> <count>
 SRC Suit <suits>
 SRC Rank <ranks>
@@ -61,10 +61,10 @@ SRCSTACK Suit match
 SRCSTACK Rank ascending
 SRCSTACK Rank descending
 SRCSTACK Size <op> <count>
-* conditions (DRAW) # can be defined for move/move_stack, but doesn't make sense
+* conditions (DRAW/WIN) # can be defined for move/move_stack, but doesn't make sense
 PILE ALL <pileset> Size <op> <count>
 PILE ANY <pileset> Size <op> <count>
-* conditions (WIN)
-Empty <pile>
+PILE ALL <pileset> Empty
+PILE ANY <pileset> Empty
 
 <conds> -> <cond> | AND<<nl><tab><conds>>+ | OR<<nl><tab><conds>>+

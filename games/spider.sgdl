@@ -39,6 +39,8 @@ AND
     DESTSRC Rank descending
     SRCSTACK Suit match
     SRCSTACK Rank descending
+DRAW
+PILE ALL COLUMN Size > 0
 
 $auto
 MOVE_STACK COLUMN FOUNDATION
