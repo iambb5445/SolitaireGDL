@@ -8,7 +8,7 @@ from utility import TextUtil
 # You cannot move a card or a stack containing a card that is face down.
 # You cannot move a stack from a draw (deal) pile.
 # You cannot move a card to a draw pile.
-# Move stack needs the stack to be at least 2 card long (else: ambiguity in interpreting gui and counting the moves, etc, the rest works fine)
+# Move stack needs the stack to be at least 2 cards long (else: ambiguity in interpreting gui and counting the moves, etc, the rest works fine)
 # Destination cannot be empty for a destsrc rule
 
 class MathOp(BaseStrEnum):

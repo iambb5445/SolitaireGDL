@@ -76,6 +76,20 @@ class Game(Viewable):
         self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
 
+    def get_all_cards(self) -> list[Card]:
+        all_cards: list[Card] = []
+        for pile in self.get_all_piles():
+            all_cards += pile.get_all_cards()
+        return all_cards
+    
+    def get_all_piles(self) -> list[Pile]:
+        all_piles: list[Pile] = []
+        if self.draw_pile is not None:
+            all_piles.append(self.draw_pile)
+        for piles in self.name_to_piles.values():
+            all_piles += piles
+        return all_piles
+
     def is_win(self):
         assert self.win_conditions is not None, "No win condition defined for the game"
         components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
@@ -146,12 +160,12 @@ class Game(Viewable):
         src_pile = self._get_pile(src_pos)
         assert src_pile is not None, f"Cannot move from non-existent pile: {src_pos}"
         dest_pile = self._get_stack(dest_pos)
-        assert dest_pile is not None, f"Cannot move to non-existent or non-stack pile: {dest_pos}"
+        assert dest_pile is not None, f"Cannot move to non-existent or non-stack pile: {dest_pos}" # TODO perhaps handle as conditions?
         if auto:
             condition: cond.Condition[cond.MoveCardComponents]|None = self.auto_move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
         else:
             condition: cond.Condition[cond.MoveCardComponents]|None = self.move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
-        if condition is None or src_pile.empty() or src_pile.peak().face_down:
+        if condition is None or src_pile.empty() or src_pile.peak().face_down: # TODO perhaps handle as conditions?
             return False
         components: cond.MoveCardComponents = cond.MoveCardComponents(src_pile.peak(), dest_pile)
         self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}" + condition.summary(components))
