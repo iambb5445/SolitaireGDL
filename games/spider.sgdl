@@ -53,6 +53,7 @@ AND
     SRCSTACK Suit match
     SRCSTACK Rank descending
     SRCSTACK Size == 13
+    DEST Empty
 
 $win
 # alternatively, can be defined with PILE ALL FOUNDATION Size == 13
