@@ -107,6 +107,9 @@ class Pile(Viewable):
         self.cards: list[Card] = cards
         self.name = name
     
+    def get_all_cards(self) -> list[Card]:
+        return self.cards
+
     @abstractmethod
     def copy(self) -> Pile:
         raise NotImplementedError
@@ -130,6 +133,9 @@ class Pile(Viewable):
     
     def len(self) -> int:
         return len(self.cards)
+    
+    def get_tag(self) -> str:
+        return self.name
     
 class DealPile(Pile):
     def __init__(self, cards: list[Card]) -> None:
@@ -166,6 +172,9 @@ class RotateDrawPile(Pile):
         assert max_redeals is None or max_redeals > 0, "In Rotate Draw, max redeals should be positive (or unlimited)"
         if max_redeals is None and view_count is None:
             print("[Warning] A limited view count with limited redeals can make cards inaccessible")
+
+    def get_all_cards(self) -> list[Card]:
+        return self.cards + self.backpile + self.drawn
     
     def copy(self) -> RotateDrawPile:
         copy = RotateDrawPile([], self.draw_count, self.view_count, self.max_redeals)
@@ -180,10 +189,10 @@ class RotateDrawPile(Pile):
             if not perform:
                 return True
             for _ in range(min(self.draw_count, len(self.backpile))):
-                self.cards += [self.backpile.pop(0)]
+                self.cards.append(self.backpile.pop(0))
                 self.cards[-1].face()
                 if self.view_count is not None and len(self.cards) > self.view_count:
-                    self.drawn += [self.cards.pop(0)]
+                    self.drawn.append(self.cards.pop(0))
         elif self.max_redeals is None or self.redeals < self.max_redeals:
             if not perform:
                 return True
@@ -262,8 +271,11 @@ class Stack(Pile):
     def copy(self) -> Stack:
         return Stack([card.copy() for card in self.cards], self.name, self.ind)
     
+    def get_tag(self) -> str:
+        return f'{self.name}{f"[{self.ind}]" if self.ind is not None else ""}'
+    
     def get_game_view(self) -> str:
-        return f'{self.name}{f"[{self.ind}]" if self.ind is not None else ""}: {super().get_game_view()}'
+        return f'{self.get_tag()}: {super().get_game_view()}'
 
     def get_state_view(self) -> str:
-        return f'{self.name}{f"[{self.ind}]" if self.ind is not None else ""}: {super().get_state_view()}'
+        return f'{self.get_tag()}: {super().get_state_view()}'
