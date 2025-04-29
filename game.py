@@ -131,10 +131,7 @@ class Game(Viewable):
                     if card.face_down:
                         card_locations.append(PileCardAccess(pile, i))
         shuffled: list[int] = list(range(len(card_locations)))
-        if seed is None:
-            random.shuffle(shuffled)
-        else:
-            random.Random(seed).shuffle(shuffled)
+        random.Random(seed).shuffle(shuffled)
         cards: list[Card] = [access.get_card() for access in card_locations]
         for i, j in enumerate(shuffled):
             card_locations[i].set_card(cards[j])
