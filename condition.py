@@ -225,6 +225,7 @@ class RankCondition(Condition[T]):
 class MultiSuitCondition(Condition[T]):
     class MODE(BaseStrEnum):
         ALTERNATE_COL = 'alternate_color'
+        MATCH_COL = 'match_color'
         MATCH = 'match'
 
     def __init__(self, mode: MODE) -> None:
@@ -240,8 +241,10 @@ class MultiSuitCondition(Condition[T]):
     def _pair_comp(self, suit1: Suit, suit2: Suit) -> bool:
         if self.mode == MultiSuitCondition.MODE.ALTERNATE_COL:
             return Suit.get_col(suit1) != Suit.get_col(suit2)
-        elif self.mode == MultiSuitCondition.MODE.MATCH:
+        elif self.mode == MultiSuitCondition.MODE.MATCH_COL:
             return Suit.get_col(suit1) == Suit.get_col(suit2)
+        elif self.mode == MultiSuitCondition.MODE.MATCH:
+            return suit1 == suit2
         raise Exception(f"Suit comparison mode not recognized: {self.mode}")
     
     def comp(self, suits: list[Suit]) -> bool:

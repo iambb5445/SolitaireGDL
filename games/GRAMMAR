@@ -52,11 +52,13 @@ DEST Size <op> <count>
 SRC Suit <suits>
 SRC Rank <ranks>
 DESTSRC Suit alternate_color
+DESTSRC Suit match_color
 DESTSRC Suit match
 DESTSRC Rank ascending
 DESTSRC Rank descending
 * conditions (MOVE_STACK)
 SRCSTACK Suit alternate_color
+SRCSTACK Suit match_color
 SRCSTACK Suit match
 SRCSTACK Rank ascending
 SRCSTACK Rank descending
