@@ -138,8 +138,9 @@ class Pile(Viewable):
         return self.name
     
 class DealPile(Pile):
-    def __init__(self, cards: list[Card]) -> None:
+    def __init__(self, cards: list[Card], target_names: list[str]) -> None:
         super().__init__(cards, 'DRAW')
+        self.target_names = target_names
 
     def get(self) -> Card:
         self.peak().face()
@@ -153,7 +154,7 @@ class DealPile(Pile):
     
     def copy(self) -> DealPile:
         cards_copy = [card.copy() for card in self.cards]
-        return DealPile(cards_copy)
+        return DealPile(cards_copy, self.target_names)
     
 # possibly, RotateDrawPile can be represented using 3 separate piles.
 # However, this representation can make things too complicated, since it can't inherit from pile anymore.

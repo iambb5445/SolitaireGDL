@@ -1,8 +1,10 @@
+from __future__ import annotations
 from typing import Callable, Sequence, Protocol, ParamSpec, Generic
 from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
 import condition as cond
 from utility import Logger
 from enum import Enum
+import random
 
 class PilePos:
     def __init__(self, pilename: str) -> None:
@@ -76,6 +78,67 @@ class Game(Viewable):
         self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
 
+    def copy(self) -> Game:
+        game = Game(self.name, self.logger.active)
+        game.deck = self.deck.copy()
+        game.draw_pile = self.draw_pile.copy() if self.draw_pile is not None else None
+        game.name_to_piles = dict([(name, [pile.copy() for pile in piles]) for name, piles in self.name_to_piles.items()])
+        game.move_conditions = self.move_conditions
+        game.move_stack_conditions = self.move_stack_conditions
+        game.auto_move_conditions = self.auto_move_conditions
+        game.auto_move_stack_conditions = self.auto_move_stack_conditions
+        if isinstance(game.draw_pile, DealPile):
+            game._submit_deal_draw_func(game.draw_pile.target_names)
+        elif isinstance(game.draw_pile, RotateDrawPile):
+            game.draw_func = game.draw_pile.rotate
+        game.draw_conditions = self.draw_conditions
+        game.win_conditions = self.win_conditions
+        return game
+    
+    def scramble(self, seed: int|None):
+        # shuffle unknown cards to prevent bots from perfect predictions
+        class CardAccess:
+            def get_card(self) -> Card:
+                raise NotImplementedError
+            def set_card(self, new_card: Card) -> None:
+                raise NotImplementedError
+        class PileCardAccess(CardAccess):
+            def __init__(self, pile: Pile, index: int) -> None:
+                self.pile = pile
+                self.index = index
+            def get_card(self) -> Card:
+                return self.pile.cards[self.index]
+            def set_card(self, new_card: Card) -> None:
+                self.pile.cards[self.index] = new_card
+        class RotateCardBackpileAccess(CardAccess):
+            def __init__(self, pile: RotateDrawPile, index: int) -> None:
+                self.pile = pile
+                self.index = index
+            def get_card(self) -> Card:
+                return self.pile.backpile[self.index]
+            def set_card(self, new_card: Card) -> None:
+                self.pile.backpile[self.index] = new_card
+        card_locations: list[CardAccess] = []
+        if isinstance(self.draw_pile, RotateDrawPile) and self.draw_pile.redeals == 0:
+            for i in range(len(self.draw_pile.backpile)):
+                card_locations.append(RotateCardBackpileAccess(self.draw_pile, i))
+        elif isinstance(self.draw_pile, DealPile):
+            for i in range(len(self.draw_pile.cards)):
+                card_locations.append(PileCardAccess(self.draw_pile, i))
+        for piles in self.name_to_piles.values():
+            for pile in piles:
+                for i, card in enumerate(pile.cards):
+                    if card.face_down:
+                        card_locations.append(PileCardAccess(pile, i))
+        shuffled: list[int] = list(range(len(card_locations)))
+        if seed is None:
+            random.shuffle(shuffled)
+        else:
+            random.Random(seed).shuffle(shuffled)
+        cards: list[Card] = [access.get_card() for access in card_locations]
+        for i, j in enumerate(shuffled):
+            card_locations[i].set_card(cards[j])
+
     def get_all_cards(self) -> list[Card]:
         all_cards: list[Card] = []
         for pile in self.get_all_piles():
@@ -111,7 +174,10 @@ class Game(Viewable):
 
     def define_deal_draw(self, count: int, targets: list[str]) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
-        self.draw_pile = DealPile(self.deck.deal(count))
+        self.draw_pile = DealPile(self.deck.deal(count), targets)
+        self._submit_deal_draw_func(targets)
+    
+    def _submit_deal_draw_func(self, targets: list[str]):
         def deal_draw(perform: bool=True) -> bool:
             assert self.draw_pile is not None, "Attempting to draw from non-existant draw card"
             if self.draw_pile.len() == 0:
