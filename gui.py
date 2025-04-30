@@ -80,7 +80,7 @@ CARD_WIDTH_SCALE = 0.09
 OFFSET_SCALE = Vec2D(0.1, 0.08)
 
 class TextureRepo:
-    TEX_DIR: str = 'textures'
+    TEX_DIR: str = os.path.join('resources', 'textures')
     card_size: Vec2D
     offset: Vec2D
     card_textures: dict[str, pygame.Surface] = {}

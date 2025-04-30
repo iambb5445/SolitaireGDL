@@ -33,7 +33,7 @@ $win
 <suit_short> -> S | H | C | D
 <rank> -> 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | J | Q | K
 <draw_def> -> DEAL <piles> | ROTATE <rotate_rule>
-<rotate_rule> -> ROTATE <count> <count_or_u> <count_or_u> # How many at a time, how big of a stack, how many redeals
+<rotate_rule> -> <count> <count_or_u> <count_or_u> # How many at a time, how big of a stack, how many redeals
 <piles> -> <pile> | {<pileset>}
 <pileset> -> <pile> | <pile>, <pileset>
 <pile> -> COLUMN | FOUNDATION | str # any name would work, but COLUMN/FOUNDATION is recommended
