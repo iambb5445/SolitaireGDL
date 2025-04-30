@@ -10,7 +10,9 @@ Additionally, a simple gui is implemented in `gui.py` which can be used to visua
 To play a solitaire game through terminal commands, use:
 
 ```shell
-python run_cmd.py
+python run_cmd.py <sgdl-filename>
+# e.g.
+# python run_cmd.py games\spider.sgdl
 ```
 
 The state of the game will be printed in the terminal, and the list of valid moves at the current state will be displayed. To play the game, you can either type the desired move (which might be invalid), or type the index of the move from the list of displayed moves.
@@ -24,7 +26,9 @@ Additionally, a summary of the win condition will be displayed after every move.
 To play the game using the GUI, you can run:
 
 ```shell
-python gui.py
+python gui.py <sgdl-filename>
+# e.g.
+# python gui.py games\klondike.sgdl
 ```
 
 Note that the gui uses the `pygame` library, so ensure that `pygame` is installed before running the GUI. `pygame` can be installed using:
