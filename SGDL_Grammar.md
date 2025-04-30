@@ -1,6 +1,8 @@
 # SGDL Grammar
 
-This document describes the format of a Solitaire Game Description Language (SGDL) file. A sgdl file should contain the following:
+This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in `games` directory, such as [Spider SGDL](games/spider.sgdl) and [Klondike SGDL](games/klondike.sgdl).
+
+A sgdl file should contain the following sections:
 
 ## `<name>`
 The file starts by one line containing the name of the game, which is only used for visualization and logging.
