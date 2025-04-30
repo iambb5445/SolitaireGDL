@@ -231,7 +231,7 @@ class Game(Viewable):
         if condition is None or src_pile.empty() or src_pile.peak().face_down: # TODO perhaps handle as conditions?
             return False
         components: cond.MoveCardComponents = cond.MoveCardComponents(src_pile.peak(), dest_pile)
-        self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}" + condition.summary(components))
+        self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n" + condition.summary(components))
         if not condition.evaluate(components):
             return False
         if perform:
