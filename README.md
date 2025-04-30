@@ -9,8 +9,8 @@ Additionally, a simple gui is implemented in `gui.py` which can be used to visua
 ### Play through Terminal
 
 <p align="center">
-  <img alt="spider terminal screenshot" src="resources/readme/spider_terminal.png" width="200">
-  <img alt="spider terminal - condition" src="resources/readme/spider_terminal_conditions.png" width="400">
+  <img alt="spider terminal screenshot" src="resources/readme/spider_terminal.png" width="400">
+  <img alt="spider terminal - condition" src="resources/readme/spider_terminal_conditions.png" width="600">
 </p>
 
 <!-- ![spider terminal screenshot](resources/readme/spider_terminal.png)
