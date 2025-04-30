@@ -23,7 +23,7 @@ Additionally, a summary of the win condition will be displayed after every move.
 
 ### Play through GUI
 
-![alt text](resources\readme\klondike_gui.png)
+![alt text](resources/readme/klondike_gui.png)
 
 To play the game using the GUI, you can run:
 
