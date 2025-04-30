@@ -8,13 +8,13 @@ Additionally, a simple gui is implemented in `gui.py` which can be used to visua
 
 ### Play through Terminal
 
-<!-- <p align="center">
+<p align="center">
   <img alt="spider terminal screenshot" src="resources/readme/spider_terminal.png" width="200">
-  <img alt="spider terminal - condition" src="resources/readme/spider_terminal_conditions.png" width="200">
-</p> -->
+  <img alt="spider terminal - condition" src="resources/readme/spider_terminal_conditions.png" width="400">
+</p>
 
-![spider terminal screenshot](resources/readme/spider_terminal.png)
-![spider terminal screenshot - conditions](resources/readme/spider_terminal_conditions.png)
+<!-- ![spider terminal screenshot](resources/readme/spider_terminal.png)
+![spider terminal screenshot - conditions](resources/readme/spider_terminal_conditions.png) -->
 
 
 To play a solitaire game through terminal commands, use:
