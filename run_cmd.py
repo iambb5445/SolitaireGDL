@@ -1,10 +1,11 @@
 from parser import Parser
 from utility import Logger
 import utility as util
+import sys
 
 if __name__ == '__main__':
-    # with open('games/klondike.sgdl', 'r') as f:
-    with open('games/spider.sgdl', 'r') as f:
+    sgdl_filename = sys.argv[1]
+    with open(sgdl_filename, 'r') as f:
         game = Parser.parse(f.read(), 42)
     logger = Logger(True)
     logger.info("GAME START!")

@@ -9,6 +9,10 @@ from game import Game
 import math
 from utility import Logger
 
+ANIMATION = False
+ANIMATION_SPEED = 1000
+DELTA_TIME = 1/120.0
+
 def log_valid_actions(game: Game):
     logger = Logger(True)
     valid_actions = game.get_possible_actions(True)
@@ -122,8 +126,15 @@ class GraphicElement:
     def __init__(self, pos: Vec2D, tex: pygame.Surface) -> None:
         self.pos = pos
         self.tex = tex
+        self.target_pos = pos
 
-    def move(self, new_pos: Vec2D) -> None:
+    def move(self, new_pos: Vec2D, instant: bool = False) -> None:
+        if ANIMATION and not instant:
+            dir = new_pos.sub(self.pos)
+            if dir.magnitude() > 5:
+                dir = dir.normalize()
+                self.pos = self.pos.add(dir.mult(ANIMATION_SPEED * DELTA_TIME))
+                return
         self.pos = new_pos.copy()
     
     def render(self, screen: pygame.Surface):
@@ -205,6 +216,7 @@ class PileGraphic(Graphic):
         self.instantiate_vectors()
         self.label_ge = None if no_label else self.initiate_label_ge()
         self.background_ge = RectGE(pos.add(self.label_offset), TextureRepo.card_size.add(self.available), ColorRepo.LightGray)
+        self.moving_cards: list[Card] = []
 
     def instantiate_vectors(self) -> None:
         self.delta_dir = self.get_delta_dir()
@@ -244,6 +256,14 @@ class PileGraphic(Graphic):
     
     def background_contains(self, pos: Vec2D) -> bool:
         return self.background_ge.contains(pos)
+    
+    def card_is_moving(self, card: Card):
+        if ANIMATION:
+            self.moving_cards.append(card)
+    
+    def card_stopped_moving(self, card: Card):
+        if ANIMATION:
+            self.moving_cards.remove(card)
 
     def render(self, screen: pygame.Surface):
         card_spacing = self.delta_dir.pairwise_mult(TextureRepo.offset.mult(PileGraphic.CARD_SPACING_BY_OFFSET))
@@ -256,9 +276,10 @@ class PileGraphic(Graphic):
             pos = pos.add(self.label_size.pairwise_mult(self.label_delta_dir))
         self.background_ge.move(pos)
         self.background_ge.render(screen)
-        for i, card in enumerate(self.pile.cards):
+        for card in self.pile.cards:
             card_graphic = self.game_graphics.card_to_graphic[card]
-            card_graphic.move(pos)
+            if card not in self.moving_cards:
+                card_graphic.move(pos)
             card_graphic.render(screen)
             pos = pos.add(card_spacing)
 
@@ -299,6 +320,7 @@ class GameGraphic(Graphic):
         self.game = game
         self.card_to_graphic: dict[Card, CardGE] = {}
         self.pile_graphics: dict[Pile, PileGraphic] = {}
+        self.render_order: list[Pile] = []
         # self.draw_button: # TODO
         self.initiate()
 
@@ -358,10 +380,21 @@ class GameGraphic(Graphic):
             y = TextureRepo.offset.y + (vertical_length + TextureRepo.offset.y) * (i // cards_per_row)
             y += vertical_y
             self.pile_graphics[pile] = VerticalPileGraphic(Vec2D(x, y), vertical_length, self, pile)
+        if ANIMATION:
+            self.render_order = [pile for pile in self.pile_graphics.keys()]
+
+    def prioritize_render(self, pile: Pile):
+        if ANIMATION:
+            self.render_order.remove(pile)
+            self.render_order.append(pile)
     
     def render(self, screen: pygame.Surface):
-        for pile_graphic in self.pile_graphics.values():
-            pile_graphic.render(screen)
+        if ANIMATION:
+            for pile in self.render_order:
+                self.pile_graphics[pile].render(screen)
+        else:
+            for pile_graphic in self.pile_graphics.values():
+                pile_graphic.render(screen)
 
     def element_at(self, pos: Vec2D) -> tuple[PileGraphic|None, LabelGE|CardGE|None]:
         for pile_g in self.pile_graphics.values():
@@ -378,11 +411,9 @@ class GameGraphic(Graphic):
 if __name__ == '__main__':
     pygame.init()
 
-    with open('games/klondike.sgdl', 'r') as f:
-    # with open('games/spider.sgdl', 'r') as f:
-    # with open('games/minispider.sgdl', 'r') as f:
-    # with open('games/supereasyspider.sgdl', 'r') as f:
-    # with open('games/easiestgame.sgdl', 'r') as f:
+    sgdl_filename = sys.argv[1]
+
+    with open(sgdl_filename, 'r') as f:
         game = Parser.parse(f.read(), 42)
     
     TextureRepo.load_textures()
@@ -395,42 +426,44 @@ if __name__ == '__main__':
     element_clicked: tuple[PileGraphic|None, CardGE|LabelGE|None] = None, None
     action: str|None = None
     is_win = game.is_win()
+    mouse_to_card: Vec2D = Vec2D(0, 0)
     log_valid_actions(game)
     while running and not is_win:
-        screen.fill((255, 255, 255))  # Fill screen with white
+        screen.fill((255, 255, 255)) # background
         game_graphic.render(screen)
-        # types of input
-        # draw
-        #     click label on rotate
-        #     click label/cards on deal
-        # move card
-        #     drag card
-        # move stack
-        #     drag top card
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = Vec2D.from_tuple(pygame.mouse.get_pos())
-                element_clicked = game_graphic.element_at(pos)
+                mouse_pos = Vec2D.from_tuple(pygame.mouse.get_pos())
+                element_clicked = game_graphic.element_at(mouse_pos)
+                if element_clicked[0] is not None:
+                    game_graphic.prioritize_render(element_clicked[0].pile)
+                    if ANIMATION and isinstance(element_clicked[1], CardGE):
+                        mouse_to_card = element_clicked[1].pos.sub(mouse_pos)
+                        element_clicked[0].card_is_moving(element_clicked[1].card)
             if event.type == pygame.MOUSEBUTTONUP:
                 if element_clicked[0] is not None and isinstance(element_clicked[1], CardGE):
-                    pos = Vec2D.from_tuple(pygame.mouse.get_pos())
-                    dest_element = game_graphic.element_at(pos) # can be mouse pos, but I think more natural is the center of the card # TODO
+                    mouse_pos = Vec2D.from_tuple(pygame.mouse.get_pos())
+                    dest_element = game_graphic.element_at(mouse_pos) # can be mouse pos, but I think more natural is the center of the card # TODO
                     if dest_element[0] is not None and dest_element[0].pile.get_tag() != 'DRAW':
                         src_pile = element_clicked[0].pile.get_tag()
                         dest_pile = dest_element[0].pile.get_tag()
                         if element_clicked[0].pile.cards[-1] == element_clicked[1].card:
-                            print(f"card selected: {element_clicked[1].card}, top card: {element_clicked[0].pile.cards[-1]}")
                             action = f'move {src_pile} {dest_pile}'
                         else:
                             src_index = element_clicked[0].pile.cards.index(element_clicked[1].card)
                             action = f'move_stack {src_pile}:{src_index} {dest_pile}'
+                        game_graphic.prioritize_render(dest_element[0].pile)
+                    element_clicked[0].card_stopped_moving(element_clicked[1].card)
                 elif element_clicked[0] is not None and isinstance(element_clicked[1], LabelGE):
                     if element_clicked[0].pile.get_tag() == 'DRAW':
                         action = 'draw'
+                element_clicked = None, None
             if event.type == pygame.MOUSEMOTION:
-                pass # TODO
+                mouse_pos = Vec2D.from_tuple(pygame.mouse.get_pos())
+                if ANIMATION and isinstance(element_clicked[1], CardGE):
+                    element_clicked[1].move(mouse_pos.add(mouse_to_card), True)
             if action is not None:
                 print(f"action received: {action}")
                 Parser.perform_action_in_game(action, game)
