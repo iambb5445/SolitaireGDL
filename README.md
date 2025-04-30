@@ -7,6 +7,16 @@ Additionally, a simple gui is implemented in `gui.py` which can be used to visua
 ## How to Run
 
 ### Play through Terminal
+
+<!-- <p align="center">
+  <img alt="spider terminal screenshot" src="resources/readme/spider_terminal.png" width="200">
+  <img alt="spider terminal - condition" src="resources/readme/spider_terminal_conditions.png" width="200">
+</p> -->
+
+![spider terminal screenshot](resources/readme/spider_terminal.png)
+![spider terminal screenshot - conditions](resources/readme/spider_terminal_conditions.png)
+
+
 To play a solitaire game through terminal commands, use:
 
 ```shell
@@ -23,7 +33,7 @@ Additionally, a summary of the win condition will be displayed after every move.
 
 ### Play through GUI
 
-![alt text](resources/readme/klondike_gui.png)
+![klondike gui screenshot](resources/readme/klondike_gui.png)
 
 To play the game using the GUI, you can run:
 
