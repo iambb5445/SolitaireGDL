@@ -1,14 +1,13 @@
 from parser import Parser
 from utility import Logger
-import utility as util
-from player import RandomPlayer
+from player import RandomPlayer, RandomNoRepeatPlayer
 
 if __name__ == '__main__':
     # with open('games/klondike.sgdl', 'r') as f:
     with open('games/spider.sgdl', 'r') as f:
         game = Parser.parse(f.read(), 42)
         game.logger.active = False
-    player = RandomPlayer(42)
+    player = RandomNoRepeatPlayer(42)
     logger = Logger(True)
     logger.info("GAME START!")
     while not game.is_win():

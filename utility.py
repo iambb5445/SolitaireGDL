@@ -28,6 +28,17 @@ class Logger:
         if self.active:
             print(s)
 
+    def info_from(self, l: list[str|tuple[Callable, list]]):
+        s = ''
+        if not self.active:
+            return
+        for val in l:
+            if isinstance(val, str):
+                s += val
+            else:
+                s += val[0](*val[1])
+        self.info(s)
+
     def temp_activate(self):
         self.active = True
     

@@ -153,13 +153,15 @@ class Game(Viewable):
     def is_win(self):
         assert self.win_conditions is not None, "No win condition defined for the game"
         components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
-        self.logger.info("WIN CONDITIONS:\n" + self.win_conditions.summary(components))
+        # self.logger.info("WIN CONDITIONS:\n" + self.win_conditions.summary(components))
+        self.logger.info_from(["WIN CONDITIONS:\n", (self.win_conditions.summary, [components])])
         return self.win_conditions.evaluate(components)
     
     def draw(self, perform: bool=True) -> bool:
         if self.draw_conditions is not None:
             components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
-            self.logger.info("DRAW CONDITIONS:\n" + self.draw_conditions.summary(components))
+            # self.logger.info("DRAW CONDITIONS:\n" + self.draw_conditions.summary(components))
+            self.logger.info_from(["DRAW CONDITIONS:\n", (self.draw_conditions.summary, [components])])
             if not self.draw_conditions.evaluate(components):
                 return False
         if self.draw_pile is None:
@@ -231,7 +233,8 @@ class Game(Viewable):
         if condition is None or src_pile.empty() or src_pile.peak().face_down: # TODO perhaps handle as conditions?
             return False
         components: cond.MoveCardComponents = cond.MoveCardComponents(src_pile.peak(), dest_pile)
-        self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n" + condition.summary(components))
+        # self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n" + condition.summary(components))
+        self.logger.info_from([f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n", (condition.summary, [components])])
         if not condition.evaluate(components):
             return False
         if perform:
@@ -251,7 +254,8 @@ class Game(Viewable):
         if condition is None or src_pos.from_ind >= src_pile.len() or any([card.face_down for card in src_pile.peak_many(src_pos.from_ind)]):
             return False
         components: cond.MoveStackComponents = cond.MoveStackComponents(src_pile.peak_many(src_pos.from_ind), dest_pile)
-        self.logger.info(f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}" + condition.summary(components))
+        # self.logger.info(f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}" + condition.summary(components))
+        self.logger.info_from([f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}\n", (condition.summary, [components])])
         if not condition.evaluate(components):
             return False
         if perform:
@@ -301,9 +305,9 @@ class Game(Viewable):
         while(True):
             actions: list[GameAction] = []
             for src_pilename, dest_pilename in self.auto_move_conditions.keys():
-                actions += self._get_move_actions(src_pilename, dest_pilename)
+                actions += self._get_move_actions(src_pilename, dest_pilename, True)
             for src_pilename, dest_pilename in self.auto_move_stack_conditions.keys():
-                actions += self._get_move_stack_actions(src_pilename, dest_pilename)
+                actions += self._get_move_stack_actions(src_pilename, dest_pilename, True)
             actions = self._filter_valid(actions, auto=True)
             if len(actions) == 0:
                 break
@@ -327,7 +331,7 @@ class Game(Viewable):
         self.logger.revert_activation()
         return actions
     
-    def _get_move_actions(self, src_pilename: str, dest_pilename: str) -> list[GameAction[PilePos, StackPilePos, bool, bool]]:
+    def _get_move_actions(self, src_pilename: str, dest_pilename: str, only_valid: bool) -> list[GameAction[PilePos, StackPilePos, bool, bool]]:
         actions: list[GameAction[PilePos, StackPilePos, bool, bool]] = []
         for src_pos in self._get_pile_positions(src_pilename):
             for dest_pos in self._get_stack_pile_positions(dest_pilename):
@@ -335,26 +339,36 @@ class Game(Viewable):
                     actions.append(GameAction(self.move, src_pos=src_pos, dest_pos=dest_pos))
         return actions
 
-    def _get_move_stack_actions(self, src_pilename: str, dest_pilename: str) -> list[GameAction[RunPos, StackPilePos, bool, bool]]:
+    def _get_move_stack_actions(self, src_pilename: str, dest_pilename: str, only_valid: bool) -> list[GameAction[RunPos, StackPilePos, bool, bool]]:
         actions: list[GameAction[RunPos, StackPilePos, bool, bool]] = []
         for src_pos in self._get_stack_pile_positions(src_pilename):
             src_pile = self._get_stack(src_pos)
             if src_pile is None:
                 continue
             for dest_pos in self._get_stack_pile_positions(dest_pilename):
-                for i in range(src_pile.len() - 1): # stack should have a size of at least 2
-                    if str(src_pos) != str(dest_pos):
-                        actions.append(GameAction(self.move_stack, src_pos=RunPos(src_pos, i), dest_pos=dest_pos))
+                if str(src_pos) == str(dest_pos):
+                    continue
+                for i in range(src_pile.len() - 2, -1, -1): # stack should have a size of at least 2
+                    dest_pile = self.name_to_piles[dest_pilename]
+                    if isinstance(dest_pile, Stack) and dest_pile.cards[i].face_down:
+                        break
+                    actions.append(GameAction(self.move_stack, src_pos=RunPos(src_pos, i), dest_pos=dest_pos))
         return actions
 
     def get_possible_actions(self, only_valid: bool) -> list[GameAction]:
         actions: list[GameAction] = []
         if self.draw_pile is not None:
             actions.append(GameAction(self.draw))
-        for src_pilename in list(self.name_to_piles.keys()) + ['DRAW']:
-            for dest_pilename in self.name_to_piles.keys():
-                actions += self._get_move_actions(src_pilename, dest_pilename)
-                actions += self._get_move_stack_actions(src_pilename, dest_pilename)
+        if only_valid:
+            for src_pilename, dest_pilename in self.move_conditions.keys():
+                actions += self._get_move_actions(src_pilename, dest_pilename, only_valid)
+            for src_pilename, dest_pilename in self.move_stack_conditions.keys():
+                actions += self._get_move_stack_actions(src_pilename, dest_pilename, only_valid)
+        else:
+            for src_pilename in self.name_to_piles.keys():
+                for dest_pilename in list(self.name_to_piles.keys()) + ['DRAW']:
+                    actions += self._get_move_actions(src_pilename, dest_pilename, only_valid)
+                    actions += self._get_move_stack_actions(src_pilename, dest_pilename, only_valid)
         if only_valid:
             return self._filter_valid(actions)
         return actions
