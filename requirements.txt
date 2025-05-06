@@ -1,0 +1,3 @@
+pygame # for running gui only `python gui.py`
+tqdm # for simluating many runs in parallel `python simulate_many.py`
+joblib # for simluating many runs in parallel `python simulate_many.py`
