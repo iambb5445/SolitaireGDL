@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from game import Game, GameAction
+from game import Game
+from utility import get_max_elements
 import random
 from parser import Parser
 from typing import Callable
@@ -15,29 +16,36 @@ class Player(ABC):
     def decide_action(self, current_state: Game) -> str|None:
         raise NotImplementedError
 
-    def _get_performed_state(self, current_state: Game, action: GameAction) -> Game:
+    def _get_performed_state(self, current_state: Game, action: str) -> Game:
         new_state = current_state.copy()
         new_state.logger.temp_deactivate()
-        Parser.perform_action_in_game(str(action), new_state)
+        Parser.perform_action_in_game(action, new_state)
         return new_state
     
+    def _get_actions(self, current_state: Game) -> list[str]:
+        return [str(action) for action in current_state.get_possible_actions(True)]
+    
+    def _get_state_actions(self, current_state: Game) -> list[tuple[Game, str]]:
+        actions = self._get_actions(current_state)
+        return [(self._get_performed_state(current_state, action), action) for action in actions]
+    
 class RandomPlayer(Player):
-    def __init__(self, seed: int|None = None, heuristic: Callable[[Game], int]|None=None) -> None:
+    def __init__(self, seed: int|None = None, heuristic: Callable[[Game, str], int]|None=None) -> None:
         self.random = random.Random(seed)
         self.heuristic = heuristic
 
-    def _weighted_choice(self, current_state: Game, actions: list[GameAction]) -> GameAction|None:
-        if len(actions) == 0:
+    def _weighted_choice(self, state_actions: list[tuple[Game, str]]) -> str|None:
+        if len(state_actions) == 0:
             return None
         if self.heuristic is None:
-            return self.random.choice(actions)
-        values = [self.heuristic(self._get_performed_state(current_state, action)) for action in actions]
-        return self.random.choices(actions, values, k=1)[0]
+            return self.random.choice(state_actions)[1]
+        values = [self.heuristic(new_state, action) for new_state, action in state_actions]
+        return self.random.choices(state_actions, values, k=1)[0][1]
 
     def decide_action(self, current_state: Game) -> str|None:
-        actions = current_state.get_possible_actions(True)
-        action = self._weighted_choice(current_state, actions)
-        return str(action) if action is not None else None
+        state_actions = self._get_state_actions(current_state)
+        action = self._weighted_choice(state_actions)
+        return action if action is not None else None
     
 class NoRepeatPlayer(Player):
     HASH_TYPE = str # TODO generic
@@ -46,23 +54,47 @@ class NoRepeatPlayer(Player):
     
     def _hash(self, state: Game) -> HASH_TYPE:
         return state.get_game_view()
-
-    def _get_new_state_hash(self, current_state: Game, action: GameAction) -> HASH_TYPE:
-        return self._hash(self._get_performed_state(current_state, action))
+    
+    def _register_state(self, current_state: Game):
+        self.seen_states.add(self._hash(current_state))
+    
+    def _get_new_state_actions(self, current_state: Game) -> list[tuple[Game, str]]:
+        state_actions = self._get_state_actions(current_state)
+        actions = [(new_state, action) for new_state, action in state_actions\
+                   if self._hash(new_state) not in self.seen_states]
+        return actions
+    
+class DFSPlayer(NoRepeatPlayer):
+    def __init__(self, heuristic: Callable[[Game, str], int]|None) -> None:
+        super().__init__()
+        self.heuristic = heuristic
+    
+    def decide_action(self, current_state: Game) -> str | None:
+        self._register_state(current_state)
+        state_actions = self._get_new_state_actions(current_state)
+        if self.heuristic is not None:
+            not_none_heuristic: Callable[[Game, str], int] = self.heuristic # otherwise, next line will raise typing errors, even though it's correct
+            return max(state_actions, key=lambda state_action: not_none_heuristic(state_action[0], state_action[1]))[1]
+        if len(state_actions) > 0:
+            state_actions[0]
 
 class RandomNoRepeatPlayer(RandomPlayer, NoRepeatPlayer):
-    def __init__(self, seed:int|None = None, heuristic: Callable[[Game], int]|None = None) -> None:
+    def __init__(self, seed:int|None = None, heuristic: Callable[[Game, str], int]|None = None) -> None:
         RandomPlayer.__init__(self, seed, heuristic)
         NoRepeatPlayer.__init__(self)
     
     def decide_action(self, current_state: Game) -> str|None:
-        self.seen_states.add(self._hash(current_state))
-        actions = current_state.get_possible_actions(True)
-        actions = [action for action in actions if self._get_new_state_hash(current_state, action) not in self.seen_states]
-        action = self._weighted_choice(current_state, actions)
+        self._register_state(current_state)
+        state_actions = self._get_state_actions(current_state)
+        action = self._weighted_choice(state_actions)
         return str(action) if action is not None else None
     
-def spider_heuristic(game: Game) -> int:
+def no_draw_heuristic(game: Game, action: str) -> int:
+    if str(action) == 'draw':
+        return -1
+    return 1
+    
+def spider_heuristic(game: Game, action: str) -> int:
     score = 0
     for pile in game.name_to_piles['FOUNDATION']:
         if pile.len() > 0:
@@ -77,7 +109,7 @@ def spider_heuristic(game: Game) -> int:
         score += stack_size * stack_size
     return score
 
-def action_count_heuristic(game: Game) -> int:
+def action_count_heuristic(game: Game, action: str) -> int:
     if game.is_win():
         return int(1e12)
     return len(game.get_possible_actions(True))
@@ -135,20 +167,17 @@ class MCTSPlayer(Player):
         self.hash_to_node[hash] = node
 
     def _expand(self, node: MCTSNode):
-        options = node.state.get_possible_actions(True)
-        for option in options:
-            new_state = self._get_state_copy(node.state)
-            Parser.perform_action_in_game(str(option), new_state)
+        options = self._get_state_actions(node.state)
+        for new_state, action in options:
             if self._get_hash(new_state) in self.hash_to_node:
                 continue
-            child = MCTSChild(new_state, node, str(option))
+            child = MCTSChild(new_state, node, action)
             node.add_child(child)
             self._register_hash(child)
     
     def _select_node(self, node: MCTSNode) -> MCTSNode:
         while not node.is_leaf():
-            max_ucb = max([child.ucb for child in node.get_children()])
-            max_nodes = [n for n in node.get_children() if n.ucb == max_ucb]
+            max_nodes = get_max_elements(node.get_children(), lambda child: child.ucb)
             node = self.random.choice(max_nodes)
             if node.visits == 0:
                 return node
@@ -165,8 +194,6 @@ class MCTSPlayer(Player):
             if action is None:
                 break
             Parser.perform_action_in_game(action, state)
-            # actions = state.get_possible_actions(True)
-            # self.random.choice(actions).act(True)
             depth += 1
         return state.is_win()
     
@@ -179,8 +206,8 @@ class MCTSPlayer(Player):
     def _get_best_action(self, node: MCTSNode) -> str|None:
         if node.is_leaf():
             return None
-        best_child = max(node.get_children(), key=lambda child: child.wins/child.visits)
-        return best_child.action
+        best_children = get_max_elements(node.get_children(), lambda child: child.wins/child.visits)
+        return self.random.choice(best_children).action
     
     def decide_action(self, current_state: Game) -> str | None:
         start_time = time.time()

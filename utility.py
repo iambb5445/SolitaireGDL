@@ -57,6 +57,12 @@ def cast(s: str, type_cast: Callable[..., T], default: T|None=None, supress_erro
             return default
         raise e
     
+G = TypeVar('G')
+def get_max_elements(elements: list[G], map_func: Callable[[G], float|int]) -> list[G]:
+        values: list[int|float] = [map_func(element) for element in elements]
+        max_value: float|int = max(values)
+        return [element for element, value in zip(elements, values) if value == max_value]
+    
 def get_safe_filename(filename: str, timed:bool=False, extension:str|None=None):
     import time
     keepcharacters = (' ','.','_', '-')
