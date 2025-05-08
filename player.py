@@ -52,7 +52,8 @@ class NoRepeatPlayer(Player):
 
 class RandomNoRepeatPlayer(RandomPlayer, NoRepeatPlayer):
     def __init__(self, seed:int|None = None, heuristic: Callable[[Game], int]|None = None) -> None:
-        super().__init__(seed, heuristic)
+        RandomPlayer.__init__(self, seed, heuristic)
+        NoRepeatPlayer.__init__(self)
     
     def decide_action(self, current_state: Game) -> str|None:
         self.seen_states.add(self._hash(current_state))
