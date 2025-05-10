@@ -5,7 +5,7 @@ from player import RandomPlayer, RandomNoRepeatPlayer
 if __name__ == '__main__':
     # with open('games/klondike.sgdl', 'r') as f:
     with open('games/spider.sgdl', 'r') as f:
-        game = Parser.parse(f.read(), 42)
+        game = Parser.parse(f.read(), 42, True)
         game.logger.active = False
     player = RandomNoRepeatPlayer(42)
     logger = Logger(True)

@@ -8,6 +8,74 @@ from typing import Callable
 import math
 import time
 
+class StateEval(ABC):
+    def __init__(self, max_value: int) -> None:
+        self.max_value = max_value
+    
+    @abstractmethod
+    def get_value(self, state: Game, action: str|None) -> int:
+        raise NotImplementedError
+    
+    def get_normalized_value(self, state: Game, action: str|None) -> float:
+        return self.get_value(state, action) / self.max_value
+    
+class MergedHeuristic(StateEval):
+    def __init__(self, state_evals: list[StateEval]) -> None:
+        super().__init__(0)
+        self.state_evals = state_evals
+    
+    def get_value(self, state: Game, action: str|None) -> int:
+        return sum((state_eval.get_value(state, action) * 100)//state_eval.max_value for state_eval in self.state_evals)
+    
+    def get_normalized_value(self, state: Game, action: str|None) -> float:
+        return sum(state_eval.get_value(state, action) for state_eval in self.state_evals) / len(self.state_evals)
+
+class WinHeuristic(StateEval):
+    def __init__(self) -> None:
+        super().__init__(1)
+    
+    def get_value(self, state: Game, action: str | None) -> int:
+        if state.is_win():
+            return 1
+        return 0
+    
+class NoDrawHeuristic(StateEval):
+    def __init__(self) -> None:
+        super().__init__(1)
+
+    def get_value(self, state: Game, action: str | None) -> int:
+        if action is not None and str(action) == 'draw':
+            return 0
+        return 1
+    
+class SpiderHeuristic(StateEval):
+    def __init__(self) -> None:
+        super().__init__(200*8)
+
+    def get_value(self, state: Game, action: str | None) -> int:
+        score = 0
+        for pile in state.name_to_piles['FOUNDATION']:
+            if pile.len() > 0:
+                score += 200
+        for pile in state.name_to_piles['COLUMN']:
+            stack_size = 1
+            for i in range(pile.len() - 2, -1, -1):
+                if pile.cards[i].suit == pile.cards[i+1].suit and pile.cards[i].rank == pile.cards[i+1].rank + 1 and not pile.cards[i].face_down:
+                    stack_size += 1
+                else:
+                    break
+            score += stack_size * stack_size
+        return score
+
+class ActionCountHeuristic(StateEval):
+    def __init__(self) -> None:
+        super().__init__(1000)
+
+    def get_value(self, state: Game, action: str | None) -> int:
+        if state.is_win():
+            return int(1000) # an estimate
+        return len(state.get_possible_actions(True))
+
 class Player(ABC):
     # This function returns an str instead of a GameAction,
     # since the current_state is most likely a copy, and we want to prevent
@@ -30,7 +98,7 @@ class Player(ABC):
         return [(self._get_performed_state(current_state, action), action) for action in actions]
     
 class RandomPlayer(Player):
-    def __init__(self, seed: int|None = None, heuristic: Callable[[Game, str], int]|None=None) -> None:
+    def __init__(self, seed: int|None = None, heuristic: StateEval|None=None) -> None:
         self.random = random.Random(seed)
         self.heuristic = heuristic
 
@@ -39,7 +107,7 @@ class RandomPlayer(Player):
             return None
         if self.heuristic is None:
             return self.random.choice(state_actions)[1]
-        values = [self.heuristic(new_state, action) for new_state, action in state_actions]
+        values = [self.heuristic.get_normalized_value(new_state, action) for new_state, action in state_actions]
         return self.random.choices(state_actions, values, k=1)[0][1]
 
     def decide_action(self, current_state: Game) -> str|None:
@@ -65,60 +133,37 @@ class NoRepeatPlayer(Player):
         return actions
     
 class DFSPlayer(NoRepeatPlayer):
-    def __init__(self, heuristic: Callable[[Game, str], int]|None) -> None:
+    def __init__(self, heuristic: StateEval|None) -> None:
         super().__init__()
         self.heuristic = heuristic
     
     def decide_action(self, current_state: Game) -> str | None:
         self._register_state(current_state)
         state_actions = self._get_new_state_actions(current_state)
+        if len(state_actions) == 0:
+            return None
         if self.heuristic is not None:
-            not_none_heuristic: Callable[[Game, str], int] = self.heuristic # otherwise, next line will raise typing errors, even though it's correct
-            return max(state_actions, key=lambda state_action: not_none_heuristic(state_action[0], state_action[1]))[1]
-        if len(state_actions) > 0:
-            state_actions[0]
+            not_none_heuristic: StateEval = self.heuristic # otherwise, next line will raise typing errors, even though it's correct
+            return max(state_actions, key=lambda state_action: not_none_heuristic.get_value(state_action[0], state_action[1]))[1]
+        return state_actions[0][1]
 
 class RandomNoRepeatPlayer(RandomPlayer, NoRepeatPlayer):
-    def __init__(self, seed:int|None = None, heuristic: Callable[[Game, str], int]|None = None) -> None:
+    def __init__(self, seed:int|None = None, heuristic: StateEval|None = None) -> None:
         RandomPlayer.__init__(self, seed, heuristic)
         NoRepeatPlayer.__init__(self)
     
     def decide_action(self, current_state: Game) -> str|None:
+        assert current_state not in self.seen_states
         self._register_state(current_state)
-        state_actions = self._get_state_actions(current_state)
+        state_actions = self._get_new_state_actions(current_state)
         action = self._weighted_choice(state_actions)
         return str(action) if action is not None else None
-    
-def no_draw_heuristic(game: Game, action: str) -> int:
-    if str(action) == 'draw':
-        return -1
-    return 1
-    
-def spider_heuristic(game: Game, action: str) -> int:
-    score = 0
-    for pile in game.name_to_piles['FOUNDATION']:
-        if pile.len() > 0:
-            score += 200
-    for pile in game.name_to_piles['COLUMN']:
-        stack_size = 1
-        for i in range(pile.len() - 2, -1, -1):
-            if pile.cards[i].suit == pile.cards[i+1].suit and pile.cards[i].rank == pile.cards[i+1].rank + 1 and not pile.cards[i].face_down:
-                stack_size += 1
-            else:
-                break
-        score += stack_size * stack_size
-    return score
-
-def action_count_heuristic(game: Game, action: str) -> int:
-    if game.is_win():
-        return int(1e12)
-    return len(game.get_possible_actions(True))
 
 class MCTSNode:
     def __init__(self, state: Game) -> None:
         self.state: Game = state
         self.visits: int = 0
-        self.wins: int = 0
+        self.reward: float = 0
         self.children: dict[str, MCTSChild] = {}
     
     def add_child(self, child: MCTSChild) -> None:
@@ -129,6 +174,9 @@ class MCTSNode:
     
     def is_leaf(self) -> bool:
         return len(self.children) == 0
+    
+    def create_child(self, new_state: Game, performed_action: str) -> MCTSChild:
+        return MCTSChild(new_state, self, performed_action)
     
 class MCTSChild(MCTSNode):
     def __init__(self, state: Game, parent: MCTSNode, action: str) -> None:
@@ -141,18 +189,20 @@ class MCTSChild(MCTSNode):
         if self.visits == 0:
             return 0 if explore_factor == 0 else math.inf
         else:
-            exploit_term = self.wins / self.visits
+            exploit_term = self.reward / self.visits
             explore_term = math.sqrt(math.log(self.parent.visits) / self.visits)
             return exploit_term + explore_factor * explore_term
 
 class MCTSPlayer(Player):
     HASH_TYPE = str
-    def __init__(self, time_budget: int, seed: int|None, max_rollout_depth: int, rollout_strategist_gen: Callable[[], Player]) -> None:
+    def __init__(self, time_budget: int, seed: int|None, max_rollout_depth: int,
+                 rollout_strategist_gen: Callable[[], Player], reward_func: StateEval) -> None:
         self.time_budget = time_budget
         self.random = random.Random(seed)
         self.hash_to_node: dict[MCTSPlayer.HASH_TYPE, MCTSNode] = {}
         self.max_rollout_depth: int = max_rollout_depth
         self.rollout_strategist_gen = rollout_strategist_gen
+        self.reward_func = reward_func
     
     def _get_hash(self, game: Game) -> HASH_TYPE:
         return str(game)
@@ -171,7 +221,7 @@ class MCTSPlayer(Player):
         for new_state, action in options:
             if self._get_hash(new_state) in self.hash_to_node:
                 continue
-            child = MCTSChild(new_state, node, action)
+            child = node.create_child(new_state, action)
             node.add_child(child)
             self._register_hash(child)
     
@@ -186,27 +236,29 @@ class MCTSPlayer(Player):
             node = self.random.choice(node.get_children())
         return node
     
-    def _rollout(self, state: Game) -> bool:
+    def _rollout(self, state: Game) -> float:
         depth = 0
         rollout_strategist = self.rollout_strategist_gen()
+        last_action: None|str = None
         while not state.is_win() and depth < self.max_rollout_depth:
             action = rollout_strategist.decide_action(state)
             if action is None:
                 break
             Parser.perform_action_in_game(action, state)
+            last_action = action
             depth += 1
-        return state.is_win()
+        return self.reward_func.get_normalized_value(state, last_action)
     
-    def _backpropagate(self, node: MCTSNode, is_win: bool) -> None:
+    def _backpropagate(self, node: MCTSNode, reward: float) -> None:
         node.visits += 1
-        node.wins += 1 if is_win else 0
+        node.reward += reward
         if isinstance(node, MCTSChild):
-            self._backpropagate(node.parent, is_win)
+            self._backpropagate(node.parent, reward)
         
     def _get_best_action(self, node: MCTSNode) -> str|None:
         if node.is_leaf():
             return None
-        best_children = get_max_elements(node.get_children(), lambda child: child.wins/child.visits)
+        best_children = get_max_elements(node.get_children(), lambda child: child.reward/child.visits)
         return self.random.choice(best_children).action
     
     def decide_action(self, current_state: Game) -> str | None:
@@ -218,8 +270,8 @@ class MCTSPlayer(Player):
         node_count = 0
         while time.time() - start_time < self.time_budget:
             node = self._select_node(node)
-            is_win = self._rollout(self._get_state_copy(node.state))
-            self._backpropagate(node, is_win)
+            reward = self._rollout(self._get_state_copy(node.state))
+            self._backpropagate(node, reward)
             node_count += 1
         best_action = self._get_best_action(node)
         print(node_count)

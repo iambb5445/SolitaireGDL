@@ -301,11 +301,11 @@ class Parser:
         game.define_win_cond(cond)
 
     @staticmethod
-    def parse(game_desc: str, seed: int|None = None) -> Game:
+    def parse(game_desc: str, seed: int|None, should_log: bool) -> Game:
         game_desc = Parser.remove_comments(game_desc)
         lines = game_desc.splitlines()
         name = lines[0]
-        game = Game(name)
+        game = Game(name, should_log)
         section_ind = [i for i in range(len(lines)) if '$' in lines[i]] + [len(lines)]
         sections = [lines[section_ind[i]:section_ind[i+1]] for i in range(len(section_ind)-1)]
         for section in sections:
