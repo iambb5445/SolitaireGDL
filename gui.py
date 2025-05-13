@@ -413,9 +413,7 @@ if __name__ == '__main__':
 
     sgdl_filename = sys.argv[1]
 
-    with open(sgdl_filename, 'r') as f:
-        game = Parser.parse(f.read(), 42, True)
-    game.start()
+    game = Parser.from_file(sgdl_filename, 42, True, True)
     
     TextureRepo.load_textures()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))

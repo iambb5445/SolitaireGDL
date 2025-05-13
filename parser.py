@@ -301,7 +301,7 @@ class Parser:
         game.define_win_cond(cond)
 
     @staticmethod
-    def parse(game_desc: str, seed: int|None, should_log: bool) -> Game:
+    def parse(game_desc: str, seed: int|None, should_log: bool, should_start: bool) -> Game:
         game_desc = Parser.remove_comments(game_desc)
         lines = game_desc.splitlines()
         name = lines[0]
@@ -310,6 +310,14 @@ class Parser:
         sections = [lines[section_ind[i]:section_ind[i+1]] for i in range(len(section_ind)-1)]
         for section in sections:
             Parser.apply(section, game, seed)
+        if should_start:
+            game.start()
+        return game
+    
+    @staticmethod
+    def from_file(filename: str, seed: int|None, should_log: bool, should_start: bool) -> Game:
+        with open(filename, 'r') as f:
+            game = Parser.parse(f.read(), seed, should_log, should_start)
         return game
     
     @staticmethod

@@ -3,10 +3,7 @@ from utility import Logger
 from player import RandomPlayer, RandomNoRepeatPlayer
 
 if __name__ == '__main__':
-    # with open('games/klondike.sgdl', 'r') as f:
-    with open('games/spider.sgdl', 'r') as f:
-        game = Parser.parse(f.read(), 42, True)
-        game.logger.active = False
+    game = Parser.from_file('games/spider.sgdl', 42, False, True)
     player = RandomNoRepeatPlayer(42)
     logger = Logger(True)
     logger.info("GAME START!")

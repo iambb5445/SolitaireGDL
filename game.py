@@ -87,6 +87,7 @@ class Game(Viewable):
 
     def copy(self) -> Game:
         game = Game(self.name, self.logger.active)
+        game.started = self.started
         game.deck = self.deck.copy()
         game.draw_pile = self.draw_pile.copy() if self.draw_pile is not None else None
         game.name_to_piles = dict([(name, [pile.copy() for pile in piles]) for name, piles in self.name_to_piles.items()])

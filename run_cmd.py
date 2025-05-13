@@ -5,8 +5,7 @@ import sys
 
 if __name__ == '__main__':
     sgdl_filename = sys.argv[1]
-    with open(sgdl_filename, 'r') as f:
-        game = Parser.parse(f.read(), 42, True)
+    game = Parser.from_file(sgdl_filename, 42, True, True)
     game.start()
     logger = Logger(True)
     logger.info("GAME START!")
