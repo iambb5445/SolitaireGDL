@@ -68,6 +68,8 @@ class Game(Viewable):
         self.name: str = name
         self.deck: Deck = Deck(0)
         self.draw_pile: Pile|None = None
+        self.started = False
+        self.initializers: list[Callable[[], None]] = []
         self.name_to_piles: dict[str, list[Stack]] = {}
         self.move_conditions: dict[tuple[str, str], cond.Condition[cond.MoveCardComponents]] = {}
         self.move_stack_conditions: dict[tuple[str, str], cond.Condition[cond.MoveStackComponents]] = {}
@@ -77,6 +79,11 @@ class Game(Viewable):
         self.draw_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
+
+    def start(self):
+        for initializer in self.initializers:
+            initializer()
+        self.started = True
 
     def copy(self) -> Game:
         game = Game(self.name, self.logger.active)
@@ -151,6 +158,7 @@ class Game(Viewable):
         return all_piles
 
     def is_win(self):
+        assert self.started, "Cannot check the win condition if game has not started"
         assert self.win_conditions is not None, "No win condition defined for the game"
         components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
         # self.logger.info("WIN CONDITIONS:\n" + self.win_conditions.summary(components))
@@ -158,6 +166,7 @@ class Game(Viewable):
         return self.win_conditions.evaluate(components)
     
     def draw(self, perform: bool=True) -> bool:
+        assert self.started, "Cannot draw if game has not started"
         if self.draw_conditions is not None:
             components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
             # self.logger.info("DRAW CONDITIONS:\n" + self.draw_conditions.summary(components))
@@ -173,8 +182,12 @@ class Game(Viewable):
 
     def define_deal_draw(self, count: int, targets: list[str]) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
-        self.draw_pile = DealPile(self.deck.deal(count), targets)
+        def initializer():
+            assert self.draw_pile is not None
+            self.draw_pile.cards = self.deck.deal(count)
+        self.draw_pile = DealPile([], targets)
         self._submit_deal_draw_func(targets)
+        self.initializers.append(initializer)
     
     def _submit_deal_draw_func(self, targets: list[str]):
         def deal_draw(perform: bool=True) -> bool:
@@ -192,18 +205,26 @@ class Game(Viewable):
 
     def define_rotate_draw(self, count: int, draw_count: int, view_count: int|None, max_redeals: int|None) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
-        self.draw_pile = RotateDrawPile(self.deck.deal(count), draw_count, view_count, max_redeals)
+        def initializer():
+            assert self.draw_pile is not None
+            self.draw_pile.cards = self.deck.deal(count)
+        self.draw_pile = RotateDrawPile([], draw_count, view_count, max_redeals)
         self.draw_func = self.draw_pile.rotate
+        self.initializers.append(initializer)
 
     def define_pile(self, pile_name: str, count: int, face: Stack.Face, starting_cards: list[Card]|None) -> None:
         assert starting_cards is None or len(starting_cards) == count, f"Initial cards define for pile does not match number of expected cards: {count} {starting_cards}"
-        if starting_cards == None:
-            starting_cards = self.deck.deal(count)
         self.name_to_piles[pile_name] = self.name_to_piles.get(pile_name, [])
         ind = len(self.name_to_piles[pile_name])
-        pile = Stack(starting_cards, pile_name, ind)
-        pile.apply_face(face)
+        pile = Stack([], pile_name, ind)
         self.name_to_piles[pile_name].append(pile)
+        def initilizer():
+            if starting_cards == None:
+                pile.cards = self.deck.deal(count)
+            else:
+                pile.cards = self.deck.extract(starting_cards)
+            pile.apply_face(face)
+        self.initializers.append(initilizer)
 
     def _get_stack(self, pos: StackPilePos) -> Stack|None:
         if pos.pilename not in self.name_to_piles:
@@ -222,6 +243,7 @@ class Game(Viewable):
 
     # Invalid syntax is getting an exception, while invalid move is getting False
     def move(self, src_pos: PilePos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
+        assert self.started, "Cannot make move if game has not started"
         src_pile = self._get_pile(src_pos)
         assert src_pile is not None, f"Cannot move from non-existent pile: {src_pos}"
         dest_pile = self._get_stack(dest_pos)
@@ -243,6 +265,7 @@ class Game(Viewable):
         return True
     
     def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
+        assert self.started, "Cannot make move stack if game has not started"
         src_pile = self._get_stack(src_pos.stack_pos)
         assert src_pile is not None, f"Cannot move stack from non-existent pile: {src_pos}"
         dest_pile = self._get_stack(dest_pos)
@@ -302,6 +325,7 @@ class Game(Viewable):
         self.auto_move_stack_conditions[(src_pilename, dest_pilename)] = condition
     
     def check_auto_moves(self):
+        assert self.started, "Cannot check auto move if game has not started"
         while(True):
             actions: list[GameAction] = []
             for src_pilename, dest_pilename in self.auto_move_conditions.keys():

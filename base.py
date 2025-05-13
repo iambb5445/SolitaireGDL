@@ -93,6 +93,17 @@ class Deck:
         ret = self.cards[:num]
         self.cards = self.cards[num:]
         return ret
+
+    def extract(self, targets: list[Card]):
+        cards = []
+        for card in self.cards:
+            for target in targets:
+                if card.rank == target.rank and card.suit == target.suit: # ignoring face
+                    cards.append(card)
+                    card.face_down = target.face_down
+        for card in cards:
+            self.cards.remove(card)
+        return cards
     
     def __str__(self) -> str:
         return ' '.join([str(card) for card in self.cards])
@@ -230,6 +241,8 @@ class Stack(Pile):
         self.ind = ind
 
     def apply_face(self, face: Face):
+        for card in self.cards:
+            card.face(False)
         if face == Stack.Face.FACE_ALL:
             for card in self.cards:
                 card.face()
