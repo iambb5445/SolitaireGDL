@@ -51,13 +51,17 @@ class Condition(Generic[T], ABC):
     def summary(self, components: T|None=None) -> str:
         raise NotImplementedError
     
-    def TFText(self, components: T|None) -> str:
-        if components is None:
-            return ''
-        elif self.evaluate(components):
+    @staticmethod
+    def format_TF(tf: bool) -> str:
+        if tf:
             return TextUtil.get_colored_text('[T]', TextUtil.TEXT_COLOR.Green)
         else:
             return TextUtil.get_colored_text('[F]', TextUtil.TEXT_COLOR.Red)
+    
+    def TF_text(self, components: T|None) -> str:
+        if components is None:
+            return ''
+        return Condition.format_TF(self.evaluate(components))
 
 class ConditionTree(Condition[T]):
     def __init__(self) -> None:
@@ -105,7 +109,7 @@ class AndSubTree(ConditionTree[T]):
         return True
     
     def get_modular_summary(self, components: T|None) -> tuple[str, list]:
-        return ('All of the following should be true: ' + self.TFText(components), super()._get_sub_modular_summaries(components))
+        return ('All of the following should be true: ' + self.TF_text(components), super()._get_sub_modular_summaries(components))
     
 class OrSubTree(ConditionTree[T]):
     def evaluate(self, components: T) -> bool:
@@ -115,11 +119,11 @@ class OrSubTree(ConditionTree[T]):
         return False
     
     def get_modular_summary(self, components: T|None) -> tuple[str, list]:
-        return ('At least one of the following should be true: ' + self.TFText(components), super()._get_sub_modular_summaries(components))
+        return ('At least one of the following should be true: ' + self.TF_text(components), super()._get_sub_modular_summaries(components))
     
 class PlainCondition(Condition[T]):
     def summary(self, components: T|None=None) -> str:
-        return self.unsigned_summary() + ' ' + self.TFText(components)
+        return self.unsigned_summary() + ' ' + self.TF_text(components)
     
     @abstractmethod
     def unsigned_summary(self) -> str:

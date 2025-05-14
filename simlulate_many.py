@@ -16,6 +16,7 @@ class Sample:
         self.action: str = action
         self.next: Game|None = game.copy()
         self.valid: bool = True
+        self.summary = Parser.get_action_summary(action, self.current)
         if not Parser.perform_action_in_game(action, self.next):
             self.valid = False
             self.next = None
@@ -25,6 +26,7 @@ class Sample:
             "current_state_view": self.current.get_state_view(),
             "current_game_view": self.current.get_game_view(),
             "action": self.action,
+            "summary": self.summary,
             "is_valid": self.valid,
             "next_state_view": self.next.get_state_view() if self.next is not None else None,
             "next_game_view": self.next.get_game_view() if self.next is not None else None,

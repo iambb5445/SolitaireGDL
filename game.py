@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Callable, Sequence, Protocol, ParamSpec, Generic
+from typing import Callable, Sequence, Protocol, ParamSpec, Generic, TypeVar
+from abc import ABC
 from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
 import condition as cond
 from utility import Logger
@@ -57,6 +58,74 @@ class GameAction(Generic[P]):
     def __str__(self) -> str:
         all_args = list(self.args) + list(self.kwargs.values())
         return f"{self.func.__name__} {' '.join([str(arg) for arg in all_args])}"
+
+T = TypeVar('T', bound=cond.ConditionComponents, contravariant=True)
+class ActionArgs(Generic[T], ABC):
+    def __init__(self) -> None:
+        self.condition: cond.Condition[T]|None
+        self.components: T|None
+
+    def get_summary(self) -> str:
+        if self.condition is None: return ''
+        if self.components is None:
+            # TODO handle this correctly, with checking all possible scenarios for each ActionArgs child
+            return f'Moving cards should always be face up {cond.Condition.format_TF(False)}'
+        return self.condition.summary(self.components)
+    
+class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
+    def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile, condition: cond.Condition[cond.GeneralConditionComponents]|None) -> None:
+        self.condition = condition
+        self.components: cond.GeneralConditionComponents|None = None
+        if self.condition is not None:
+            self.components = cond.GeneralConditionComponents(name_to_piles, draw_pile)
+
+    @staticmethod
+    def get(game: Game) -> DrawArgs:
+        assert game.draw_pile is not None, "Cannot draw if a draw pile does not exist"
+        return DrawArgs(game.name_to_piles, game.draw_pile, game.draw_conditions)
+
+class MoveArgs(ActionArgs[cond.MoveCardComponents]):
+    def __init__(self, src_pile: Pile, dest_pile: Stack, condition: cond.Condition[cond.MoveCardComponents]|None):
+        self.src_pile = src_pile
+        self.dest_pile = dest_pile
+        self.condition = condition
+        self.components: cond.MoveCardComponents|None = None
+        if condition is not None and not src_pile.empty() and not src_pile.peak().face_down: # TODO perhaps handle as conditions?
+            self.components = cond.MoveCardComponents(src_pile.peak(), dest_pile)
+    
+    @staticmethod
+    def from_pos(game: Game, src_pos: PilePos, dest_pos: StackPilePos, auto:bool = False) -> MoveArgs:
+        src_pile = game._get_pile(src_pos)
+        assert src_pile is not None, f"Cannot move from non-existent pile: {src_pos}"
+        dest_pile = game._get_stack(dest_pos)
+        assert dest_pile is not None, f"Cannot move to non-existent or non-stack pile: {dest_pos}" # TODO perhaps handle as conditions?
+        if auto:
+            condition: cond.Condition[cond.MoveCardComponents]|None = game.auto_move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
+        else:
+            condition: cond.Condition[cond.MoveCardComponents]|None = game.move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
+        return MoveArgs(src_pile, dest_pile, condition)
+    
+class MoveStackArgs(ActionArgs[cond.MoveStackComponents]):
+    def __init__(self, src_pile: Stack, src_ind, dest_pile: Stack, condition: cond.Condition[cond.MoveStackComponents]|None):
+        self.src_pile = src_pile
+        self.src_ind = src_ind
+        self.dest_pile = dest_pile
+        self.condition = condition
+        self.components: cond.MoveStackComponents|None = None
+        if condition is not None and src_ind < src_pile.len() and all([not card.face_down for card in src_pile.peak_many(src_ind)]):
+            self.components = cond.MoveStackComponents(src_pile.peak_many(src_ind), dest_pile)
+    
+    @staticmethod
+    def from_pos(game: Game, src_pos: RunPos, dest_pos: StackPilePos, auto: bool=False) -> MoveStackArgs:
+        src_pile = game._get_stack(src_pos.stack_pos)
+        assert src_pile is not None, f"Cannot move stack from non-existent pile: {src_pos}"
+        dest_pile = game._get_stack(dest_pos)
+        assert dest_pile is not None, f"Cannot move stack to non-existent pile: {dest_pos}"
+        if auto:
+            condition: cond.Condition[cond.MoveStackComponents]|None = game.auto_move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
+        else:
+            condition: cond.Condition[cond.MoveStackComponents]|None = game.move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
+        return MoveStackArgs(src_pile, src_pos.from_ind, dest_pile, condition)
 
 class Game(Viewable):
     class MoveType(Enum):
@@ -166,16 +235,17 @@ class Game(Viewable):
         self.logger.info_from(["WIN CONDITIONS:\n", (self.win_conditions.summary, [components])])
         return self.win_conditions.evaluate(components)
     
+    def get_draw_summary(self) -> str:
+        args = DrawArgs.get(self)
+        return args.get_summary()
+    
     def draw(self, perform: bool=True) -> bool:
         assert self.started, "Cannot draw if game has not started"
-        if self.draw_conditions is not None:
-            components = cond.GeneralConditionComponents(self.name_to_piles, self.draw_pile)
-            # self.logger.info("DRAW CONDITIONS:\n" + self.draw_conditions.summary(components))
-            self.logger.info_from(["DRAW CONDITIONS:\n", (self.draw_conditions.summary, [components])])
-            if not self.draw_conditions.evaluate(components):
+        args = DrawArgs.get(self)
+        if args.condition is not None and args.components is not None:
+            self.logger.info_from(["DRAW CONDITIONS:\n", (args.condition.summary, [args.components])])
+            if not args.condition.evaluate(args.components):
                 return False
-        if self.draw_pile is None:
-            return False # no draw pile, action invalid
         valid = self.draw_func(perform)
         if valid and perform:
             self.check_auto_moves()
@@ -241,51 +311,41 @@ class Game(Viewable):
             return self._get_stack(pos)
         else:
             raise Exception(f"Pile Position type not recognized {pos}")
-
+        
     # Invalid syntax is getting an exception, while invalid move is getting False
     def move(self, src_pos: PilePos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         assert self.started, "Cannot make move if game has not started"
-        src_pile = self._get_pile(src_pos)
-        assert src_pile is not None, f"Cannot move from non-existent pile: {src_pos}"
-        dest_pile = self._get_stack(dest_pos)
-        assert dest_pile is not None, f"Cannot move to non-existent or non-stack pile: {dest_pos}" # TODO perhaps handle as conditions?
-        if auto:
-            condition: cond.Condition[cond.MoveCardComponents]|None = self.auto_move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
-        else:
-            condition: cond.Condition[cond.MoveCardComponents]|None = self.move_conditions.get((src_pos.pilename, dest_pos.pilename), None)
-        if condition is None or src_pile.empty() or src_pile.peak().face_down: # TODO perhaps handle as conditions?
+        args = MoveArgs.from_pos(self, src_pos, dest_pos, auto)
+        if args.condition is None or args.components is None:
             return False
-        components: cond.MoveCardComponents = cond.MoveCardComponents(src_pile.peak(), dest_pile)
-        # self.logger.info(f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n" + condition.summary(components))
-        self.logger.info_from([f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n", (condition.summary, [components])])
-        if not condition.evaluate(components):
+        self.logger.info_from([f"MOVE_CONDITIONS {src_pos} to {dest_pos}\n", (args.condition.summary, [args.components])])
+        if not args.condition.evaluate(args.components):
             return False
         if perform:
-            dest_pile.add([src_pile.get()])
+            args.dest_pile.add([args.src_pile.get()])
             self.check_auto_moves()
         return True
     
+    def get_move_summary(self, src_pos: PilePos, dest_pos: StackPilePos, auto: bool=False) -> str:
+        args = MoveArgs.from_pos(self, src_pos, dest_pos, auto)
+        return args.get_summary()
+    
     def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         assert self.started, "Cannot make move stack if game has not started"
-        src_pile = self._get_stack(src_pos.stack_pos)
-        assert src_pile is not None, f"Cannot move stack from non-existent pile: {src_pos}"
-        dest_pile = self._get_stack(dest_pos)
-        assert dest_pile is not None, f"Cannot move stack to non-existent pile: {dest_pos}"
-        if auto:
-            condition: cond.Condition[cond.MoveStackComponents]|None = self.auto_move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
-        else:
-            condition: cond.Condition[cond.MoveStackComponents]|None = self.move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
-        if condition is None or src_pos.from_ind >= src_pile.len() or any([card.face_down for card in src_pile.peak_many(src_pos.from_ind)]):
+        args = MoveStackArgs.from_pos(self, src_pos, dest_pos, auto)
+        if args.condition is None or args.components is None:
             return False
-        components: cond.MoveStackComponents = cond.MoveStackComponents(src_pile.peak_many(src_pos.from_ind), dest_pile)
-        # self.logger.info(f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}" + condition.summary(components))
-        self.logger.info_from([f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}\n", (condition.summary, [components])])
-        if not condition.evaluate(components):
+        self.logger.info_from([f"MOVE_STACK CONDITIONS {src_pos} to {dest_pos}\n", (args.condition.summary, [args.components])])
+        if not args.condition.evaluate(args.components):
             return False
         if perform:
-            dest_pile.add(src_pile.get_many(src_pos.from_ind))
+            args.dest_pile.add(args.src_pile.get_many(src_pos.from_ind))
             self.check_auto_moves()
         return True
+    
+    def get_move_stack_summary(self, src_pos: RunPos, dest_pos: StackPilePos, auto: bool=False) -> str:
+        args = MoveStackArgs.from_pos(self, src_pos, dest_pos, auto)
+        return args.get_summary()
     
     def _check_pilename(self, name: str, stack_only: bool) -> bool:
         if name == 'DRAW':

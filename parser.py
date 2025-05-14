@@ -348,3 +348,15 @@ class Parser:
             return game.move_stack(Parser.prase_run_pos(parts[1]), Parser.parse_stack_position(parts[2]), perform)
         else:
             raise Exception(f"Action not recognized: {s}")
+        
+    @staticmethod
+    def get_action_summary(s: str, game: Game, perform: bool = True) -> str:
+        parts = s.split()
+        if parts[0] == 'draw':
+            return game.get_draw_summary()
+        elif parts[0] == 'move':
+            return game.get_move_summary(Parser.parse_pile_position(parts[1]), Parser.parse_stack_position(parts[2]))
+        elif parts[0] == 'move_stack':
+            return game.get_move_stack_summary(Parser.prase_run_pos(parts[1]), Parser.parse_stack_position(parts[2]))
+        else:
+            raise Exception(f"Action not recognized: {s}")
