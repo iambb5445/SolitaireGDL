@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Callable, Sequence, Protocol, ParamSpec, Generic, TypeVar
-from abc import ABC
+from abc import ABC, abstractmethod
 from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
 import condition as cond
 from utility import Logger
@@ -65,12 +65,17 @@ class ActionArgs(Generic[T], ABC):
         self.condition: cond.Condition[T]|None
         self.components: T|None
 
+    @abstractmethod
+    def _default_summary(self) -> str:
+        raise NotImplementedError
+
     def get_summary(self) -> str:
-        if self.condition is None: return ''
-        if self.components is None:
-            # TODO handle this correctly, with checking all possible scenarios for each ActionArgs child
-            return f'Moving cards should always be face up {cond.Condition.format_TF(False)}'
-        return self.condition.summary(self.components)
+        summary = self._default_summary()
+        if len(summary) > 0:
+            summary += '\n'
+        if self.condition is None or self.components is None:
+            return summary
+        return summary + self.condition.summary(self.components)
     
 class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
     def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile, condition: cond.Condition[cond.GeneralConditionComponents]|None) -> None:
@@ -78,6 +83,12 @@ class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
         self.components: cond.GeneralConditionComponents|None = None
         if self.condition is not None:
             self.components = cond.GeneralConditionComponents(name_to_piles, draw_pile)
+
+    def _default_summary(self) -> str:
+        assert not (self.components is None and self.condition is not None)
+        attempt = f'Actin \"draw\" is attempted'
+        exist = f'Action \"draw\" should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
+        return attempt + '\n' + exist
 
     @staticmethod
     def get(game: Game) -> DrawArgs:
@@ -93,6 +104,16 @@ class MoveArgs(ActionArgs[cond.MoveCardComponents]):
         if condition is not None and not src_pile.empty() and not src_pile.peak().face_down: # TODO perhaps handle as conditions?
             self.components = cond.MoveCardComponents(src_pile.peak(), dest_pile)
     
+    def _default_summary(self) -> str:
+        card = 'NON_EXISTENT_CARD' if self.src_pile.empty() else self.src_pile.peak().get_state_view()
+        attempt = f'Actin \"move\" is attempted to move {card} from top of {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
+        exist = f'Action \"move\" from a {self.src_pile.name} to {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
+        not_empty = f'Action \"move\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}'
+        face_up = f'Action \"move\" can only move face up card {cond.Condition.format_TF(not self.src_pile.empty() and not self.src_pile.peak().face_down)}'
+        if not self.src_pile.empty:
+            not_empty += '\n' + face_up # TODO is this the best way?
+        return attempt + '\n' + exist + '\n' + not_empty
+
     @staticmethod
     def from_pos(game: Game, src_pos: PilePos, dest_pos: StackPilePos, auto:bool = False) -> MoveArgs:
         src_pile = game._get_pile(src_pos)
@@ -114,6 +135,15 @@ class MoveStackArgs(ActionArgs[cond.MoveStackComponents]):
         self.components: cond.MoveStackComponents|None = None
         if condition is not None and src_ind < src_pile.len() and all([not card.face_down for card in src_pile.peak_many(src_ind)]):
             self.components = cond.MoveStackComponents(src_pile.peak_many(src_ind), dest_pile)
+
+    def _default_summary(self) -> str:
+        assert self.src_ind < self.src_pile.len(), "non-existant source card action should not be generated"
+        cards = 'NON_EXISTENT_STACK' if self.src_ind >= self.src_pile.len() else '-'.join(card.get_state_view() for card in self.src_pile.peak_many(self.src_ind))
+        attempt = f'Action \"move_stack\" is attempted to move {cards} from {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
+        exist = f'Action \"move_stack\" from a {self.src_pile.name} to {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
+        not_empty = f'Action \"move_stack\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}' # one card actoins are not generated for move_stack, but technically are correct (also this is always true because of the leading assert)
+        face_up = f'Action \"move_stack\" can only move face up card {cond.Condition.format_TF(all([not card.face_down for card in self.src_pile.peak_many(self.src_ind)]))}'
+        return attempt + '\n' + exist + '\n' + not_empty + '\n' + face_up
     
     @staticmethod
     def from_pos(game: Game, src_pos: RunPos, dest_pos: StackPilePos, auto: bool=False) -> MoveStackArgs:

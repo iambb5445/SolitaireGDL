@@ -1,5 +1,4 @@
 from parser import Parser
-from utility import Logger
 from player import Player, RandomPlayer, RandomNoRepeatPlayer, MCTSPlayer, WinHeuristic, ActionCountHeuristic, SpiderHeuristic, NoDrawHeuristic, MergedHeuristic, DFSPlayer
 from game import Game
 from joblib import delayed, Parallel
@@ -30,11 +29,10 @@ class Sample:
             "is_valid": self.valid,
             "next_state_view": self.next.get_state_view() if self.next is not None else None,
             "next_game_view": self.next.get_game_view() if self.next is not None else None,
-            # "action_summary": Parser.perform_action_in_game()
         }
 
 def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_moves: int|None,
-                 sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0) -> tuple[Game, int, list[Sample]]:
+                 sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0, bot_action_rate: float = 0) -> tuple[Game, int, list[Sample]]:
     sample_rnd = random.Random(sampling_seed)
     game = Parser.from_file(game_filename, game_seed, False, True)
     game_samples: list[Sample] = []
@@ -46,7 +44,12 @@ def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_mo
             return game, move_count, game_samples
         if sample_rnd.random() < sample_rate:
             if sample_rnd.random() < invalid_actions_rate:
-                game_samples.append(Sample(game.copy(), action))
+                if sample_rnd.random() < bot_action_rate:
+                    game_samples.append(Sample(game.copy(), action))
+                else:
+                    actions = game.get_possible_actions(True)
+                    random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
+                    game_samples.append(Sample(game.copy(), random_action))
             else:
                 actions = game.get_possible_actions(False)
                 while True:
@@ -70,11 +73,11 @@ def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|No
 
 def simulate_for_player(count: int, max_moves: int|None, game_filename: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],
-                        sampling_rate: float, invalid_actions_rate: float) -> tuple[list[Game], list[int], list[Sample]]:
+                        sampling_rate: float, invalid_actions_rate: float, bot_action_rate: float) -> tuple[list[Game], list[int], list[Sample]]:
     game_seeds = get_seeds(game_seeds, count)
     sampling_seeds = get_seeds(sampling_seeds, count)
     results = Parallel(n_jobs=thread_count)(delayed(simulate_one)(
-        player_creator(), game_filename, game_seed, max_moves, sampling_seed, sampling_rate, invalid_actions_rate) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds)))
+        player_creator(), game_filename, game_seed, max_moves, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds)))
     # assert isinstance(results, list) and results is all(isinstance(item, (Game, int)) for item in results), "Parallel jobs have not resulted in an output of type list"
     games = [game for game, _, _ in results] # type: ignore
     move_counts = [move_count for _, move_count, _ in results] # type: ignore
@@ -107,7 +110,7 @@ if __name__ == '__main__':
         MergedHeuristic(
             [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()]
             )
-        ), None, None, 0.15, 0.5)
+        ), None, None, 0.15, 0.5, 0.2)
     report_results(games, move_counts)
     print(f"timed at {time.time() - start_time}")
     if len(samples) == 0:

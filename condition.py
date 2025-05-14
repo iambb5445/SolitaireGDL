@@ -289,7 +289,7 @@ class MultiRankCondition(Condition[T]):
 
 class DestEmptyCondition(MoveCondition):
     def unsigned_summary(self) -> str:
-        return 'destiantion should be empty'
+        return 'destination should be empty'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.empty()
