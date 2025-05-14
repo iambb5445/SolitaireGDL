@@ -338,13 +338,13 @@ class Parser:
         return RunPos(Parser.parse_stack_position(stack_str), Parser.parse_number(ind_str))
 
     @staticmethod
-    def perform_action_in_game(s: str, game: Game) -> bool:
+    def perform_action_in_game(s: str, game: Game, perform: bool = True) -> bool:
         parts = s.split()
         if parts[0] == 'draw':
-            return game.draw()
+            return game.draw(perform)
         elif parts[0] == 'move':
-            return game.move(Parser.parse_pile_position(parts[1]), Parser.parse_stack_position(parts[2]))
+            return game.move(Parser.parse_pile_position(parts[1]), Parser.parse_stack_position(parts[2]), perform)
         elif parts[0] == 'move_stack':
-            return game.move_stack(Parser.prase_run_pos(parts[1]), Parser.parse_stack_position(parts[2]))
+            return game.move_stack(Parser.prase_run_pos(parts[1]), Parser.parse_stack_position(parts[2]), perform)
         else:
             raise Exception(f"Action not recognized: {s}")
