@@ -11,6 +11,17 @@ from utility import TextUtil
 # Move stack needs the stack to be at least 2 cards long (else: ambiguity in interpreting gui and counting the moves, etc, the rest works fine)
 # Destination cannot be empty for a destsrc rule
 
+class ConditionReport:
+    def __init__(self, text: str, resolution: bool|None) -> None:
+        self.text = text
+        self.resolution = resolution
+
+class TreeReport(ConditionReport):
+    def __init__(self, text: str, resolution: bool|None, subreports: list[ConditionReport], step_explain: str) -> None:
+        super().__init__(text, resolution)
+        self.subreports = subreports
+        self.step_explain = step_explain
+
 class MathOp(BaseStrEnum):
     EQ = '=='
     GT = '>'
@@ -71,35 +82,61 @@ class ConditionTree(Condition[T]):
         self.subtrees.append(subtree)
 
     @abstractmethod
-    def get_modular_summary(self, all_resolutions: bool, explain: bool, components: T|None) -> tuple[str, list]:
+    def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
         raise NotImplementedError
 
-    def _get_sub_modular_summaries(self, all_resolutions: bool, explain: bool, components: T|None) -> list[tuple|str]:
-        subs= []
+    def _get_sub_modular_reports(self, all_resolutions: bool, explain: bool, components: T|None) -> list[ConditionReport]:
+        subs: list[ConditionReport] = []
         for subtree in self.subtrees:
             if isinstance(subtree, ConditionTree):
-                subs.append(subtree.get_modular_summary(all_resolutions, explain, components))
+                subs.append(subtree.get_modular_report(all_resolutions, explain, components))
             else:
-                subs.append(subtree.summary(all_resolutions, explain, components))
+                subs.append(ConditionReport(subtree.summary(all_resolutions, explain, components), subtree.evaluate(components) if components is not None else None))
         return subs
     
     @staticmethod
-    def _index_text(index: list[int]):
+    def _index_text(index: list[int], indented: bool):
+        if not indented:
+            return '.'.join([str(i) for i in index]) if len(index) > 0 else "this condition"
         return len(index) * '    ' + '.'.join([str(i) for i in index]) + ('. ' if len(index) != 0 else '')
     
     @staticmethod
-    def _inner_summary(subsummaries: str|tuple, index: list[int]) -> str:
+    def _inner_summary(report: ConditionReport, index: list[int]) -> str:
         ret = ''
-        if isinstance(subsummaries, tuple):
-            ret += ConditionTree._index_text(index) + subsummaries[0] + '\n'
-            for i, part in enumerate(subsummaries[1]):
-                ret += ConditionTree._inner_summary(part, index + [i+1])
+        if isinstance(report, TreeReport):
+            ret += ConditionTree._index_text(index, True) + report.text + '\n'
+            for i, subreport in enumerate(report.subreports):
+                ret += ConditionTree._inner_summary(subreport, index + [i+1])
             return ret
-        return ret + ConditionTree._index_text(index) + subsummaries + '\n'
+        return ret + ConditionTree._index_text(index, True) + report.text + '\n'
+    
+    @staticmethod
+    def _explain(report: ConditionReport, index: list[int]) -> str:
+        assert report.resolution is not None, "Cannot explain report when report is generated without a resolution (no components available)"
+        ret = ''
+        if isinstance(report, TreeReport):
+            for i, subreport in enumerate(report.subreports):
+                child_index = index + [i+1]
+                sub_explain = ConditionTree._explain(subreport, child_index)
+                if len(sub_explain) > 0:
+                    ret += sub_explain + '\n'
+            this_explain = []
+            for i, subreport in enumerate(report.subreports):
+                child_index = index + [i+1]
+                assert subreport.resolution is not None, "Cannot explain report when report is generated without a resolution (no components available)"
+                this_explain.append(f'{ConditionTree._index_text(child_index, False)} is {Condition.format_TF(subreport.resolution)}')
+            this_explain.append(f'{ConditionTree._index_text(index, False)} is {Condition.format_TF(True)} if and only if {report.step_explain}')
+            ret += ', '.join(this_explain)
+            ret += f' => {ConditionTree._index_text(index, False)} is {Condition.format_TF(report.resolution)}'
+            return ret
+        return ''
     
     def summary(self, all_resolutions: bool, explain: bool, components: T|None=None) -> str:
-        subsummaries = self.get_modular_summary(all_resolutions, explain, components)
-        return ConditionTree._inner_summary(subsummaries, [])
+        report = self.get_modular_report(all_resolutions, explain, components)
+        summary = ConditionTree._inner_summary(report, [])
+        if explain:
+            summary += self._explain(report, [])
+        return summary
 
 class AndSubTree(ConditionTree[T]):
     def evaluate(self, components: T) -> bool:
@@ -108,9 +145,12 @@ class AndSubTree(ConditionTree[T]):
                 return False
         return True
     
-    def get_modular_summary(self, all_resolutions: bool, explain: bool, components: T|None) -> tuple[str, list]:
-        resolution = self.TF_text(components) if all_resolutions else ''
-        return (f'All of the following should be true: {resolution}', super()._get_sub_modular_summaries(all_resolutions, explain, components))
+    def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
+        resolution: bool|None = self.evaluate(components) if components is not None else None
+        resolution_str: str = self.format_TF(resolution) if resolution is not None else ''
+        return TreeReport(f'All of the following should be true: {resolution_str}', resolution,
+                          super()._get_sub_modular_reports(all_resolutions, explain, components),
+                          f"all of its sub-conditions are {Condition.format_TF(True)}")
     
 class OrSubTree(ConditionTree[T]):
     def evaluate(self, components: T) -> bool:
@@ -119,9 +159,12 @@ class OrSubTree(ConditionTree[T]):
                 return True
         return False
     
-    def get_modular_summary(self, all_resolutions: bool, explain: bool, components: T|None) -> tuple[str, list]:
-        resolution = self.TF_text(components) if all_resolutions else ''
-        return (f'At least one of the following should be true: {resolution}', super()._get_sub_modular_summaries(all_resolutions, explain, components))
+    def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
+        resolution: bool|None = self.evaluate(components) if components is not None else None
+        resolution_str: str = self.format_TF(resolution) if resolution is not None else ''
+        return TreeReport(f'At least one of the following should be true: {resolution_str}', resolution,
+                          super()._get_sub_modular_reports(all_resolutions, explain, components),
+                          f"at least one of its sub-conditions is {Condition.format_TF(True)}")
     
 class PlainCondition(Condition[T]):
     def summary(self, all_resolutions: bool, explain: bool, components: T|None=None) -> str:
