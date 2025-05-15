@@ -14,4 +14,4 @@ if __name__ == '__main__':
             print("Bot cannot find any possible move")
             break
         Parser.perform_action_in_game(action, game)
-        input() # interupt
+        input("Press anything to continue") # interupt
