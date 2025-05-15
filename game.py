@@ -69,13 +69,13 @@ class ActionArgs(Generic[T], ABC):
     def _default_summary(self) -> str:
         raise NotImplementedError
 
-    def get_summary(self, all_resolutions: bool) -> str:
+    def get_summary(self, all_resolutions: bool, explain: bool) -> str:
         summary = self._default_summary()
         if len(summary) > 0:
             summary += '\n'
         if self.condition is None or self.components is None:
             return summary
-        return summary + self.condition.summary(self.components, all_resolutions)
+        return summary + self.condition.summary(all_resolutions, explain, self.components)
     
 class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
     def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile, condition: cond.Condition[cond.GeneralConditionComponents]|None) -> None:
@@ -265,9 +265,9 @@ class Game(Viewable):
         self.logger.info_from(["WIN CONDITIONS:\n", (self.win_conditions.summary, [components])])
         return self.win_conditions.evaluate(components)
     
-    def get_draw_summary(self, all_resolutions: bool) -> str:
+    def get_draw_summary(self, all_resolutions: bool, explain: bool) -> str:
         args = DrawArgs.get(self)
-        return args.get_summary(all_resolutions)
+        return args.get_summary(all_resolutions, explain)
     
     def draw(self, perform: bool=True) -> bool:
         assert self.started, "Cannot draw if game has not started"
@@ -356,9 +356,9 @@ class Game(Viewable):
             self.check_auto_moves()
         return True
     
-    def get_move_summary(self, src_pos: PilePos, dest_pos: StackPilePos, auto: bool=False, all_resolutions: bool=True) -> str:
+    def get_move_summary(self, all_resolutions: bool, explain: bool, src_pos: PilePos, dest_pos: StackPilePos, auto: bool=False) -> str:
         args = MoveArgs.from_pos(self, src_pos, dest_pos, auto)
-        return args.get_summary(all_resolutions)
+        return args.get_summary(all_resolutions, explain)
     
     def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         assert self.started, "Cannot make move stack if game has not started"
@@ -373,9 +373,9 @@ class Game(Viewable):
             self.check_auto_moves()
         return True
     
-    def get_move_stack_summary(self, src_pos: RunPos, dest_pos: StackPilePos, auto: bool=False, all_resolutions: bool=True) -> str:
+    def get_move_stack_summary(self, all_resolutions: bool, explain: bool, src_pos: RunPos, dest_pos: StackPilePos, auto: bool=False) -> str:
         args = MoveStackArgs.from_pos(self, src_pos, dest_pos, auto)
-        return args.get_summary(all_resolutions)
+        return args.get_summary(all_resolutions, explain)
     
     def _check_pilename(self, name: str, stack_only: bool) -> bool:
         if name == 'DRAW':
