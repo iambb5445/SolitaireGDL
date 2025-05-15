@@ -15,7 +15,7 @@ class Sample:
         self.action: str = action
         self.next: Game|None = game.copy()
         self.valid: bool = True
-        self.summary = Parser.get_action_summary(action, self.current)
+        self.summary = Parser.get_action_summary(action, self.current, all_resolutions=False)
         if not Parser.perform_action_in_game(action, self.next):
             self.valid = False
             self.next = None

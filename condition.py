@@ -48,7 +48,7 @@ class Condition(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def summary(self, components: T|None=None) -> str:
+    def summary(self, components: T|None=None, all_resolutions: bool=True) -> str:
         raise NotImplementedError
     
     @staticmethod
@@ -71,14 +71,14 @@ class ConditionTree(Condition[T]):
         self.subtrees.append(subtree)
 
     @abstractmethod
-    def get_modular_summary(self, components: T|None) -> tuple[str, list]:
+    def get_modular_summary(self, components: T|None, all_resolutions: bool) -> tuple[str, list]:
         raise NotImplementedError
 
-    def _get_sub_modular_summaries(self, components: T|None) -> list[tuple|str]:
+    def _get_sub_modular_summaries(self, components: T|None, all_resolutions: bool) -> list[tuple|str]:
         subs= []
         for subtree in self.subtrees:
             if isinstance(subtree, ConditionTree):
-                subs.append(subtree.get_modular_summary(components))
+                subs.append(subtree.get_modular_summary(components, all_resolutions))
             else:
                 subs.append(subtree.summary(components))
         return subs
@@ -97,8 +97,8 @@ class ConditionTree(Condition[T]):
             return ret
         return ret + ConditionTree._index_text(index) + subsummaries + '\n'
     
-    def summary(self, components: T|None=None) -> str:
-        subsummaries = self.get_modular_summary(components)
+    def summary(self, components: T|None=None, all_resolutions: bool=True) -> str:
+        subsummaries = self.get_modular_summary(components, all_resolutions)
         return ConditionTree._inner_summary(subsummaries, [])
 
 class AndSubTree(ConditionTree[T]):
@@ -108,8 +108,9 @@ class AndSubTree(ConditionTree[T]):
                 return False
         return True
     
-    def get_modular_summary(self, components: T|None) -> tuple[str, list]:
-        return ('All of the following should be true: ' + self.TF_text(components), super()._get_sub_modular_summaries(components))
+    def get_modular_summary(self, components: T|None, all_resolutions: bool) -> tuple[str, list]:
+        resolution = self.TF_text(components) if all_resolutions else ''
+        return (f'All of the following should be true: {resolution}', super()._get_sub_modular_summaries(components, all_resolutions))
     
 class OrSubTree(ConditionTree[T]):
     def evaluate(self, components: T) -> bool:
@@ -118,11 +119,12 @@ class OrSubTree(ConditionTree[T]):
                 return True
         return False
     
-    def get_modular_summary(self, components: T|None) -> tuple[str, list]:
-        return ('At least one of the following should be true: ' + self.TF_text(components), super()._get_sub_modular_summaries(components))
+    def get_modular_summary(self, components: T|None, all_resolutions) -> tuple[str, list]:
+        resolution = self.TF_text(components) if all_resolutions else ''
+        return (f'At least one of the following should be true: {resolution}', super()._get_sub_modular_summaries(components, all_resolutions))
     
 class PlainCondition(Condition[T]):
-    def summary(self, components: T|None=None) -> str:
+    def summary(self, components: T|None=None, all_resolutions: bool=True) -> str:
         return self.unsigned_summary() + ' ' + self.TF_text(components)
     
     @abstractmethod
