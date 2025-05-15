@@ -126,7 +126,7 @@ class ConditionTree(Condition[T]):
                 assert subreport.resolution is not None, "Cannot explain report when report is generated without a resolution (no components available)"
                 this_explain.append(f'{ConditionTree._index_text(child_index, False)} is {Condition.format_TF(subreport.resolution)}')
             this_explain.append(f'{ConditionTree._index_text(index, False)} is {Condition.format_TF(True)} if and only if {report.step_explain}')
-            ret += ', '.join(this_explain)
+            ret += ' * ' + ', '.join(this_explain)
             ret += f' => {ConditionTree._index_text(index, False)} is {Condition.format_TF(report.resolution)}'
             return ret
         return ''
@@ -147,8 +147,8 @@ class AndSubTree(ConditionTree[T]):
     
     def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
         resolution: bool|None = self.evaluate(components) if components is not None else None
-        resolution_str: str = self.format_TF(resolution) if resolution is not None else ''
-        return TreeReport(f'All of the following should be true: {resolution_str}', resolution,
+        resolution_str: str = f" {self.format_TF(resolution)}" if resolution is not None and all_resolutions else ''
+        return TreeReport(f'All of the following should be true:{resolution_str}', resolution,
                           super()._get_sub_modular_reports(all_resolutions, explain, components),
                           f"all of its sub-conditions are {Condition.format_TF(True)}")
     
@@ -161,8 +161,8 @@ class OrSubTree(ConditionTree[T]):
     
     def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
         resolution: bool|None = self.evaluate(components) if components is not None else None
-        resolution_str: str = self.format_TF(resolution) if resolution is not None else ''
-        return TreeReport(f'At least one of the following should be true: {resolution_str}', resolution,
+        resolution_str: str = f" {self.format_TF(resolution)}" if resolution is not None and all_resolutions else ''
+        return TreeReport(f'At least one of the following should be true:{resolution_str}', resolution,
                           super()._get_sub_modular_reports(all_resolutions, explain, components),
                           f"at least one of its sub-conditions is {Condition.format_TF(True)}")
     
