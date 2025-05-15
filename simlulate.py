@@ -13,5 +13,6 @@ if __name__ == '__main__':
         if action is None:
             print("Bot cannot find any possible move")
             break
+        print(Parser.get_action_summary(action, game, True, True))
         Parser.perform_action_in_game(action, game)
         input("Press anything to continue") # interupt
