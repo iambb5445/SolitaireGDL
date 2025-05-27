@@ -15,4 +15,5 @@ if __name__ == '__main__':
             break
         print(Parser.get_action_summary(action, game, True, True))
         Parser.perform_action_in_game(action, game)
+        print(game.get_description())
         input("Press anything to continue") # interupt
