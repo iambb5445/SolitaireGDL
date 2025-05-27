@@ -2,6 +2,7 @@ from __future__ import annotations
 from enum import StrEnum, EnumMeta
 import random
 from abc import ABC, abstractmethod
+from diffs import Diffs
 
 # General rules:
 # top of a stack of cards always automatically turns face up
@@ -124,6 +125,10 @@ class Pile(Viewable):
     @abstractmethod
     def copy(self) -> Pile:
         raise NotImplementedError
+
+    @abstractmethod    
+    def diff(self, other: Pile) -> Diffs:
+        raise NotImplementedError
     
     def get_game_view(self) -> str:
         return ', '.join([card.get_game_view() for card in self.cards])
@@ -149,13 +154,23 @@ class Pile(Viewable):
         return self.name
     
 class DealPile(Pile):
-    def __init__(self, cards: list[Card], target_names: list[str]) -> None:
+    def __init__(self, cards: list[Card], target_names: set[str]) -> None:
         super().__init__(cards, 'DRAW')
         self.target_names = target_names
 
     def get(self) -> Card:
         self.peak().face()
         return super().get()
+    
+    def diff(self, other: Pile) -> Diffs:
+        if not isinstance(other, DealPile):
+            return Diffs().add(1, 1)
+        diff = Diffs().add(0, 1)
+        # TODO this is not completely right. We should get the diff of those piles, not how different the names are
+        # the diff should be name invariant
+        diff.add_set_diff(self.target_names, other.target_names)
+        diff.add_count_diff(self.len(), other.len())
+        return diff
     
     def get_game_view(self) -> str:
         return f'Draw Pile (DEAL): {len(self.cards)} cards'
@@ -184,6 +199,16 @@ class RotateDrawPile(Pile):
         assert max_redeals is None or max_redeals > 0, "In Rotate Draw, max redeals should be positive (or unlimited)"
         if max_redeals is None and view_count is None:
             print("[Warning] A limited view count with limited redeals can make cards inaccessible")
+
+    def diff(self, other: Pile) -> Diffs:
+        if not isinstance(other, RotateDrawPile):
+            return Diffs().add(1, 1)
+        diff = Diffs().add(0, 1)
+        diff.add(1 if self.draw_count != other.draw_count else 0, 1)
+        diff.add(1 if self.view_count != other.view_count else 0, 1)
+        diff.add(1 if self.max_redeals != other.max_redeals else 0, 1)
+        diff.add_count_diff(len(self.get_all_cards()), len(other.get_all_cards()))
+        return diff
 
     def get_all_cards(self) -> list[Card]:
         return self.cards + self.backpile + self.drawn
@@ -239,6 +264,13 @@ class Stack(Pile):
     def __init__(self, cards: list[Card], name:str, ind: int) -> None:
         super().__init__(cards, name)
         self.ind = ind
+
+    def diff(self, other: Pile) -> Diffs:
+        if not isinstance(other, Stack):
+            return Diffs().add(1, 1)
+        diff = Diffs().add(0, 1)
+        diff.add_count_diff(self.len(), other.len())
+        return diff
 
     def apply_face(self, face: Face):
         for card in self.cards:

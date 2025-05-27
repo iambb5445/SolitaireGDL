@@ -1,8 +1,11 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Callable
 from base import BaseStrEnum, Card, Stack, Suit, Pile
 from utility import TextUtil
+from diffs import Diffs
+from itertools import permutations
+from enum import Enum
 
 # GENERAL CONDITIONS
 # You cannot move a card or a stack containing a card that is face down.
@@ -62,6 +65,10 @@ class Condition(Generic[T], ABC):
     def summary(self, all_resolutions: bool, explain: bool, components: T|None=None) -> str:
         raise NotImplementedError
     
+    @abstractmethod
+    def diff(self, other: Condition[T], accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        raise NotImplementedError
+    
     @staticmethod
     def format_TF(tf: bool) -> str:
         if tf:
@@ -80,6 +87,26 @@ class ConditionTree(Condition[T]):
 
     def add_subtree(self, subtree: Condition[T]):
         self.subtrees.append(subtree)
+
+    def _diff_ordered(self, other: ConditionTree, accept_shuffled: bool, order: list[int], minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        diffs: list[Diffs] = []
+        for i, index in enumerate(order):
+            if index < len(other.subtrees) and i < len(self.subtrees):
+                diffs.append(self.subtrees[i].diff(other.subtrees[index], accept_shuffled, minimizer_metric))
+            else:
+                diffs.append(Diffs().add(0, 1))
+        return Diffs.get_merged(diffs)
+
+    def diff(self, other: Condition[T], accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        diff = Diffs()
+        diff.add(0 if type(self) == type(other) else 1, 1)
+        if not isinstance(other, ConditionTree):
+            return diff
+        # TODO use Diffs.get_deep_list_diff instead
+        indices = list(range(max(len(self.subtrees), len(other.subtrees))))
+        orders: list[list[int]] = [indices] if not accept_shuffled else [list(perm) for perm in permutations(indices)]
+        diff.merge(min([self._diff_ordered(other, accept_shuffled, order, minimizer_metric) for order in orders], key=lambda d: minimizer_metric(d)))
+        return diff
 
     @abstractmethod
     def get_modular_report(self, all_resolutions: bool, explain: bool, components: T|None) -> TreeReport:
@@ -173,6 +200,13 @@ class PlainCondition(Condition[T]):
     @abstractmethod
     def unsigned_summary(self) -> str:
         raise NotImplementedError
+    
+    def diff(self, other: Condition[T], accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        if not isinstance(other, PlainCondition):
+            return Diffs().add(1, 1)
+        diff  = Diffs().add(0, 1)
+        diff.add(0 if self.unsigned_summary() == other.unsigned_summary() else 1, 1)
+        return diff
     
 class MoveStackCondition(PlainCondition[MoveStackComponents]):
     @abstractmethod

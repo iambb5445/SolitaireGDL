@@ -140,7 +140,7 @@ class Parser:
             if parts[0] == 'DRAW':
                 count = Parser.parse_number(parts[1])
                 if parts[2] == 'DEAL':
-                    game.define_deal_draw(count, Parser.parse_items(parts[3], Parser.parse_str))
+                    game.define_deal_draw(count, set(Parser.parse_items(parts[3], Parser.parse_str)))
                 elif parts[2] == 'ROTATE':
                     draw_count = Parser.parse_number(parts[3])
                     view_count = Parser.parse_number(parts[4]) if parts[4] != 'U' else None

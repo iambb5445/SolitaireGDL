@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
 import condition as cond
 from utility import Logger
+from diffs import Diffs
 from enum import Enum
 import random
 
@@ -179,6 +180,45 @@ class Game(Viewable):
         self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
 
+    def _get_draw_pile_diff(self, other: Game,) -> Diffs:
+        if self.draw_pile is None or other.draw_pile is None:
+            return Diffs().add(1 if self.draw_pile is not None or other.draw_pile is not None else 0, 1)
+        else:
+            return self.draw_pile.diff(other.draw_pile)
+
+    def _get_draw_con_diff(self, other: Game, accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        if self.draw_conditions is None or other.draw_conditions is None:
+            return Diffs().add(1 if self.draw_conditions is not None or other.draw_conditions is not None else 0, 1)
+        else:
+            return self.draw_conditions.diff(other.draw_conditions, accept_shuffled, minimizer_metric)
+        
+    def _get_piles_diff(self, other: Game, accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        return Diffs().add_dict_diff(self.name_to_piles, other.name_to_piles,
+                    lambda a, b: Diffs().add_deep_list_diff(a, b, Stack.diff, minimizer_metric, accept_shuffled, True))
+    
+    def get_action_condition_diff(self, self_conditions: dict[tuple[str, str], cond.Condition],
+                                  other_conditions: dict[tuple[str, str], cond.Condition],
+                                  accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        return Diffs().add_dict_diff(self_conditions, other_conditions,
+                    lambda a, b: a.diff(b, accept_shuffled, minimizer_metric))
+
+    def diff(self, other: Game, accept_shuffled: bool, minimizer_metric: Callable[[Diffs], float]) -> Diffs:
+        diff = Diffs()
+        # draw
+        diff.merge(self._get_draw_pile_diff(other))
+        diff.merge(self._get_draw_con_diff(other, accept_shuffled, minimizer_metric))
+        # piles
+        diff.merge(self._get_piles_diff(other, accept_shuffled, minimizer_metric))
+        # move condition diffs * 4
+        diff.merge(self.get_action_condition_diff(self.move_conditions, other.move_conditions, accept_shuffled, minimizer_metric))
+        diff.merge(self.get_action_condition_diff(self.move_stack_conditions, other.move_stack_conditions, accept_shuffled, minimizer_metric))
+        diff.merge(self.get_action_condition_diff(self.auto_move_conditions, other.auto_move_conditions, accept_shuffled, minimizer_metric))
+        diff.merge(self.get_action_condition_diff(self.auto_move_stack_conditions, other.auto_move_stack_conditions, accept_shuffled, minimizer_metric))
+        # win condition diff
+        assert self.win_conditions is not None and other.win_conditions is not None
+        diff.merge(self.win_conditions.diff(other.win_conditions, accept_shuffled, minimizer_metric))
+        return diff
+
     def get_description(self) -> str:
         desc = f'''# {self.name}
 {self.name} is a Solitaire game, played with {len(self.get_all_cards())} cards. The game has the following piles:\n'''
@@ -341,7 +381,7 @@ class Game(Viewable):
             self.check_auto_moves()
         return valid
 
-    def define_deal_draw(self, count: int, targets: list[str]) -> None:
+    def define_deal_draw(self, count: int, targets: set[str]) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
         def initializer():
             assert self.draw_pile is not None
@@ -350,7 +390,7 @@ class Game(Viewable):
         self._submit_deal_draw_func(targets)
         self.initializers.append(initializer)
     
-    def _submit_deal_draw_func(self, targets: list[str]):
+    def _submit_deal_draw_func(self, targets: set[str]):
         def deal_draw(perform: bool=True) -> bool:
             assert self.draw_pile is not None, "Attempting to draw from non-existant draw card"
             if self.draw_pile.len() == 0:
