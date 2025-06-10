@@ -1,9 +1,11 @@
 from parser import Parser
 from utility import Logger
+import sys
 from player import RandomPlayer, RandomNoRepeatPlayer
 
 if __name__ == '__main__':
-    game = Parser.from_file('games/spider.sgdl', 42, False, True)
+    game_filename = sys.argv[1]
+    game = Parser.from_file(game_filename, 42, False, True)
     player = RandomNoRepeatPlayer(42)
     logger = Logger(True)
     logger.info("GAME START!")
@@ -15,5 +17,4 @@ if __name__ == '__main__':
             break
         print(Parser.get_action_summary(action, game, True, True))
         Parser.perform_action_in_game(action, game)
-        print(game.get_description())
         input("Press anything to continue") # interupt
