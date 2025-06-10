@@ -136,19 +136,25 @@ class Pile(Viewable):
     def get_state_view(self) -> str:
         return ', '.join([card.get_state_view() for card in self.cards])
     
+    def len(self) -> int:
+        return len(self.get_all_cards())
+    
     def empty(self) -> bool:
-        return len(self.cards) == 0
+        return self.len() == 0
+    
+    def viewable_len(self) -> int:
+        return len(self.cards)
+
+    def gettable(self) -> bool:
+        return len(self.cards) > 0
 
     def get(self) -> Card:
-        assert not self.empty(), "Cannot get card from empty pile"
+        assert self.gettable(), "Cannot get card from empty pile"
         return self.cards.pop(-1)
     
     def peak(self) -> Card:
-        assert not self.empty(), "Cannot get card from empty pile"
+        assert self.gettable(), "Cannot peak card from empty pile"
         return self.cards[-1]
-    
-    def len(self) -> int:
-        return len(self.cards)
     
     def get_tag(self) -> str:
         return self.name
@@ -207,7 +213,7 @@ class RotateDrawPile(Pile):
         diff.add(1 if self.draw_count != other.draw_count else 0, 1)
         diff.add(1 if self.view_count != other.view_count else 0, 1)
         diff.add(1 if self.max_redeals != other.max_redeals else 0, 1)
-        diff.add_count_diff(len(self.get_all_cards()), len(other.get_all_cards()))
+        diff.add_count_diff(self.len(), other.len())
         return diff
 
     def get_all_cards(self) -> list[Card]:
@@ -279,8 +285,8 @@ class Stack(Pile):
             for card in self.cards:
                 card.face()
         elif face == Stack.Face.FACE_LAST:
-            if not self.empty():
-                self.cards[-1].face()
+            if self.gettable():
+                self.peak().face()
         elif face == Stack.Face.FACE_ALTERNATE_TOP:
             should_face = True
             for card in reversed(self.cards):
@@ -290,14 +296,14 @@ class Stack(Pile):
 
     def get(self) -> Card:
         ret = super().get()
-        if not self.empty():
+        if self.gettable():
             self.peak().face()
         return ret
     
     def get_many(self, from_ind: int) -> list[Card]:
         cards = self.peak_many(from_ind)
         self.cards = self.cards[:from_ind]
-        if not self.empty():
+        if self.gettable():
             self.peak().face()
         return cards
     

@@ -267,8 +267,8 @@ class PileGraphic(Graphic):
 
     def render(self, screen: pygame.Surface):
         card_spacing = self.delta_dir.pairwise_mult(TextureRepo.offset.mult(PileGraphic.CARD_SPACING_BY_OFFSET))
-        if self.pile.len() > 1:
-            card_spacing = card_spacing.min(self.available.div(self.pile.len() - 1))
+        if self.pile.viewable_len() > 1:
+            card_spacing = card_spacing.min(self.available.div(self.pile.viewable_len() - 1))
         pos = self.pos
         if self.label_ge is not None:
             self.label_ge.move(pos)

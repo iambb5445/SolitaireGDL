@@ -400,7 +400,7 @@ class DestSrcSuitCondition(MultiSuitCondition, MoveCondition):
         return f'the destination card and source card should have {self.comp_to_str()}'
     
     def evaluate(self, components: MoveCardComponents) -> bool:
-        return components.destination.len() > 0 and self.comp([components.destination.peak().suit, components.source.suit])
+        return components.destination.gettable() and self.comp([components.destination.peak().suit, components.source.suit])
 
 class DestSrcRankCondition(MultiRankCondition, MoveCondition):
     def unsigned_summary(self) -> str:
@@ -408,7 +408,7 @@ class DestSrcRankCondition(MultiRankCondition, MoveCondition):
         return f'The destination card and source card should form a sequence of {self.comp_to_str()}'
     
     def evaluate(self, components: MoveCardComponents) -> bool:
-        return components.destination.len() > 0 and self.comp([components.destination.peak().rank, components.source.rank])
+        return components.destination.gettable() and self.comp([components.destination.peak().rank, components.source.rank])
     
 class StackSuitCondition(MultiSuitCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:

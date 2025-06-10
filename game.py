@@ -102,16 +102,16 @@ class MoveArgs(ActionArgs[cond.MoveCardComponents]):
         self.dest_pile = dest_pile
         self.condition = condition
         self.components: cond.MoveCardComponents|None = None
-        if condition is not None and not src_pile.empty() and not src_pile.peak().face_down: # TODO perhaps handle as conditions?
+        if condition is not None and src_pile.gettable() and not src_pile.peak().face_down: # TODO perhaps handle as conditions?
             self.components = cond.MoveCardComponents(src_pile.peak(), dest_pile)
     
     def _default_summary(self) -> str:
-        card = 'NON_EXISTENT_CARD' if self.src_pile.empty() else self.src_pile.peak().get_state_view()
+        card = 'NON_EXISTENT_CARD' if not self.src_pile.gettable() else self.src_pile.peak().get_state_view()
         attempt = f'Action \"move\" is attempted to move {card} from top of {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
         exist = f'Action \"move\" from a {self.src_pile.name} to a {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
-        not_empty = f'Action \"move\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}'
-        face_up = f'Action \"move\" can only move face-up card {cond.Condition.format_TF(not self.src_pile.empty() and not self.src_pile.peak().face_down)}'
-        if not self.src_pile.empty:
+        not_empty = f'Action \"move\" should move at least one card {cond.Condition.format_TF(self.src_pile.gettable())}'
+        if self.src_pile.gettable():
+            face_up = f'Action \"move\" can only move face-up card {cond.Condition.format_TF(self.src_pile.peak().face_down)}'
             not_empty += '\n' + face_up # TODO is this the best way?
         return attempt + '\n' + exist + '\n' + not_empty
 
@@ -142,7 +142,7 @@ class MoveStackArgs(ActionArgs[cond.MoveStackComponents]):
         cards = 'NON_EXISTENT_STACK' if self.src_ind >= self.src_pile.len() else '-'.join(card.get_state_view() for card in self.src_pile.peak_many(self.src_ind))
         attempt = f'Action \"move_stack\" is attempted to move {cards} from {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
         exist = f'Action \"move_stack\" from a {self.src_pile.name} to a {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
-        not_empty = f'Action \"move_stack\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}' # one card actoins are not generated for move_stack, but technically are correct (also this is always true because of the leading assert)
+        not_empty = f'Action \"move_stack\" should move at least one card {cond.Condition.format_TF(self.src_pile.gettable())}' # one card actoins are not generated for move_stack, but technically are correct (also this is always true because of the leading assert)
         face_up = f'Action \"move_stack\" can only move face-up card {cond.Condition.format_TF(all([not card.face_down for card in self.src_pile.peak_many(self.src_ind)]))}'
         return attempt + '\n' + exist + '\n' + not_empty + '\n' + face_up
     
@@ -408,13 +408,13 @@ class Game(Viewable):
     def _submit_deal_draw_func(self, targets: set[str]):
         def deal_draw(perform: bool=True) -> bool:
             assert self.draw_pile is not None, "Attempting to draw from non-existant draw card"
-            if self.draw_pile.len() == 0:
+            if not self.draw_pile.gettable():
                 return False
             if not perform:
                 return True
             for name in targets:
                 for pile in self.name_to_piles.get(name, []):
-                    if not self.draw_pile.empty():
+                    if self.draw_pile.gettable():
                         pile.add([self.draw_pile.get()])
             return True
         self.draw_func = deal_draw
