@@ -10,7 +10,7 @@ if __name__ == '__main__':
     logger = Logger(True)
     logger.info("GAME START!")
     while not game.is_win():
-        logger.info(game.get_game_view())
+        logger.info(game.get_state_view())
         action: str|None = player.decide_action(game.copy())
         if action is None:
             print("Bot cannot find any possible move")

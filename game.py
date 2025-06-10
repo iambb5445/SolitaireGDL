@@ -422,8 +422,8 @@ class Game(Viewable):
     def define_rotate_draw(self, count: int, draw_count: int, view_count: int|None, max_redeals: int|None) -> None:
         assert self.draw_pile is None, "Defining multiple draw conditions for a game is invalid"
         def initializer():
-            assert self.draw_pile is not None
-            self.draw_pile.cards = self.deck.deal(count)
+            assert isinstance(self.draw_pile, RotateDrawPile)
+            self.draw_pile.backpile = self.deck.deal(count)
         self.draw_pile = RotateDrawPile([], draw_count, view_count, max_redeals)
         self.draw_func = self.draw_pile.rotate
         self.initializers.append(initializer)

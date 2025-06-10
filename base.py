@@ -251,12 +251,12 @@ class RotateDrawPile(Pile):
         return True
     
     def get_game_view(self) -> str:
-        return f'Draw Pile (ROTATE): {len(self.cards)} cards, {self.redeals}/{self.max_redeals} redeals'\
+        return f'Draw Pile (ROTATE): {self.len()} cards, {self.redeals}/{self.max_redeals if self.max_redeals is not None else "infinite"} redeals'\
             + f'\nDraw View: {", ".join([card.get_state_view() for card in self.cards])}[top]'
             # + f'\nDraw View: [top]{str(self)}' reversed
 
     def get_state_view(self) -> str:
-        return f'Draw Pile (ROTATE): {len(self.cards)} cards, {self.redeals}/{self.max_redeals} redeals'\
+        return f'Draw Pile (ROTATE): {self.len()} cards, {self.redeals}/{self.max_redeals if self.max_redeals is not None else "infinite"} redeals'\
             + f'\nBackPile: {", ".join([card.get_state_view() for card in self.backpile])}[top]'\
             + f'\nDraw View: {", ".join([card.get_state_view() for card in self.cards])}[top]'\
             + f'\nDrawn: {", ".join([card.get_state_view() for card in self.drawn])}[top]'
