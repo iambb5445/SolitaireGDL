@@ -6,7 +6,6 @@ import sys
 if __name__ == '__main__':
     sgdl_filename = sys.argv[1]
     game = Parser.from_file(sgdl_filename, 42, True, True)
-    game.start()
     logger = Logger(True)
     logger.info("GAME START!")
     while not game.is_win():
