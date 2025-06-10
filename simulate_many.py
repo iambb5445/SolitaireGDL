@@ -1,3 +1,4 @@
+import argparse
 from parser import Parser
 from player import Player, RandomPlayer, RandomNoRepeatPlayer, MCTSPlayer, WinHeuristic, ActionCountHeuristic, SpiderHeuristic, NoDrawHeuristic, MergedHeuristic, DFSPlayer
 from game import Game
@@ -6,6 +7,7 @@ from tqdm import tqdm
 from typing import Callable, Sequence
 import time
 import random
+import sys
 
 thread_count=10
 
@@ -85,7 +87,7 @@ def simulate_for_player(count: int, max_moves: int|None, game_filename: str, pla
     return games, move_counts, samples
 
 def report_results(games: list[Game], move_counts: list[int]):
-    print("games:\n" + '\n'.join([f'{i}\n' + game.get_state_view() for i, game in enumerate(games)])) # type: ignore
+    # print("games:\n" + '\n'.join([f'{i}\n' + game.get_state_view() for i, game in enumerate(games)])) # type: ignore
     wins: list[bool] = [game.is_win() for game in games]
     print(f"win_percentage: {sum(wins)/len(wins)}")
     print(f"move_count: {move_counts}")
@@ -93,7 +95,13 @@ def report_results(games: list[Game], move_counts: list[int]):
 
 if __name__ == '__main__':
     start_time = time.time()
-    game_filename = 'games/easiestspider.sgdl'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename')
+    parser.add_argument('--max-count', default=None)
+    args = parser.parse_args(sys.argv[1:])
+    game_filename: str = args.filename
+    max_sample_count: int|None = args.max_count
+    # game_filename = 'games/klondike.sgdl'
     # simulate_for_player(50, 1000, game, lambda: RandomPlayer(None))
     # simulate_for_player(50, 10000, game, lambda: RandomNoRepeatPlayer(None, spider_heuristic))
     # simulate_for_player(50, 10000, game, lambda: RandomNoRepeatPlayer(None, action_count_heuristic))
@@ -106,7 +114,7 @@ if __name__ == '__main__':
     # print("RandomPlayerNoRepeat, action heuristic")
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
-    games, move_counts, samples = simulate_for_player(10, 100, game_filename, lambda: DFSPlayer(
+    games, move_counts, samples = simulate_for_player(100, 100, game_filename, lambda: DFSPlayer(
         MergedHeuristic(
             [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()]
             )
@@ -115,14 +123,19 @@ if __name__ == '__main__':
     print(f"timed at {time.time() - start_time}")
     if len(samples) == 0:
         exit()
+    random.shuffle(samples)
+    if max_sample_count is not None:
+        samples = samples[:int(max_sample_count)]
     game = Parser.from_file(game_filename, None, False, False)
     dataset = {
         "name": game.name,
         "bot": "DFSBot",
+        "description": game.get_description(),
         "samples": [
             sample.as_json()
             for sample in samples
-        ]
+        ],
+        "sample_count": len(samples)
     }
     import json, time
     filename = f"results/{dataset['name']}_{dataset['bot']}_{int(time.time())}.json"

@@ -110,7 +110,7 @@ class MoveArgs(ActionArgs[cond.MoveCardComponents]):
         attempt = f'Action \"move\" is attempted to move {card} from top of {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
         exist = f'Action \"move\" from a {self.src_pile.name} to a {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
         not_empty = f'Action \"move\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}'
-        face_up = f'Action \"move\" can only move face up card {cond.Condition.format_TF(not self.src_pile.empty() and not self.src_pile.peak().face_down)}'
+        face_up = f'Action \"move\" can only move face-up card {cond.Condition.format_TF(not self.src_pile.empty() and not self.src_pile.peak().face_down)}'
         if not self.src_pile.empty:
             not_empty += '\n' + face_up # TODO is this the best way?
         return attempt + '\n' + exist + '\n' + not_empty
@@ -143,7 +143,7 @@ class MoveStackArgs(ActionArgs[cond.MoveStackComponents]):
         attempt = f'Action \"move_stack\" is attempted to move {cards} from {self.src_pile.get_tag()} to {self.dest_pile.get_tag()}'
         exist = f'Action \"move_stack\" from a {self.src_pile.name} to a {self.dest_pile.name} should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
         not_empty = f'Action \"move_stack\" should move at least one card {cond.Condition.format_TF(not self.src_pile.empty())}' # one card actoins are not generated for move_stack, but technically are correct (also this is always true because of the leading assert)
-        face_up = f'Action \"move_stack\" can only move face up card {cond.Condition.format_TF(all([not card.face_down for card in self.src_pile.peak_many(self.src_ind)]))}'
+        face_up = f'Action \"move_stack\" can only move face-up card {cond.Condition.format_TF(all([not card.face_down for card in self.src_pile.peak_many(self.src_ind)]))}'
         return attempt + '\n' + exist + '\n' + not_empty + '\n' + face_up
     
     @staticmethod
@@ -221,7 +221,7 @@ class Game(Viewable):
 
     def get_description(self) -> str:
         desc = f'''# {self.name}
-{self.name} is a Solitaire game, played with {len(self.get_all_cards())} cards. The game has the following piles:\n'''
+{self.name} is a Solitaire game, played with {len(self.get_all_cards()) + len(self.deck.cards)} cards. The game has the following piles:\n'''
         if self.draw_pile is not None:
             desc += '- 1 draw pile'
             if isinstance(self.draw_pile, RotateDrawPile):
@@ -232,18 +232,26 @@ class Game(Viewable):
                 raise Exception("Unrecognized draw pile")
         for name, piles in self.name_to_piles.items():
             desc += f'- {len(piles)} `{name}` pile{"s" if len(piles) > 1 else ""}\n'
-        desc += 'The following moves are possible in the game:\n'
+        if self.draw_pile is not None or len(self.move_conditions) > 0 or len(self.move_stack_conditions) > 0:
+            desc += '## Actions\n'
+            desc += 'Actions in the game move cards between piles. Each action has conditions that defines its validity. These conditions may involve the following keywords:\n'
+            desc += '* Source card: The source card is the card that is being moved. If a stack of cards is being moved together, the source card is the first card in that stack.\n'
+            desc += '* Source pile: The source pile is the pile that the source card belongs to prior to the movement.\n'
+            desc += '* Destination pile: The destination pile is the target pile that the source card is being moved to.\n'
+            desc += '* Destination card: The destination card is the top card of the destination pile. If the destination pile is empty, no destination card exists, and any conditions involving it are resolved as False.\n'
+            desc += 'The following actions are possible in the game:\n'
         if self.draw_pile is not None:
+            desc += '### Draw\n'
             desc += '- `draw`: The draw action will '
             if isinstance(self.draw_pile, RotateDrawPile):
-                desc += f'turn the top {self.draw_pile.draw_count} card{"s" if self.draw_pile.draw_count > 1 else ""} from the draw pile face up. '
+                desc += f'turn the top {self.draw_pile.draw_count} card{"s" if self.draw_pile.draw_count > 1 else ""} from the draw pile face-up. '
                 desc += f'At any point, only the top card of the draw pile can be moved and '
                 if self.draw_pile.view_count is None:
-                    desc += 'all face up cards in the draw pile are shown in the game state. '
+                    desc += 'all face-up cards in the draw pile are shown in the game state. '
                 else:
                     desc += f'only the top {self.draw_pile.view_count} card{"s" if self.draw_pile.view_count > 1 else ""} are shown in the game state. '
                 if self.draw_pile.max_redeals is None or self.draw_pile.max_redeals > 0:
-                    desc += f'When all the cards in the draw pile are turned face up, drawing will rotate all of its cards that haven\'t been moved back into the draw pile. '
+                    desc += f'When all the cards in the draw pile are turned face-up, drawing will rotate all of its cards that haven\'t been moved back into the draw pile. '
                     if self.draw_pile.max_redeals is not None:
                         desc += f'This can be done until {self.draw_pile.max_redeals} pass through the draw pile.'
                     else:
@@ -257,23 +265,30 @@ class Game(Viewable):
         if self.draw_conditions is not None:
             desc += f' The `draw` action is valid if and only if the following condition is true:\nCondition: {self.draw_conditions.summary(False, False, None)}'
         desc += '\n'
+        if len(self.move_conditions) > 0:
+            desc += '### Move\n'
+            desc += 'A `move` action is valid if it matches one of the listed types, meets all conditions, and only involves face-up cards.\n'
         for (src_pile, dest_pile), cond in self.move_conditions.items():
             desc += f'- `move` from a {src_pile} pile to a {dest_pile} pile: This will move one card from a {src_pile} pile to a {dest_pile} pile and is valid if and only if the following condition is true:\nCondition: {cond.summary(False, False, None)}'
-        if len(self.move_conditions) > 0:
-            desc += 'For a `move` action to be valid, it should match one of the possible `move` actions listed above and follow its condition. Additionally, it should move at least one card (i.e. source pile cannot be empty). Finally, only cards that are faced up can be moved.\n'
-        for (src_pile, dest_pile), cond in self.move_conditions.items():
+        if len(self.move_stack_conditions) > 0:
+            desc += '### Move Stack\n'
+            desc += 'A `move_stack` action is valid if it matches one of the listed types, meets all conditions, and only involves face-up cards (all cards in the moving stack should be face-up).\n'
+        for (src_pile, dest_pile), cond in self.move_stack_conditions.items():
             desc += f'- `move_stack` from a {src_pile} pile to a {dest_pile} pile: This will move a stack of at least two cards from a {src_pile} pile to a {dest_pile} pile and is valid if and only if the following condition is true:\nCondition: {cond.summary(False, False, None)}'
-        if len(self.move_conditions) > 0:
-            desc += 'For a `move_stack` action to be valid, it should match one of the possible `move_stack` actions listed above and follow its condition. Additionally, it should move at least one card (i.e. the stack size cannot be 0). Finally, only cards that are faced up can be moved, so all cards in the stack should be face up.\n'
+        desc += '## Win Condition\n'
         assert self.win_conditions is not None
         desc += 'To win the game, the following condition should be true:\n'
         desc += f'Condition: {self.win_conditions.summary(False, False, None)}'
-        desc += 'For an action in the game to be valid, it should be one of the possible actions mentioned above. \n'
+        if len(self.auto_move_conditions) > 0 or len(self.auto_move_stack_conditions) > 0:
+            desc += '## Auto Actions\n'
+            desc += 'Auto actions are actions that occur automatically as soon as their conditions are met. After every action in the game, all auto actions are checked and performed as many times as necessary.\n'
         if len(self.auto_move_conditions) > 0:
+            desc += '### Auto Move\n'
             desc += f'In a game of {self.name}, the following move actions will happen automatically whenever their conditions are true:\n'
             for (src_pile, dest_pile), cond in self.move_conditions.items():
                 desc += f'- `move` from a {src_pile} pile to a {dest_pile} pile: This will move one card from a {src_pile} pile to a {dest_pile} pile if and only if the following condition is true:\nCondition: {cond.summary(False, False, None)}'
         if len(self.auto_move_stack_conditions) > 0:
+            desc += '## Auto Move Stack\n'
             desc += f'In a game of {self.name}, the following move_stack actions will happen automatically whenever their conditions are true:\n'
             for (src_pile, dest_pile), cond in self.move_conditions.items():
                 desc += f'- `move_stack` from a {src_pile} pile to a {dest_pile} pile: This will move a stack of at least two cards from a {src_pile} pile to a {dest_pile} pile if and only if the following condition is true:\nCondition: {cond.summary(False, False, None)}'

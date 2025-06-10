@@ -8,7 +8,7 @@ from itertools import permutations
 from enum import Enum
 
 # GENERAL CONDITIONS
-# You cannot move a card or a stack containing a card that is face down.
+# You cannot move a card or a stack containing a card that is face-down.
 # You cannot move a stack from a draw (deal) pile.
 # You cannot move a card to a draw pile.
 # Move stack needs the stack to be at least 2 cards long (else: ambiguity in interpreting gui and counting the moves, etc, the rest works fine)
@@ -347,10 +347,10 @@ class MultiRankCondition(Condition[T]):
     def comp_to_str(self) -> str:
         if self.mode == MultiRankCondition.MODE.ASC:
             # return '[consecutive] [strictly] ascending ranks (no gaps or equals)'
-            return '[consecutive] ascending ranks'
+            return 'consecutive, ascending ranks'
         elif self.mode == MultiRankCondition.MODE.DES:
             # return '[consecutive] [strictly] descending ranks (no gaps or equals)'
-            return '[consecutive] descending ranks'
+            return 'consecutive, descending ranks'
         raise Exception(f"Rank comparison mode not recognized: {self.mode}")
 
     def _pair_comp(self, rank1: int, rank2: int) -> bool:
@@ -368,14 +368,14 @@ class MultiRankCondition(Condition[T]):
 
 class DestEmptyCondition(MoveCondition):
     def unsigned_summary(self) -> str:
-        return 'destination should be empty'
+        return 'the destination pile should be empty'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.empty()
 
 class DestSizeCondition(SizeCondition, MoveCondition):
     def unsigned_summary(self) -> str:
-        return f'destination should have a size {self.comp_to_str()}'
+        return f'the destination pile should have a size {self.comp_to_str()}'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return self.comp(components.destination.len())
@@ -397,7 +397,7 @@ class SrcRankCondition(RankCondition, MoveCondition):
 class DestSrcSuitCondition(MultiSuitCondition, MoveCondition):
     def unsigned_summary(self) -> str:
         # return f'destination shouldn\'t be empty and top card of destination and source card should have {self.comp_to_str()}'
-        return f'top card of destination and source card should have {self.comp_to_str()}'
+        return f'the destination card and source card should have {self.comp_to_str()}'
     
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.len() > 0 and self.comp([components.destination.peak().suit, components.source.suit])
@@ -405,21 +405,21 @@ class DestSrcSuitCondition(MultiSuitCondition, MoveCondition):
 class DestSrcRankCondition(MultiRankCondition, MoveCondition):
     def unsigned_summary(self) -> str:
         # return f'destination shouldn\'t be empty and top card of destination and source card should make {self.comp_to_str()}'
-        return f'top card of destination and source card should make {self.comp_to_str()}'
+        return f'The destination card and source card should form a sequence of {self.comp_to_str()}'
     
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.len() > 0 and self.comp([components.destination.peak().rank, components.source.rank])
     
 class StackSuitCondition(MultiSuitCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:
-        return f'cards in the stack should have {self.comp_to_str()}'
+        return f'all cards in the stack should have {self.comp_to_str()}'
     
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp([card.suit for card in components.stack])
     
 class StackRankCondition(MultiRankCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:
-        return f'cards in the stack should have {self.comp_to_str()}'
+        return f'all cards in the stack should form a sequence of {self.comp_to_str()}'
 
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp([card.rank for card in components.stack])
