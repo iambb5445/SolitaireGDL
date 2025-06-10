@@ -9,7 +9,7 @@ import time
 import random
 import sys
 
-thread_count=10
+thread_count=1
 
 class Sample:
     def __init__(self, game: Game, action: str) -> None:
@@ -32,34 +32,43 @@ class Sample:
             "next_state_view": self.next.get_state_view() if self.next is not None else None,
             "next_game_view": self.next.get_game_view() if self.next is not None else None,
         }
+    
+def sample(sample_rnd: random.Random, invalid_actions_rate: float, bot_action_rate: float, game: Game, bot_action: str) -> Sample:
+    if sample_rnd.random() < invalid_actions_rate:
+        if sample_rnd.random() < bot_action_rate:
+            return Sample(game, bot_action)
+        else:
+            actions = game.get_possible_actions(True)
+            random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
+            return Sample(game, random_action)
+    else:
+        actions = game.get_possible_actions(False)
+        while True:
+            random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
+            sample = Sample(game, random_action)
+            if not sample.valid:
+                return sample
 
-def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_moves: int|None,
+
+def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
                  sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0, bot_action_rate: float = 0) -> tuple[Game, int, list[Sample]]:
     sample_rnd = random.Random(sampling_seed)
     game = Parser.from_file(game_filename, game_seed, False, True)
     game_samples: list[Sample] = []
     move_count = 0
+    backtrack_trace: list[Game] = []
     while not game.is_win():
-        game_copy = game.copy()
-        action: str|None = player.decide_action(game_copy)
+        action: str|None = player.decide_action(game.copy())
+        if backtracking:
+            while action is None and len(backtrack_trace) > 0:
+                game = backtrack_trace.pop()
+                action: str|None = player.decide_action(game.copy())
         if action is None or move_count == max_moves:
             return game, move_count, game_samples
         if sample_rnd.random() < sample_rate:
-            if sample_rnd.random() < invalid_actions_rate:
-                if sample_rnd.random() < bot_action_rate:
-                    game_samples.append(Sample(game.copy(), action))
-                else:
-                    actions = game.get_possible_actions(True)
-                    random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
-                    game_samples.append(Sample(game.copy(), random_action))
-            else:
-                actions = game.get_possible_actions(False)
-                while True:
-                    random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
-                    sample = Sample(game.copy(), random_action)
-                    if not sample.valid:
-                        game_samples.append(sample)
-                        break
+            game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action))
+        if backtracking:
+            backtrack_trace.append(game.copy())
         Parser.perform_action_in_game(action, game)
         move_count += 1
     return game, move_count, game_samples
@@ -73,13 +82,18 @@ def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|No
     assert len(seeds) == count
     return seeds
 
-def simulate_for_player(count: int, max_moves: int|None, game_filename: str, player_creator: Callable[[], Player],
+def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_filename: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],
                         sampling_rate: float, invalid_actions_rate: float, bot_action_rate: float) -> tuple[list[Game], list[int], list[Sample]]:
     game_seeds = get_seeds(game_seeds, count)
     sampling_seeds = get_seeds(sampling_seeds, count)
-    results = Parallel(n_jobs=thread_count)(delayed(simulate_one)(
-        player_creator(), game_filename, game_seed, max_moves, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds)))
+    if thread_count == 1:
+        results = [simulate_one(
+            player_creator(), game_filename, game_seed, max_moves, backtracking, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
+        ) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds))]
+    else:
+        results = Parallel(n_jobs=thread_count)(delayed(simulate_one)(
+            player_creator(), game_filename, game_seed, max_moves, backtracking, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds)))
     # assert isinstance(results, list) and results is all(isinstance(item, (Game, int)) for item in results), "Parallel jobs have not resulted in an output of type list"
     games = [game for game, _, _ in results] # type: ignore
     move_counts = [move_count for _, move_count, _ in results] # type: ignore
@@ -114,12 +128,12 @@ if __name__ == '__main__':
     # print("RandomPlayerNoRepeat, action heuristic")
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
-    games, move_counts, samples = simulate_for_player(100, 100, game_filename, lambda: DFSPlayer(
+    games, move_counts, samples = simulate_for_player(10, 1000, True, game_filename, lambda: DFSPlayer(
         MergedHeuristic(
             [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
             [1, 1, 3]
             )
-        ), None, None, 0.15, 0.5, 0.2)
+        ), None, None, 0, 0.5, 0.2)
     report_results(games, move_counts)
     print(f"timed at {time.time() - start_time}")
     if len(samples) == 0:
