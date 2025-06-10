@@ -4,7 +4,7 @@ $cards
 DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
 
 $initial
-DRAW 24 ROTATE 3 3 U # 3 at a time, stack of 3, unlimited redeals
+DRAW 24 ROTATE 1 3 U # 3 at a time, stack of 3, unlimited redeals
 FOUNDATION 0
 FOUNDATION 0
 FOUNDATION 0
