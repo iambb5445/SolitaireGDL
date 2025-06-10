@@ -79,21 +79,21 @@ class ActionArgs(Generic[T], ABC):
         return summary + 'This action can only be performed if:\n' + '-' * 10 + '\n' + self.condition.summary(all_resolutions, explain, self.components) + '\n' + '-' * 10 + '\n'
     
 class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
-    def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile, condition: cond.Condition[cond.GeneralConditionComponents]|None) -> None:
+    def __init__(self, name_to_piles: dict[str, list[Stack]], draw_pile: Pile|None, condition: cond.Condition[cond.GeneralConditionComponents]|None) -> None:
         self.condition = condition
         self.components: cond.GeneralConditionComponents|None = None
         if self.condition is not None:
             self.components = cond.GeneralConditionComponents(name_to_piles, draw_pile)
+        self.possible = draw_pile is not None
 
     def _default_summary(self) -> str:
         assert not (self.components is None and self.condition is not None)
         attempt = f'Actin \"draw\" is attempted'
-        exist = f'Action \"draw\" should be a possible action for this game {cond.Condition.format_TF(self.condition is not None)}'
+        exist = f'Action \"draw\" should be a possible action for this game {cond.Condition.format_TF(self.possible)}'
         return attempt + '\n' + exist
 
     @staticmethod
     def get(game: Game) -> DrawArgs:
-        assert game.draw_pile is not None, "Cannot draw if a draw pile does not exist"
         return DrawArgs(game.name_to_piles, game.draw_pile, game.draw_conditions)
 
 class MoveArgs(ActionArgs[cond.MoveCardComponents]):
