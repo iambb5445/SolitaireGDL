@@ -94,6 +94,18 @@ class Card(Viewable, Hashable):
     
     def copy(self) -> Card:
         return Card(self.suit, self.rank, self.face_down)
+    
+    @staticmethod
+    def extract_from_list(target: Card, cards: list[Card], replace: Card|None) -> Card|None: # can be not staticmethod, but doesn't make sense
+        for i in range(len(cards)):
+            card = cards[i]
+            if card.rank == target.rank and card.suit == target.suit: # ignoring face
+                card.face_down = target.face_down
+                cards.remove(card)
+                if replace is not None:
+                    cards.insert(i, replace)
+                return card
+        return None
 
     def get_game_view(self) -> str:
         if self.face_down:
@@ -136,17 +148,9 @@ class Deck:
         ret = self.cards[:num]
         self.cards = self.cards[num:]
         return ret
-
-    def extract(self, targets: list[Card]):
-        cards = []
-        for card in self.cards:
-            for target in targets:
-                if card.rank == target.rank and card.suit == target.suit: # ignoring face
-                    cards.append(card)
-                    card.face_down = target.face_down
-        for card in cards:
-            self.cards.remove(card)
-        return cards
+    
+    def extract(self, card: Card) -> Card|None:
+        return Card.extract_from_list(card, self.cards, None)
     
     def __str__(self) -> str:
         return ' '.join([str(card) for card in self.cards])
@@ -171,6 +175,9 @@ class Pile(Viewable, Hashable):
     @abstractmethod    
     def diff(self, other: Pile) -> Diffs:
         raise NotImplementedError
+    
+    def extract(self, card: Card, replace: Card|None) -> Card|None:
+        return Card.extract_from_list(card, self.cards, replace)
     
     def get_game_view(self) -> str:
         return ', '.join([card.get_game_view() for card in self.cards])
@@ -275,7 +282,7 @@ class RotateDrawPile(Pile):
         self.redeals = 0
         assert draw_count > 0, "In Rotate Draw, draw count should be positive"
         assert view_count is None or view_count > 0, "In Rotate Draw, view count should be positive (or unlimited)"
-        assert max_redeals is None or max_redeals > 0, "In Rotate Draw, max redeals should be positive (or unlimited)"
+        assert max_redeals is None or max_redeals >= 0, "In Rotate Draw, max redeals cannot be negative"
         if max_redeals is None and view_count is None:
             print("[Warning] A limited view count with limited redeals can make cards inaccessible")
 
@@ -291,6 +298,14 @@ class RotateDrawPile(Pile):
 
     def get_all_cards(self) -> list[Card]:
         return self.cards + self.backpile + self.drawn
+    
+    def extract(self, card: Card, replace: Card|None) -> Card|None:
+        ret: Card|None = Card.extract_from_list(card, self.cards, replace)
+        if ret is None:
+            ret = Card.extract_from_list(card, self.backpile, replace)
+        if ret is None:
+            ret = Card.extract_from_list(card, self.drawn, replace)
+        return ret
     
     def copy(self) -> RotateDrawPile:
         copy = RotateDrawPile([], self.draw_count, self.view_count, self.max_redeals)

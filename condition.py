@@ -319,6 +319,8 @@ class MultiSuitCondition(Condition[T]):
             return "alternating suit colors"
         elif self.mode == MultiSuitCondition.MODE.MATCH:
             return "matching suits"
+        elif self.mode == MultiSuitCondition.MODE.MATCH_COL:
+            return "matching suit colors"
         raise Exception(f"Suit comparison mode not recognized: {self.mode}")
 
     def _pair_comp(self, suit1: Suit, suit2: Suit) -> bool:

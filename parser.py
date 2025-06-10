@@ -152,7 +152,7 @@ class Parser:
                 face = Stack.Face.FACE_LAST # default value is here because it's a property of the gdl to have this for default, not a property of the game or base
                 cards: list[Card]|None = None
                 if len(parts) > 2 and parts[2] in Stack.Face:
-                    Parser.parse_pile_face(parts[2])
+                    face = Parser.parse_pile_face(parts[2])
                 if len(parts) > 2 and (parts[2] not in Stack.Face or len(parts) > 3):
                     cards = Parser.parse_items(parts[-1], Parser.parse_card)
                 game.define_pile(pile_name, count, face, cards)

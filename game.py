@@ -435,10 +435,21 @@ class Game(Viewable, Hashable):
         pile = Stack([], pile_name, ind)
         self.name_to_piles[pile_name].append(pile)
         def initilizer():
-            if starting_cards == None:
+            if starting_cards is None:
                 pile.cards = self.deck.deal(count)
             else:
-                pile.cards = self.deck.extract(starting_cards)
+                assert len(starting_cards) == count, f"Starting cards in {pile_name} do not match the number of cards, {count}"
+                for starting_card in starting_cards:
+                    card = self.deck.extract(starting_card)
+                    if card is None:
+                        replace: Card = self.deck.deal(1)[0]
+                        piles = self.get_all_piles() # TODO shuffle these for more accurate randomness, and shuffle inside extract
+                        for other_pile in piles:
+                            card = other_pile.extract(starting_card, replace)
+                            if card is not None:
+                                break
+                    assert card is not None, f"Cannot find the starting card, {str(starting_card)}"
+                    pile.cards.append(card)
             pile.apply_face(face)
         self.initializers.append(initilizer)
 
