@@ -118,12 +118,12 @@ class RandomPlayer(Player):
         return action if action is not None else None
     
 class NoRepeatPlayer(Player):
-    HASH_TYPE = str # TODO generic
+    HASH_TYPE = int # TODO generic
     def __init__(self) -> None:
         self.seen_states: set[NoRepeatPlayer.HASH_TYPE] = set()
     
     def _hash(self, state: Game) -> HASH_TYPE:
-        return state.get_hash_view()
+        return state.get_efficient_hash()
     
     def _register_state(self, current_state: Game):
         self.seen_states.add(self._hash(current_state))
@@ -196,7 +196,7 @@ class MCTSChild(MCTSNode):
             return exploit_term + explore_factor * explore_term
 
 class MCTSPlayer(Player):
-    HASH_TYPE = str
+    HASH_TYPE = int
     def __init__(self, time_budget: int, seed: int|None, max_rollout_depth: int,
                  rollout_strategist_gen: Callable[[], Player], reward_func: StateEval) -> None:
         self.time_budget = time_budget
@@ -207,7 +207,7 @@ class MCTSPlayer(Player):
         self.reward_func = reward_func
     
     def _get_hash(self, game: Game) -> HASH_TYPE:
-        return str(game)
+        return game.get_efficient_hash()
 
     def _get_state_copy(self, state: Game):
         state = state.copy()

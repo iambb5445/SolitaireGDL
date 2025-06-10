@@ -469,6 +469,7 @@ if __name__ == '__main__':
                 action = None
                 log_valid_actions(game)
                 is_win = game.is_win()
+                print(game.get_efficient_hash())
         pygame.display.update()
     pygame.quit()
     sys.exit()

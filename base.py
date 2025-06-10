@@ -32,6 +32,31 @@ class Suit(BaseStrEnum):
         else:
             raise Exception(f"Suit color not recognized: {suit}")
 
+class Hashable(ABC):
+    MOD = 1000000007
+
+    @abstractmethod
+    def get_hash_view(self) -> str:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def get_efficient_hash(self) -> int:
+        raise NotImplementedError
+    
+    @staticmethod
+    @abstractmethod
+    def get_max_efficient_hash() -> int:
+        raise NotImplementedError
+    
+    @staticmethod
+    def get_str_hash(s: str) -> int:
+        num = 0
+        for c in s:
+            num *= 256
+            num += ord(c)
+            num %= Hashable.MOD
+        return num
+
 class Viewable(ABC):
     @abstractmethod
     def get_game_view(self) -> str:
@@ -40,12 +65,8 @@ class Viewable(ABC):
     @abstractmethod
     def get_state_view(self) -> str:
         raise NotImplementedError
-    
-    @abstractmethod
-    def get_hash_view(self) -> str:
-        raise NotImplementedError
 
-class Card(Viewable):
+class Card(Viewable, Hashable):
     def __init__(self, suit: Suit, rank: int, is_face_down: bool) -> None:
         assert rank >= 1 and rank <= 13
         self.suit = suit
@@ -84,6 +105,20 @@ class Card(Viewable):
     
     def get_hash_view(self) -> str:
         return str(self)
+    
+    def get_efficient_hash(self) -> int:
+        suit_number: int|None =\
+            0 if self.suit == Suit.Clubs else\
+            1 if self.suit == Suit.Diamonds else\
+            2 if self.suit == Suit.Hearts else\
+            3 if self.suit == Suit.Spades else None
+        assert suit_number is not None, "Suit not found"
+        num = suit_number * 13 + (self.rank - 1)
+        return (num * 2 + (1 if self.face_down else 0)) % Hashable.MOD
+    
+    @staticmethod
+    def get_max_efficient_hash() -> int:
+        return ((3 * 13 + 12) * 2 + 1) % Hashable.MOD
 
 class Deck:
     def __init__(self, times:int=1, suits:list[Suit]|None=None) -> None:
@@ -121,7 +156,7 @@ class Deck:
         deck.cards = [card.copy() for card in self.cards]
         return deck
     
-class Pile(Viewable):
+class Pile(Viewable, Hashable):
     def __init__(self, cards: list[Card], name: str) -> None:
         self.cards: list[Card] = cards
         self.name = name
@@ -145,6 +180,27 @@ class Pile(Viewable):
     
     def get_hash_view(self) -> str:
         return ', '.join([card.get_hash_view() for card in self.cards])
+    
+    def get_efficient_hash(self) -> int:
+        return self._get_efficient_hash(self.cards)
+
+    @staticmethod
+    def _get_efficient_hash(cards: list[Card]) -> int:
+        num = 0
+        for card in cards:
+            num *= Card.get_max_efficient_hash() + 1
+            num += card.get_efficient_hash()
+            num %= Hashable.MOD
+        return num
+    
+    @staticmethod
+    def get_max_efficient_hash() -> int: # todo save this
+        num = 0
+        for _ in range(100):
+            num *= Card.get_max_efficient_hash() + 1
+            num += Card.get_max_efficient_hash()
+            num %= Hashable.MOD
+        return num
     
     def len(self) -> int:
         return len(self.get_all_cards())
@@ -196,6 +252,10 @@ class DealPile(Pile):
     
     def get_hash_view(self) -> str:
         return f'Draw Pile (DEAL): {super().get_hash_view()}'
+    
+    def get_efficient_hash(self) -> int:
+        name_hash = Hashable.get_str_hash('Draw Pile (DEAL)')
+        return (super().get_efficient_hash() * name_hash + Pile.get_max_efficient_hash()) % Hashable.MOD
     
     def copy(self) -> DealPile:
         cards_copy = [card.copy() for card in self.cards]
@@ -279,6 +339,15 @@ class RotateDrawPile(Pile):
             + f'\nBackPile: {", ".join([card.get_state_view() for card in self.backpile])}[top]'\
             + f'\nDraw View: {", ".join([card.get_state_view() for card in self.cards])}[top]'\
             + f'\nDrawn: {", ".join([card.get_state_view() for card in self.drawn])}[top]'
+    
+    def get_efficient_hash(self) -> int:
+        name_hash = Hashable.get_str_hash('Draw Pile (ROTATE)')
+        num = name_hash
+        for pile in [self.backpile, self.cards, self.drawn]:
+            num *= Pile.get_max_efficient_hash()
+            num += Pile._get_efficient_hash(pile)
+            num %= Hashable.MOD
+        return num
 
 class Stack(Pile):
     class Face(BaseStrEnum):
@@ -353,3 +422,7 @@ class Stack(Pile):
     
     def get_hash_view(self) -> str:
         return f'{self.get_tag()}: {super().get_hash_view()}'
+    
+    def get_efficient_hash(self) -> int:
+        name_hash = Hashable.get_str_hash(self.name) # NOT TAG, because this is invariant
+        return (super().get_efficient_hash() * name_hash + Pile.get_max_efficient_hash()) % Hashable.MOD

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Callable, Sequence, Protocol, ParamSpec, Generic, TypeVar
 from abc import ABC, abstractmethod
-from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable
+from base import Deck, Card, Stack, Pile, DealPile, RotateDrawPile, Viewable, Hashable
 import condition as cond
 from utility import Logger
 from diffs import Diffs
@@ -158,7 +158,7 @@ class MoveStackArgs(ActionArgs[cond.MoveStackComponents]):
             condition: cond.Condition[cond.MoveStackComponents]|None = game.move_stack_conditions.get((src_pos.stack_pos.pilename, dest_pos.pilename), None)
         return MoveStackArgs(src_pile, src_pos.from_ind, dest_pile, condition)
 
-class Game(Viewable):
+class Game(Viewable, Hashable):
     class MoveType(Enum):
         Move = 1
         MoveStack = 2
@@ -620,6 +620,23 @@ class Game(Viewable):
             for pile in piles:
                 ret += pile.get_hash_view() + '\n'
         return ret
+    
+    def get_efficient_hash(self) -> int:
+        num = Hashable.get_str_hash(self.name)
+        if self.draw_pile is not None:
+            num *= self.draw_pile.get_max_efficient_hash()
+            num += self.draw_pile.get_efficient_hash()
+            num %= Hashable.MOD
+        num *= Pile.get_max_efficient_hash() # this doesn't consider name, but it should be fine
+        for piles in self.name_to_piles.values():
+            for pile in piles:
+                num += pile.get_efficient_hash() # no multiplication, to allow for changing the order
+                num %= Hashable.MOD
+        return num
+    
+    @staticmethod
+    def get_max_efficient_hash() -> int:
+        return 0
     
     # TODO remove duplicate code (get_state_view/get_game_view/get_hash_view)
     def get_state_view(self) -> str:
