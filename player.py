@@ -121,7 +121,7 @@ class NoRepeatPlayer(Player):
         self.seen_states: set[NoRepeatPlayer.HASH_TYPE] = set()
     
     def _hash(self, state: Game) -> HASH_TYPE:
-        return state.get_game_view()
+        return state.get_hash_view()
     
     def _register_state(self, current_state: Game):
         self.seen_states.add(self._hash(current_state))

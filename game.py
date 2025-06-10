@@ -612,7 +612,16 @@ class Game(Viewable):
                 ret += pile.get_game_view() + '\n'
         return ret
     
-    # TODO remove duplicate code (get_state_view/get_game_view)
+    def get_hash_view(self) -> str:
+        ret = self.name + '\n'
+        if self.draw_pile is not None:
+            ret += self.draw_pile.get_hash_view() + '\n'
+        for piles in self.name_to_piles.values():
+            for pile in piles:
+                ret += pile.get_hash_view() + '\n'
+        return ret
+    
+    # TODO remove duplicate code (get_state_view/get_game_view/get_hash_view)
     def get_state_view(self) -> str:
         ret = self.name + '\n'
         if self.draw_pile is not None:

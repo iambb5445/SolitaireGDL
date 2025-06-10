@@ -40,6 +40,10 @@ class Viewable(ABC):
     @abstractmethod
     def get_state_view(self) -> str:
         raise NotImplementedError
+    
+    @abstractmethod
+    def get_hash_view(self) -> str:
+        raise NotImplementedError
 
 class Card(Viewable):
     def __init__(self, suit: Suit, rank: int, is_face_down: bool) -> None:
@@ -76,6 +80,9 @@ class Card(Viewable):
         return str(self)
 
     def get_state_view(self) -> str:
+        return str(self)
+    
+    def get_hash_view(self) -> str:
         return str(self)
 
 class Deck:
@@ -136,6 +143,9 @@ class Pile(Viewable):
     def get_state_view(self) -> str:
         return ', '.join([card.get_state_view() for card in self.cards])
     
+    def get_hash_view(self) -> str:
+        return ', '.join([card.get_hash_view() for card in self.cards])
+    
     def len(self) -> int:
         return len(self.get_all_cards())
     
@@ -183,6 +193,9 @@ class DealPile(Pile):
 
     def get_state_view(self) -> str:
         return f'Draw Pile (DEAL): {super().get_state_view()}'
+    
+    def get_hash_view(self) -> str:
+        return f'Draw Pile (DEAL): {super().get_hash_view()}'
     
     def copy(self) -> DealPile:
         cards_copy = [card.copy() for card in self.cards]
@@ -260,6 +273,12 @@ class RotateDrawPile(Pile):
             + f'\nBackPile: {", ".join([card.get_state_view() for card in self.backpile])}[top]'\
             + f'\nDraw View: {", ".join([card.get_state_view() for card in self.cards])}[top]'\
             + f'\nDrawn: {", ".join([card.get_state_view() for card in self.drawn])}[top]'
+    
+    def get_hash_view(self) -> str:
+        return f'Draw Pile (ROTATE): {self.len()} cards'\
+            + f'\nBackPile: {", ".join([card.get_state_view() for card in self.backpile])}[top]'\
+            + f'\nDraw View: {", ".join([card.get_state_view() for card in self.cards])}[top]'\
+            + f'\nDrawn: {", ".join([card.get_state_view() for card in self.drawn])}[top]'
 
 class Stack(Pile):
     class Face(BaseStrEnum):
@@ -331,3 +350,6 @@ class Stack(Pile):
 
     def get_state_view(self) -> str:
         return f'{self.get_tag()}: {super().get_state_view()}'
+    
+    def get_hash_view(self) -> str:
+        return f'{self.get_tag()}: {super().get_hash_view()}'
