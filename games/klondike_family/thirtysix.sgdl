@@ -1,0 +1,44 @@
+Thirty Six
+
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 16 ROTATE 1 U 0 # 3 at a time, stack of 3, unlimited redeals
+FOUNDATION 0
+FOUNDATION 0
+FOUNDATION 0
+FOUNDATION 0
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+
+$moves
+MOVE {DRAW, COLUMN} COLUMN
+OR
+    AND
+        DESTSRC Rank descending
+    DEST Empty
+MOVE {COLUMN, DRAW} FOUNDATION
+OR
+    AND
+        DEST Empty
+        SRC Rank 1 # the card you’re moving is Ace
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank ascending
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Rank descending
+    OR
+        AND
+            DESTSRC Rank descending
+        DEST Empty
+
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

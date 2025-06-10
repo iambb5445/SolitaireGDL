@@ -1,0 +1,47 @@
+Blind Alleys
+
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 30 ROTATE 1 3 1 # 3 at a time, stack of 3, unlimited redeals
+FOUNDATION 1 {H1}
+FOUNDATION 1 {D1}
+FOUNDATION 1 {C1}
+FOUNDATION 1 {S1}
+COLUMN 3 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 3 FACE_LAST
+
+$moves
+MOVE {DRAW, COLUMN} COLUMN
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank descending
+    DEST Empty
+MOVE {COLUMN, DRAW} FOUNDATION
+OR
+    AND
+        DEST Empty
+        SRC Rank 1 # the card you’re moving is Ace
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank ascending
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Suit alternate_color
+    SRCSTACK Rank descending
+    OR
+        AND
+            DESTSRC Suit alternate_color
+            DESTSRC Rank descending
+        DEST Empty
+
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

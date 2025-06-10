@@ -1,0 +1,42 @@
+MiniSpider
+
+$cards
+DECK 1 {SPADES}
+
+$initial
+FOUNDATION 0
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 1 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank descending
+    DEST Empty # empty destination won't pass DESTSRC rules, to prevent problems in games such as klondike
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        DEST Empty
+        AND
+            DESTSRC Suit match
+            DESTSRC Rank descending
+    SRCSTACK Suit match
+    SRCSTACK Rank descending
+
+$auto
+MOVE_STACK COLUMN FOUNDATION
+AND
+    SRCSTACK Suit match
+    SRCSTACK Rank descending
+    SRCSTACK Size == 13
+    DEST Empty
+
+$win
+PILE ALL COLUMN Empty
