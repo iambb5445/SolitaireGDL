@@ -116,7 +116,8 @@ if __name__ == '__main__':
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
     games, move_counts, samples = simulate_for_player(100, 100, game_filename, lambda: DFSPlayer(
         MergedHeuristic(
-            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()]
+            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
+            [1, 1, 3]
             )
         ), None, None, 0.15, 0.5, 0.2)
     report_results(games, move_counts)

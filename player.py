@@ -20,15 +20,17 @@ class StateEval(ABC):
         return self.get_value(state, action) / self.max_value
     
 class MergedHeuristic(StateEval):
-    def __init__(self, state_evals: list[StateEval]) -> None:
+    def __init__(self, state_evals: list[StateEval], weights: list[int]|None) -> None:
         super().__init__(0)
         self.state_evals = state_evals
+        self.weights: list[int] = weights if weights is not None else [1] * len(state_evals)
+        assert len(self.weights) == len(self.state_evals), "Size of weights should match number of given heuristics"
     
     def get_value(self, state: Game, action: str|None) -> int:
-        return sum((state_eval.get_value(state, action) * 100)//state_eval.max_value for state_eval in self.state_evals)
+        return sum((state_eval.get_value(state, action) * 100 * weight)//state_eval.max_value for state_eval, weight in zip(self.state_evals, self.weights))
     
     def get_normalized_value(self, state: Game, action: str|None) -> float:
-        return sum(state_eval.get_value(state, action) for state_eval in self.state_evals) / len(self.state_evals)
+        return sum(state_eval.get_value(state, action) * weight for state_eval, weight in zip(self.state_evals, self.weights)) / sum(self.weights)
 
 class WinHeuristic(StateEval):
     def __init__(self) -> None:
