@@ -19,8 +19,7 @@ COLUMN 6 FACE_ALL
 $moves
 MOVE {DRAW, COLUMN} COLUMN
 OR
-    AND
-        DESTSRC Rank descending
+    DESTSRC Rank descending
     DEST Empty
 MOVE {COLUMN, DRAW} FOUNDATION
 OR
@@ -34,8 +33,7 @@ MOVE_STACK COLUMN COLUMN
 AND
     SRCSTACK Rank descending
     OR
-        AND
-            DESTSRC Rank descending
+        DESTSRC Rank descending
         DEST Empty
 
 $win
