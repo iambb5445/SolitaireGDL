@@ -238,18 +238,18 @@ class Game(Viewable, Hashable):
             desc += '* Source card: The source card is the card that is being moved. If a stack of cards is being moved together, the source card is the first card in that stack.\n'
             desc += '* Source pile: The source pile is the pile that the source card belongs to prior to the movement.\n'
             desc += '* Destination pile: The destination pile is the target pile that the source card is being moved to.\n'
-            desc += '* Destination card: The destination card is the top card of the destination pile. If the destination pile is empty, no destination card exists, and any conditions involving it are resolved as False.\n'
+            desc += '* Destination card: The destination card is the top card (last card) of the destination pile. If the destination pile is empty, no destination card exists, and any conditions involving it are resolved as False.\n'
             desc += 'The following actions are possible in the game:\n'
         if self.draw_pile is not None:
             desc += '### Draw\n'
             desc += '- `draw`: The draw action will '
             if isinstance(self.draw_pile, RotateDrawPile):
                 desc += f'turn the top {self.draw_pile.draw_count} card{"s" if self.draw_pile.draw_count > 1 else ""} from the draw pile face-up. '
-                desc += f'At any point, only the top card of the draw pile can be moved and '
                 if self.draw_pile.view_count is None:
-                    desc += 'all face-up cards in the draw pile are shown in the game state. '
+                    desc += 'All face-up cards in the draw pile are shown in the game state. '
                 else:
-                    desc += f'only the top {self.draw_pile.view_count} card{"s" if self.draw_pile.view_count > 1 else ""} are shown in the game state. '
+                    desc += f'Only the top {self.draw_pile.view_count} card{"s" if self.draw_pile.view_count > 1 else ""} are shown in the game state. '
+                desc += f'At any point, only the top card of the draw pile can be moved. '
                 if self.draw_pile.max_redeals is None or self.draw_pile.max_redeals > 0:
                     desc += f'When all the cards in the draw pile are turned face-up, drawing will rotate all of its cards that haven\'t been moved back into the draw pile. '
                     if self.draw_pile.max_redeals is not None:
@@ -297,6 +297,7 @@ class Game(Viewable, Hashable):
     def start(self):
         for initializer in self.initializers:
             initializer()
+        assert len(self.deck.cards) == 0, "Not all cards are used in the game"
         self.started = True
 
     def copy(self) -> Game:
