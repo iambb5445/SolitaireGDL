@@ -412,8 +412,9 @@ if __name__ == '__main__':
     pygame.init()
 
     sgdl_filename = sys.argv[1]
+    random_seed = int(sys.argv[2]) if len(sys.argv) > 2 else 42
 
-    game = Parser.from_file(sgdl_filename, 42, True, True)
+    game = Parser.from_file(sgdl_filename, random_seed, True, True)
     
     TextureRepo.load_textures()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
