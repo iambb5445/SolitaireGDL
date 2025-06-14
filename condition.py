@@ -370,37 +370,37 @@ class MultiRankCondition(Condition[T]):
 
 class DestEmptyCondition(MoveCondition):
     def unsigned_summary(self) -> str:
-        return 'the destination pile should be empty'
+        return 'The destination pile should be empty'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.empty()
 
 class DestSizeCondition(SizeCondition, MoveCondition):
     def unsigned_summary(self) -> str:
-        return f'the destination pile should have a size {self.comp_to_str()}'
+        return f'The destination pile should have a size {self.comp_to_str()}'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return self.comp(components.destination.len())
 
 class SrcSuitCondition(SuitCondition, MoveCondition):
     def unsigned_summary(self) -> str:
-        return f'source should have {self.comp_to_str()}'
+        return f'The source card should have {self.comp_to_str()}'
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return self.comp(components.source.suit)
 
 class SrcRankCondition(RankCondition, MoveCondition):
     def unsigned_summary(self) -> str:
-        return f'source should have {self.comp_to_str()}'
-    
+        return f'The source card should have {self.comp_to_str()}'
+
     def evaluate(self, components: MoveCardComponents) -> bool:
         return self.comp(components.source.rank)
 
 class DestSrcSuitCondition(MultiSuitCondition, MoveCondition):
     def unsigned_summary(self) -> str:
         # return f'destination shouldn\'t be empty and top card of destination and source card should have {self.comp_to_str()}'
-        return f'the destination card and source card should have {self.comp_to_str()}'
-    
+        return f'The destination card and source card should have {self.comp_to_str()}'
+
     def evaluate(self, components: MoveCardComponents) -> bool:
         return components.destination.gettable() and self.comp([components.destination.peak().suit, components.source.suit])
 
@@ -414,28 +414,28 @@ class DestSrcRankCondition(MultiRankCondition, MoveCondition):
     
 class StackSuitCondition(MultiSuitCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:
-        return f'all cards in the stack should have {self.comp_to_str()}'
+        return f'All cards in the stack should have {self.comp_to_str()}'
     
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp([card.suit for card in components.stack])
     
 class StackRankCondition(MultiRankCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:
-        return f'all cards in the stack should form a sequence of {self.comp_to_str()}'
+        return f'All cards in the stack should form a sequence of {self.comp_to_str()}'
 
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp([card.rank for card in components.stack])
     
 class StackSizeCondition(SizeCondition, MoveStackCondition):
     def unsigned_summary(self) -> str:
-        return f'stack should have a size {self.comp_to_str()}'
-    
+        return f'The stack should have a size {self.comp_to_str()}'
+
     def evaluate(self, components: MoveStackComponents) -> bool:
         return self.comp(len(components.stack))
     
 class PileEmptyCondition(PileCondition):
     def unsigned_summary(self) -> str:
-        return f'{self.mode} {"and".join(self.pilenames)} piles should be empty'
+        return f'{self.mode} {" and ".join(self.pilenames)} piles should be empty'
     
     def _pile_comp(self, pile: Pile):
         return pile.empty()
@@ -446,7 +446,7 @@ class PileSizeCondition(PileCondition, SizeCondition):
         SizeCondition.__init__(self, math_op, threshold)
 
     def unsigned_summary(self) -> str:
-        return f'{self.mode} {"and".join(self.pilenames)} piles should have a size {self.comp_to_str()}'
+        return f'{self.mode} {" and ".join(self.pilenames)} piles should have a size {self.comp_to_str()}'
     
     def _pile_comp(self, pile: Pile):
         return self.comp(pile.len())

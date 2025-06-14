@@ -46,7 +46,7 @@ class NoDrawHeuristic(StateEval):
         super().__init__(1)
 
     def get_value(self, state: Game, action: str | None) -> int:
-        if action is not None and str(action) == 'draw':
+        if action is not None and str(action).startswith('draw'):
             return 0
         return 1
     

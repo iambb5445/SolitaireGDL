@@ -236,9 +236,9 @@ class Game(Viewable, Hashable):
             desc += '## Actions\n'
             desc += 'Actions in the game move cards between piles. Each action has conditions that defines its validity. These conditions may involve the following keywords:\n'
             desc += '* Source card: The source card is the card that is being moved. If a stack of cards is being moved together, the source card is the first card in that stack.\n'
-            desc += '* Source pile: The source pile is the pile that the source card belongs to prior to the movement.\n'
+            desc += '* Source pile: The source pile is the pile that the source card belongs to prior to the movement. If the source pile is empty, no source card exists, and any conditions involving it are resolved as False.\n'
             desc += '* Destination pile: The destination pile is the target pile that the source card is being moved to.\n'
-            desc += '* Destination card: The destination card is the top card (last card) of the destination pile. If the destination pile is empty, no destination card exists, and any conditions involving it are resolved as False.\n'
+            desc += '* Destination card: The destination card is the top card (rightmost card) of the destination pile. If the destination pile is empty, no destination card exists, and any conditions involving it are resolved as False.\n'
             desc += 'The following actions are possible in the game:\n'
         if self.draw_pile is not None:
             desc += '### Draw\n'
@@ -251,13 +251,13 @@ class Game(Viewable, Hashable):
                     desc += f'Only the top {self.draw_pile.view_count} card{"s" if self.draw_pile.view_count > 1 else ""} are shown in the game state. '
                 desc += f'At any point, only the top card of the draw pile can be moved. '
                 if self.draw_pile.max_redeals is None or self.draw_pile.max_redeals > 0:
-                    desc += f'When all the cards in the draw pile are turned face-up, drawing will rotate all of its cards that haven\'t been moved back into the draw pile. '
+                    desc += f'When all the cards in the draw pile are turned face-up, drawing will rotate all of its cards that haven\'t been moved back into the draw pile in the order they were drawn. '
                     if self.draw_pile.max_redeals is not None:
-                        desc += f'This can be done until {self.draw_pile.max_redeals} pass through the draw pile.'
+                        desc += f'This rotation or redeal can be done {self.draw_pile.max_redeals} times, and if attempted again, performing a `draw` action will not do anything.'
                     else:
-                        desc += f'This can be done for an unlimited number of itmes.'
+                        desc += f'This can be done for an unlimited number of times.'
                 else:
-                    desc += 'if the draw pile is empty, performing a `draw` action will not do anything.'
+                    desc += 'If the draw pile is empty, performing a `draw` action will not do anything.'
             elif isinstance(self.draw_pile, DealPile):
                 desc += 'deal 1 card from the draw pile to every ' + 'pile, '.join(self.draw_pile.target_names) + ' pile.'
             else:
