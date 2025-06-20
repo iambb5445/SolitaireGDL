@@ -27,7 +27,7 @@ OR
     AND
         DESTSRC Rank descending
         DESTSRC Suit alternate_color
-    DEST Empty # empty destination won't pass DESTSRC rules, to prevent problems in games such as klondike
+    DEST Empty
 MOVE COLUMN CELL
 DEST Empty
 MOVE COLUMN FOUNDATION
