@@ -369,6 +369,7 @@ class Stack(Pile):
         FACE_LAST = 'FACE_LAST'
         FACE_ALL = 'FACE_ALL'
         FACE_ALTERNATE_TOP = 'FACE_ALTERNATE_LAST'
+        FACE_HALF = 'FACE_HALF' # TODO make this FACE_SOME_<num>
     
     def __init__(self, cards: list[Card], name:str, ind: int) -> None:
         super().__init__(cards, name)
@@ -396,6 +397,11 @@ class Stack(Pile):
                 if should_face:
                     card.face()
                 should_face = not should_face
+        elif face == Stack.Face.FACE_HALF:
+            for card in self.cards[self.len()//2:]:
+                card.face()
+        else:
+            raise Exception(f"Unknown face {face} for pile {self.get_tag()}")
 
     def get(self) -> Card:
         ret = super().get()

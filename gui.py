@@ -206,7 +206,7 @@ class LabelGE(RectGE):
 
 class PileGraphic(Graphic):
     LABEL_SCALE_BY_OFFSET = 3
-    CARD_SPACING_BY_OFFSET = 1.5
+    CARD_SPACING_BY_OFFSET = 2
 
     def __init__(self, pos: Vec2D, length: int, game_graphic: GameGraphic, pile: Pile, no_label:bool=False) -> None:
         self.pile = pile
