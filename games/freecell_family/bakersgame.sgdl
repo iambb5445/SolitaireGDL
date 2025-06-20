@@ -1,4 +1,4 @@
-Free Cell
+Baker's Game
 
 $cards
 DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
@@ -26,7 +26,7 @@ MOVE {CELL, COLUMN} COLUMN
 OR
     AND
         DESTSRC Rank descending
-        DESTSRC Suit alternate_color
+        DESTSRC Suit match
     DEST Empty
 MOVE COLUMN CELL
 DEST Empty

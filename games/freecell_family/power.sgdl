@@ -5,6 +5,7 @@ DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
 
 $initial
 FOUNDATION 1
+# TODO add card from position (also needed for defining the conditions in penguin)
 FOUNDATION 1#CARD(Rank=FOUNDATION[0]:0)
 FOUNDATION 1#CARD(Rank=FOUNDATION[0]:0)
 FOUNDATION 1#CARD(Rank=FOUNDATION[0]:0)
