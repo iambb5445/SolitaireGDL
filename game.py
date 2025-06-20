@@ -84,12 +84,15 @@ class DrawArgs(ActionArgs[cond.GeneralConditionComponents]):
         self.components: cond.GeneralConditionComponents|None = None
         if self.condition is not None:
             self.components = cond.GeneralConditionComponents(name_to_piles, draw_pile)
-        self.possible = draw_pile is not None
+        self.draw_pile: Pile|None = draw_pile
 
     def _default_summary(self) -> str:
         assert not (self.components is None and self.condition is not None)
         attempt = f'Actin \"draw\" is attempted'
-        exist = f'Action \"draw\" should be a possible action for this game {cond.Condition.format_TF(self.possible)}'
+        exist = f'Action \"draw\" should be a possible action for this game {cond.Condition.format_TF(self.draw_pile is not None)}'
+        if self.draw_pile is not None:
+            not_empty = f'Draw pile should not be empty for the \"draw\" action to be legal {cond.Condition.format_TF(not self.draw_pile.empty())}'
+            return attempt + '\n' + exist + '\n' + not_empty
         return attempt + '\n' + exist
 
     @staticmethod
