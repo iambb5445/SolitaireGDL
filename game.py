@@ -433,16 +433,15 @@ class Game(Viewable, Hashable):
         self.initializers.append(initializer)
 
     def define_pile(self, pile_name: str, count: int, face: Stack.Face, starting_cards: list[Card]|None) -> None:
-        assert starting_cards is None or len(starting_cards) == count, f"Initial cards define for pile does not match number of expected cards: {count} {starting_cards}"
+        # assert starting_cards is None or len(starting_cards) == count, f"Initial cards define for pile does not match number of expected cards: {count} {starting_cards}"
+        assert starting_cards is None or len(starting_cards) <= count, f"Initial cards defined for pile is higher than the number of expected cards: {count} {starting_cards}"
         self.name_to_piles[pile_name] = self.name_to_piles.get(pile_name, [])
         ind = len(self.name_to_piles[pile_name])
         pile = Stack([], pile_name, ind)
         self.name_to_piles[pile_name].append(pile)
         def initilizer():
-            if starting_cards is None:
-                pile.cards = self.deck.deal(count)
-            else:
-                assert len(starting_cards) == count, f"Starting cards in {pile_name} do not match the number of cards, {count}"
+            remaining = count
+            if starting_cards is not None:
                 for starting_card in starting_cards:
                     card = self.deck.extract(starting_card)
                     if card is None:
@@ -454,6 +453,8 @@ class Game(Viewable, Hashable):
                                 break
                     assert card is not None, f"Cannot find the starting card, {str(starting_card)}"
                     pile.cards.append(card)
+                remaining -= len(starting_cards)
+            pile.cards += self.deck.deal(remaining)
             pile.apply_face(face)
         self.initializers.append(initilizer)
 
