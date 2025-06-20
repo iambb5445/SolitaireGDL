@@ -1,9 +1,13 @@
-FreeCell
+Eight Off
 
 $cards
 DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
 
 $initial
+CELL 1
+CELL 1
+CELL 1
+CELL 1
 CELL 0
 CELL 0
 CELL 0
@@ -12,10 +16,10 @@ FOUNDATION 0
 FOUNDATION 0
 FOUNDATION 0
 FOUNDATION 0
-COLUMN 7 FACE_ALL
-COLUMN 7 FACE_ALL
-COLUMN 7 FACE_ALL
-COLUMN 7 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
 COLUMN 6 FACE_ALL
 COLUMN 6 FACE_ALL
 COLUMN 6 FACE_ALL
@@ -26,7 +30,7 @@ MOVE {CELL, COLUMN} COLUMN
 OR
     AND
         DESTSRC Rank descending
-        DESTSRC Suit alternate_color
+        DESTSRC Suit match
     DEST Empty # empty destination won't pass DESTSRC rules, to prevent problems in games such as klondike
 MOVE COLUMN CELL
 DEST Empty
