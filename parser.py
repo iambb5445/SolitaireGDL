@@ -246,6 +246,10 @@ class Parser:
             return cond.DestEmptyCondition()
         elif parts[0] == 'DEST' and parts[1] == 'Size':
             return cond.DestSizeCondition(cond.MathOp(parts[2]), Parser.parse_number(parts[3]))
+        elif parts[0] == 'DEST' and parts[1] == 'Suit':
+            return cond.DestSuitCondition(Parser.parse_items(parts[2], Parser.parse_suit))
+        elif parts[0] == 'DEST' and parts[1] == 'Rank':
+            return cond.DestRankCondition(Parser.parse_items(parts[2], Parser.parse_rank))
         elif parts[0] == 'DESTSRC' and parts[1] == 'Suit':
             return cond.DestSrcSuitCondition(cond.MultiSuitCondition.MODE(parts[2]))
         elif parts[0] == 'DESTSRC' and parts[1] == 'Rank':

@@ -395,6 +395,20 @@ class SrcRankCondition(RankCondition, MoveCondition):
 
     def evaluate(self, components: MoveCardComponents) -> bool:
         return self.comp(components.source.rank)
+    
+class DestSuitCondition(SuitCondition, MoveCondition):
+    def unsigned_summary(self) -> str:
+        return f'The destination card should have {self.comp_to_str()}'
+
+    def evaluate(self, components: MoveCardComponents) -> bool:
+        return components.destination.gettable() and self.comp(components.destination.peak().suit)
+
+class DestRankCondition(RankCondition, MoveCondition):
+    def unsigned_summary(self) -> str:
+        return f'The destination card should have {self.comp_to_str()}'
+
+    def evaluate(self, components: MoveCardComponents) -> bool:
+        return components.destination.gettable() and self.comp(components.destination.peak().rank)
 
 class DestSrcSuitCondition(MultiSuitCondition, MoveCondition):
     def unsigned_summary(self) -> str:
