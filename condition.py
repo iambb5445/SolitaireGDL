@@ -342,6 +342,9 @@ class MultiRankCondition(Condition[T]):
     class MODE(BaseStrEnum):
         ASC = 'ascending'
         DES = 'descending'
+        EQ = 'equal'
+        ADD_13 = 'add_13' # TODO possibly put this in a DualRankCondition to allow for only move, not move_stack
+        ADD_14 = 'add_14' # TODO possibly put this in a DualRankCondition to allow for only move, not move_stack
 
     def __init__(self, mode: MODE) -> None:
         self.mode = mode
@@ -353,6 +356,12 @@ class MultiRankCondition(Condition[T]):
         elif self.mode == MultiRankCondition.MODE.DES:
             # return '[consecutive] [strictly] descending ranks (no gaps or equals)'
             return 'consecutive, descending ranks'
+        elif self.mode == MultiRankCondition.MODE.EQ:
+            return 'equal ranks'
+        elif self.mode == MultiRankCondition.MODE.ADD_13:
+            return 'ranks that sum up to 13 (assuming J=11, Q=12 and K=13)'
+        elif self.mode == MultiRankCondition.MODE.ADD_14:
+            return 'ranks that sum up to 14 (assuming J=11, Q=12 and K=13)'
         raise Exception(f"Rank comparison mode not recognized: {self.mode}")
 
     def _pair_comp(self, rank1: int, rank2: int) -> bool:
@@ -360,6 +369,12 @@ class MultiRankCondition(Condition[T]):
             return rank1 + 1 == rank2
         elif self.mode == MultiRankCondition.MODE.DES:
             return rank1 == rank2 + 1
+        elif self.mode == MultiRankCondition.MODE.EQ:
+            return rank1 == rank2
+        elif self.mode == MultiRankCondition.MODE.ADD_13:
+            return rank1 + rank2 == 13
+        elif self.mode == MultiRankCondition.MODE.ADD_14:
+            return rank1 + rank2 == 14
         raise Exception(f"Rank comparison mode not recognized: {self.mode}")
     
     def comp(self, ranks: list[int]) -> bool:

@@ -476,6 +476,8 @@ class Game(Viewable, Hashable):
     # Invalid syntax is getting an exception, while invalid move is getting False
     def move(self, src_pos: PilePos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         assert self.started, "Cannot make move if game has not started"
+        if str(src_pos) == str(dest_pos):
+            return False
         args = MoveArgs.from_pos(self, src_pos, dest_pos, auto)
         if args.condition is None or args.components is None:
             return False
@@ -493,6 +495,8 @@ class Game(Viewable, Hashable):
     
     def move_stack(self, src_pos: RunPos, dest_pos: StackPilePos, perform: bool=True, auto: bool=False) -> bool:
         assert self.started, "Cannot make move stack if game has not started"
+        if str(src_pos.stack_pos) == str(dest_pos):
+            return False
         args = MoveStackArgs.from_pos(self, src_pos, dest_pos, auto)
         if args.condition is None or args.components is None:
             return False
