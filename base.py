@@ -133,12 +133,12 @@ class Card(Viewable, Hashable):
         return ((3 * 13 + 12) * 2 + 1) % Hashable.MOD
 
 class Deck:
-    def __init__(self, times:int=1, suits:list[Suit]|None=None) -> None:
+    def __init__(self, times:int=1, suits:list[Suit]|None=None, ranks:list[int]|None=None) -> None:
         is_face_down = True
         self.cards: list[Card] = []
         for _ in range(times):
             for suit in (Suit if suits is None else suits):
-                for rank in range(1, 14):
+                for rank in (range(1, 14) if ranks is None else ranks):
                     self.cards.append(Card(suit, rank, is_face_down))
     
     def shuffle(self, seed:int|None=None) -> None:

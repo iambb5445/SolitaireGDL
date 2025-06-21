@@ -127,10 +127,15 @@ class Parser:
         # finds = re.findall(r"^\s*DECK\s+(\d+)\s+\{\s*([A-Za-z, ]+)\s*\}\s*$", deck_desc[1])
         # assert len(finds) == 1, "deck description does not match with the expected format"
         # count, suits_text = finds[0]
-        _, count_text, suits_text = Parser.split_line(deck_desc[0])
+        parts = Parser.split_line(deck_desc[0])
+        ranks = None
+        if len(parts) == 4:
+            ranks = Parser.parse_items(parts[-1], Parser.parse_rank)
+            parts = parts[:-1]
+        _, count_text, suits_text = parts
         count = Parser.parse_number(count_text)
         suits = Parser.parse_items(suits_text, Parser.parse_suit)
-        game.deck = Deck(count, suits)
+        game.deck = Deck(count, suits, ranks)
         game.deck.shuffle(seed)
 
     @staticmethod
