@@ -28,7 +28,7 @@ $auto
 MOVE_STACK COLUMN DISCARD
 AND
     SRCSTACK Size == 2
-    SRCSTACK Rank equal # don't need this most likely
+    SRCSTACK Rank equal # don't need this most likely, due to faces
 MOVE TALON COLUMN
 DEST Empty
 
