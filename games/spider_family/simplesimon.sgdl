@@ -42,6 +42,4 @@ AND
 
 $win
 # alternatively, can be defined with PILE ALL FOUNDATION Size == 13
-AND
-    PILE ALL COLUMN Empty
-    PILE ALL DRAW Empty
+PILE ALL COLUMN Empty
