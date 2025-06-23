@@ -12,7 +12,8 @@ import sys
 thread_count=1
 
 class Sample:
-    def __init__(self, game: Game, action: str) -> None:
+    def __init__(self, game: Game, action: str, game_id: int) -> None:
+        self.game_id: int = game_id
         self.current: Game = game
         self.action: str = action
         self.next: Game|None = game.copy()
@@ -22,8 +23,9 @@ class Sample:
             self.valid = False
             self.next = None
 
-    def as_json(self) -> dict[str, str|bool|None]:
+    def as_json(self) -> dict[str, str|bool|None|int]:
         return {
+            "game_id": self.game_id,
             "current_state_view": self.current.get_state_view(),
             "current_game_view": self.current.get_game_view(),
             "action": self.action,
@@ -33,24 +35,24 @@ class Sample:
             "next_game_view": self.next.get_game_view() if self.next is not None else None,
         }
     
-def sample(sample_rnd: random.Random, invalid_actions_rate: float, bot_action_rate: float, game: Game, bot_action: str) -> Sample:
+def sample(sample_rnd: random.Random, invalid_actions_rate: float, bot_action_rate: float, game: Game, bot_action: str, game_id: int) -> Sample:
     if sample_rnd.random() < invalid_actions_rate:
         if sample_rnd.random() < bot_action_rate:
-            return Sample(game, bot_action)
+            return Sample(game, bot_action, game_id)
         else:
             actions = game.get_possible_actions(True)
             random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
-            return Sample(game, random_action)
+            return Sample(game, random_action, game_id)
     else:
         actions = game.get_possible_actions(False)
         while True:
             random_action = str(actions[sample_rnd.randint(0, len(actions) - 1)])
-            sample = Sample(game, random_action)
+            sample = Sample(game, random_action, game_id)
             if not sample.valid:
                 return sample
 
 
-def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
+def simulate_one(game_id: int, player: Player, game_filename: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
                  sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0, bot_action_rate: float = 0) -> tuple[Game, int, list[Sample]]:
     sample_rnd = random.Random(sampling_seed)
     game = Parser.from_file(game_filename, game_seed, False, True)
@@ -66,7 +68,7 @@ def simulate_one(player: Player, game_filename: str, game_seed: int|None, max_mo
         if action is None or move_count == max_moves:
             return game, move_count, game_samples
         if sample_rnd.random() < sample_rate:
-            game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action))
+            game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action, game_id))
         if backtracking:
             backtrack_trace.append(game.copy())
         Parser.perform_action_in_game(action, game)
@@ -89,11 +91,14 @@ def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, gam
     sampling_seeds = get_seeds(sampling_seeds, count)
     if thread_count == 1:
         results = [simulate_one(
-            player_creator(), game_filename, game_seed, max_moves, backtracking, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
-        ) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds))]
+            game_id, player_creator(), game_filename, game_seed, max_moves, backtracking,
+            sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
+        ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds)))]
     else:
         results = Parallel(n_jobs=thread_count)(delayed(simulate_one)(
-            player_creator(), game_filename, game_seed, max_moves, backtracking, sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate) for game_seed, sampling_seed in tqdm(zip(game_seeds, sampling_seeds)))
+            game_id, player_creator(), game_filename, game_seed, max_moves, backtracking,
+            sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
+        ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds))))
     # assert isinstance(results, list) and results is all(isinstance(item, (Game, int)) for item in results), "Parallel jobs have not resulted in an output of type list"
     games = [game for game, _, _ in results] # type: ignore
     move_counts = [move_count for _, move_count, _ in results] # type: ignore
