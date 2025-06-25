@@ -153,6 +153,7 @@ if __name__ == '__main__':
         "bot": "DFSBot",
         "move_counts": move_counts,
         "average_move_count": sum(move_counts)/len(move_counts),
+        "wins": wins,
         "win_percentage": sum(wins)/len(wins),
         "description": game.get_description(),
         "samples": [
