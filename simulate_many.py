@@ -9,7 +9,7 @@ import time
 import random
 import sys
 
-thread_count=30
+thread_count=50
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
