@@ -27,6 +27,4 @@ OR
         SRC Rank K
 
 $win
-AND
-    PILE ALL COLUMN Empty
-    PILE ALL DRAW Empty
+PILE ALL COLUMN Empty
