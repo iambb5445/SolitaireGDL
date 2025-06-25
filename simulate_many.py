@@ -147,9 +147,13 @@ if __name__ == '__main__':
     if max_sample_count is not None:
         samples = samples[:int(max_sample_count)]
     game = Parser.from_file(game_filename, None, False, False)
+    wins: list[bool] = [game.is_win() for game in games]
     dataset = {
         "name": game.name,
         "bot": "DFSBot",
+        "move_counts": move_counts,
+        "average_move_count": sum(move_counts)/len(move_counts),
+        "win_percentage": sum(wins)/len(wins),
         "description": game.get_description(),
         "samples": [
             sample.as_json()
