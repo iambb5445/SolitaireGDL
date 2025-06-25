@@ -7,8 +7,8 @@ import math
 
 max_move_count = 1000
 simulation_count_per_game = 20
-# from_file = '1750842589_win_percentages.out'
-from_file = None
+from_file = '1750842589_win_percentages.out'
+# from_file = None
 save = True
 
 def get_win_points(wins: list[bool], move_counts: list[int]) -> list[tuple[float, float]]:
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     else:
         with open(from_file, 'r') as f:
             data = json.load(f)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(8, 6))
     for game_data in data:
         print(game_data)
         points = [(0.0, 0.0)] + get_win_points(game_data['wins'], game_data['move_counts'])
