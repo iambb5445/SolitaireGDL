@@ -5,11 +5,11 @@ import sys
 
 if __name__ == '__main__':
     sgdl_filename = sys.argv[1]
-    game = Parser.from_file(sgdl_filename, 42, True, True)
+    game = Parser.from_file(sgdl_filename, 0, True, True)
     logger = Logger(True)
     logger.info("GAME START!")
     while not game.is_win():
-        logger.info(game.get_game_view())
+        logger.info(game.get_state_view())
         logger.info(f"{len(game.get_possible_actions(False))} actions")
         valid_actions = game.get_possible_actions(True)
         logger.info(f"{len(valid_actions)} valid actions:")

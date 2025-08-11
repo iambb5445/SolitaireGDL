@@ -1,18 +1,10 @@
 from parser import Parser
 from diffs import Diffs
 import pandas as pd
+import sys
 
 if __name__ == '__main__':
-    game_filenames = [
-        'games\\klondike_family\\klondike.sgdl',
-        'games\\klondike_family\\blindalleys.sgdl',
-        'games\\klondike_family\\doubleklondike.sgdl',
-        'games\\klondike_family\\legion.sgdl',
-        'games\\klondike_family\\thirtysix.sgdl',
-        'games\\klondike_family\\westcliff.sgdl',
-        'games\\klondike_family\\whitehead.sgdl',
-        'games\\spider_family\\spider.sgdl',
-    ]
+    game_filenames = sys.argv[1:]
     games = [Parser.from_file(filename, None, False, True) for filename in game_filenames]
     diff_vals: list[list[float]] = [[0 for _ in games] for _ in games]
     diff_points: list[list[float]] = [[0 for _ in games] for _ in games]
