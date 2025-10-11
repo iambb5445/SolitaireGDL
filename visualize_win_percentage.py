@@ -7,7 +7,7 @@ import math
 
 max_move_count = 1000
 simulation_count_per_game = 20
-from_file = '1750842589_win_percentages.out'
+from_file = '1750886588_win_percentages.out'
 # from_file = None
 save = True
 
@@ -52,18 +52,24 @@ if __name__ == '__main__':
     else:
         with open(from_file, 'r') as f:
             data = json.load(f)
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(11, 6))
+    plt.rc('legend', fontsize=13)
+    plt.rc('axes', titlesize=14, labelsize=14)
+    plt.rc('xtick', labelsize=12)
+    plt.rc('ytick', labelsize=12)
     for game_data in data:
         print(game_data)
         points = [(0.0, 0.0)] + get_win_points(game_data['wins'], game_data['move_counts'])
         x_values = [x for x, _ in points]
         y_values = [y for _, y in points]
         exhaust_count = sum([1 if win or move_count < game_data['max_move_count'] else 0 for win, move_count in zip(game_data['wins'], game_data['move_counts'])])
-        plt.plot(x_values, y_values, label = f"{game_data['game']}:{round((exhaust_count/len(game_data['wins'])) * 100, 2)}% exhausted")
-    plt.legend()
+        plt.plot(x_values, y_values, label = f"{game_data['game']}: {round((exhaust_count/len(game_data['wins'])) * 100, 2)}% exhausted")
+    plt.legend(loc='center left', bbox_to_anchor=(0.56, 0.35))
     # plt.title('Win Percentages')
     plt.xlabel('Number of Moves')
     plt.ylabel('Winrate')
+    plt.xlim(0, 2000)
+    plt.ylim(0, 0.85)
     plt.grid(True)
     if save:
         plt.savefig('wins.pdf',dpi=300,pad_inches=0)

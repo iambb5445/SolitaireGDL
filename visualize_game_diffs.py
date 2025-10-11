@@ -44,11 +44,13 @@ if __name__ == '__main__':
 
     # heatmap
 
-    # plt.figure(figsize=(10, 8))
-    plt.figure(figsize=(8, 8))
-    # sns.heatmap(diff_matrix, cmap="coolwarm", xticklabels=names, yticklabels=names, annot=True, fmt='.1f')
+    import matplotlib
+    matplotlib.rcParams['pdf.fonttype'] = 42
+    matplotlib.rcParams['ps.fonttype'] = 42
+    plt.figure(figsize=(10, 8))
     ticks = names if HeatmapConfig.GameLabel else []
-    sns.heatmap(diff_matrix, cmap="coolwarm", xticklabels=ticks, yticklabels=ticks, annot=False, cbar=False)
+    sns.set(font_scale=1.4)
+    sns.heatmap(diff_matrix, cmap="coolwarm", xticklabels=ticks, yticklabels=ticks, annot=False, cbar=True, square=True)
     for i, family in enumerate(families):
         start_idx = sum(len(f) for f in families[:i])
         end_idx = start_idx + len(family)
@@ -56,15 +58,16 @@ if __name__ == '__main__':
             plt.gca().add_patch(plt.Rectangle((start_idx, start_idx), len(family), len(family),  # type: ignore
                                             color='red', fill=False, lw=2))
         if HeatmapConfig.FamilyLabel:
-            plt.text((start_idx + end_idx) / 2, len(games) + 0.75, family_names[i], ha='center', va='center', fontsize=12, 
+            plt.text((start_idx + end_idx) / 2, len(games) + 0.75, family_names[i], ha='center', va='center', fontsize=18, 
                 color='black')
-            plt.text(-0.5, (start_idx + end_idx) / 2, family_names[i], rotation='vertical', ha='right', va='center', fontsize=12, 
+            plt.text(-0.5, (start_idx + end_idx) / 2, family_names[i], rotation='vertical', ha='right', va='center', fontsize=18, 
                 color='black')
-    plt.title("Distance Matrix Heatmap")
+    # plt.title("Distance Matrix Heatmap")
     if HeatmapConfig.Save:
-        plt.savefig('variant_heatmap.pdf',dpi=300,pad_inches=0)
+        plt.savefig('variant_heatmap.pdf',dpi=300, bbox_inches='tight',pad_inches=0)
     else:
         plt.show()
+    quit()
 
 
     from sklearn.manifold import MDS
