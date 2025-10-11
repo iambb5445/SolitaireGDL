@@ -19,7 +19,7 @@ Some of the keywords used here are:
 * <move_stack_rule>: Defined in the [`MOVE_STACK`](#move_stack) section
 * <draw_rule>: Defined in the [`DRAW`](#draw-1) section
 * <move_conds>: Any condition in [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move_stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
-* <stack_conds>: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move_stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for- move-and-move_stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* <stack_conds>: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move_stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move_stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
 * <general_conds>: Any condition in [Conditions valid for `DRAW`/`$win`](#conditions-valid-for-drawwin), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
 
 An sgdl file should contain the following sections:
