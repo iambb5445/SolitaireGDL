@@ -128,6 +128,27 @@ PILE ALL COLUMN Size > 0
 
 The set of conditions for checking the validity of an action are defiend after every action. These conditions, which can be added together using `AND` and `OR` keywords, have different types and can be used for different actions based on their type.
 
+For adding conditions together, start by using the connecting operator (`AND` or `OR`), then use indentation for creating a block of conditions where all of them are combined using the operator. For example:
+```sgdl
+AND
+    <cond_a>
+    <cond_b>
+```
+Note that each condition can recurstively include subconditions as well.
+```sgdl
+AND
+    <cond_a>
+    OR
+        <cond_b>
+        <cond_c>
+    <cond_d>
+    OR
+        AND
+            <cond_e>
+            <cond_f>
+        <cond_g>
+```
+
 #### Conditions valid for `MOVE` and `MOVE_STACK`
 
 Move actions involve a source card (the card being moved in `MOVE`, or the top card of the stack being moved in `MOVE_STACK`) and a destination pile.
