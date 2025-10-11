@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from game import Game
 import math
 from utility import Logger
+import argparse
 
 ANIMATION = False
 ANIMATION_SPEED = 1000
@@ -411,10 +412,14 @@ class GameGraphic(Graphic):
 if __name__ == '__main__':
     pygame.init()
 
-    sgdl_filename = sys.argv[1]
-    random_seed = int(sys.argv[2]) if len(sys.argv) > 2 else 42
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', type=str, help="Name of the SGDL file defining game rules. Refer to games/ for examples.")
+    parser.add_argument('seed', type=int, nargs="?", default=0, help="Integer seed to be used for shuffling the deck.")
+    args = parser.parse_args(sys.argv[1:])
+    sgdl_filename: str = args.filename
+    seed = args.seed
 
-    game = Parser.from_file(sgdl_filename, random_seed, True, True)
+    game = Parser.from_file(sgdl_filename, seed, True, True)
     
     TextureRepo.load_textures()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))

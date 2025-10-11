@@ -1,6 +1,7 @@
 import argparse
 from parser import Parser
 from player import Player, RandomPlayer, RandomNoRepeatPlayer, MCTSPlayer, WinHeuristic, ActionCountHeuristic, SpiderHeuristic, NoDrawHeuristic, MergedHeuristic, DFSPlayer
+from simulate import players
 from game import Game
 from joblib import delayed, Parallel
 from tqdm import tqdm
@@ -8,8 +9,6 @@ from typing import Callable, Sequence
 import time
 import random
 import sys
-
-thread_count=50
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
@@ -114,12 +113,22 @@ def report_results(games: list[Game], move_counts: list[int]):
 
 if __name__ == '__main__':
     start_time = time.time()
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filename')
-    parser.add_argument('--max-count', default=None)
+    parser = argparse.ArgumentParser(description="We have intentionally chosen default values that will ensure a fast response. For creating balanced datasets, these default values should be changed.")
+    parser.add_argument('filename', type=str, help="Name of the SGDL file defining game rules. Refer to games/ for examples.")
+    parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {players.keys()}")
+    parser.add_argument('--sampling-seed', type=int, default=None, help="Integer seed to be used for choosing the samples, random by default.")
+    parser.add_argument('--game-seed', type=int, default=None, help="Integer seed to be used for shuffling the games, random by default.")
+    parser.add_argument('--max-moves', type=int, default=100, help="Maximum number of moves in a game before stopping the sampling process (per game). Set to None using the code to continue until exhausting all the states the bot can reach.")
+    parser.add_argument('--max-count', type=int, default=100, help="Maximum number of samples to save in the dataset. Set to None using the code save all the sampled states.")
+    parser.add_argument('--game-count', type=int, default=5, help="Number of games to play.")
+    parser.add_argument('--sampling-rate', type=float, default=0.1, help="Rate of sampling (between 0 and 1). While you can directly set the number of samples by using max-count, not sampling all games can save memory.")
+    parser.add_argument('--invalid-action-rate', type=float, default=0.5, help="Rate of invalid actions to sample. Default is 0.5 to have a balanced dataset between valid/invalid responses.")
+    parser.add_argument('--bot-action-rate', type=float, default=0.2, help="Rate of bot actoins to sample (between 0 and 1). We avoid bias, we don't want to always (or ever) sample bot actions when choosing a valid action.")
+    parser.add_argument('--thread-count', type=int, default=20, help="Number of threads to run the simulation.")
     args = parser.parse_args(sys.argv[1:])
     game_filename: str = args.filename
     max_sample_count: int|None = args.max_count
+    thread_count = args.thread_count
     # game_filename = 'games/klondike.sgdl'
     # simulate_for_player(50, 1000, game, lambda: RandomPlayer(None))
     # simulate_for_player(50, 10000, game, lambda: RandomNoRepeatPlayer(None, spider_heuristic))
@@ -133,12 +142,11 @@ if __name__ == '__main__':
     # print("RandomPlayerNoRepeat, action heuristic")
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
-    games, move_counts, samples = simulate_for_player(10, 1000, True, game_filename, lambda: DFSPlayer(
-        MergedHeuristic(
-            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
-            [1, 1, 3]
-            )
-        ), None, None, 0, 0.5, 0.2)
+    games, move_counts, samples = simulate_for_player(
+        args.game_count, args.max_moves, True, game_filename, lambda: players[args.bot](None),
+        args.game_seed, args.sampling_seed, args.sampling_rate,
+        args.invalid_action_rate, args.bot_action_rate
+    )
     report_results(games, move_counts)
     print(f"timed at {time.time() - start_time}")
     if len(samples) == 0:

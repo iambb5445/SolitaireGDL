@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', type=str, help="Name of the SGDL file defining game rules. Refer to games/ for examples.")
     parser.add_argument('seed', type=int, nargs="?", default=0, help="Integer seed to be used for shuffling the deck.")
-    parser.add_argument('--partial-info', action="store_true", help="Show only the cards that are faced up. Face down cards will be shown as [?]")
+    parser.add_argument('--partial-info', action="store_true", help="Show only the cards that are faced up. Face down cards will be shown as [?].")
     args = parser.parse_args(sys.argv[1:])
     sgdl_filename: str = args.filename
     seed = args.seed
