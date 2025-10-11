@@ -1,6 +1,6 @@
 # SGDL Grammar
 
-This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in `games` directory, such as [Spider SGDL](games/spider.sgdl) and [Klondike SGDL](games/klondike.sgdl).
+This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in [`games`](/games) directory, such as [Spider SGDL](games/spider_family/spider.sgdl) and [Klondike SGDL](games/klondike_family/klondike.sgdl).
 
 Some of the keywords used here are:
 * <count>: A non-negative integer
