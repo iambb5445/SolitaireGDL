@@ -14,7 +14,8 @@ Our work on this research includes multiple components, spread across different 
 3. Datasets used in the paper are included both on [huggingface](https://huggingface.co/datasets/bbateni/Solitaire-Rule-Reasoning-Benchmark) and [github](https://github.com/iambb5445/SolitaireLLMBenchmark/tree/main/dataset).
 4. Finally, a web version of our Solitaire framework can be accessed via this [link](https://iambb5445.github.io/SolitaireGDLWeb/index.html). Note that this version only allows for playing games and modifying game rules by changing the underlying SGDL, but does not provde a way to simulate the game using bots or create datasets.
 
-[system-overview-1.pdf](https://github.com/user-attachments/files/22863399/system-overview-1.pdf)
+<img width="1312" height="331" alt="image" src="https://github.com/user-attachments/assets/37853580-3695-4b96-a561-9e103c8f7d44" />
+
 
 The code in this repository is for the Solitaire framework allowing for creating playable Solitaire games based on an SGDL. The code includes game logic, SGDL parsing and validation, game playing bots capable of playing with any generated game, and dataset creation. Below we provide more information and instructions for each of these components.
 
