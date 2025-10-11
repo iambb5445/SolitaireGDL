@@ -2,7 +2,27 @@
 
 This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in `games` directory, such as [Spider SGDL](games/spider.sgdl) and [Klondike SGDL](games/klondike.sgdl).
 
-A sgdl file should contain the following sections:
+Some of the keywords used here are:
+* <count>: A non-negative integer
+* <count_or_u>: A non-negative integer, or `U` for unlimited.
+* <op>: A comparison operator. Possible values are "==", ">", "<", ">=", "<=".
+* <suits>: One or more suits. Possible suits are SPADES, HEARTS, CLUBS, DIAMONDS. If more than one, they should be enclosed in `{` `}` and seperated by `,`, for example: `{SPADES, HEARTS}`. If only 1, `{` `}` can be omitted.
+* <ranks>: One or more ranks. Possible ranks are 1, 2, ..., 10, J, Q, K. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
+* <pile>: The name of a pile. This can be any string without whitespaces, but it has to be one of piles defined in [`$initial`](#initial).
+* <piles>: One or more <pile>. If more than one, they should be enclosed in `{` `}`.
+* <piles_or_D>: One or more <pile>, but this can also include the `DRAW` pile. If more than one, they should be enclosed in `{` `}`.
+* <pile_face>: Initial facing positin for a pile. Possible values are described in the [Other Piles](#other-piles) section below.
+* <cards>: One or more cards. Each card is defined as <rank><short-suit>, where <rank> is one of 1, 2, ..., 10, J, Q, K and <short-suit> is one of S, H, C, D. For example, `8D` is 8 of diamonds. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
+* <draw_def>: Defined in the [Draw](#draw) section
+* <initial_def>: Defined in the [Other Piles](#other-piles) section
+* <move_rule>: Defined in the [`MOVE`](#move) section
+* <move_stack_rule>: Defined in the [`MOVE_STACK`](#move-stack) section
+* <draw_rule>: Defined in the [`DRAW`](#draw-1) section
+* <move_conds>: Any condition in [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* <stack_conds>: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move-stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for- move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* <general_conds>: Any condition in [Conditions valid for `DRAW`/`$win`](#conditions-valid-for-drawwin), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+
+An sgdl file should contain the following sections:
 
 ## `<name>`
 The file starts by one line containing the name of the game, which is only used for visualization and logging.
@@ -10,16 +30,18 @@ The file starts by one line containing the name of the game, which is only used 
 ## `$cards`
 
 ```sgdl
-DECK <count> <suits>
+DECK <count> <suits> <ranks>
 ```
 
-The first section in the file should describe the number and type of cards used in the game. This is described as some number of decks, each containing some combination of suits. For example, `DECK 4 {SPADES, HEARTS}` describes a game that is played with 4 deck of cards, each containing only Spades and Hearts (26 cards per deck). This is the set of cards required to play 2-Suit Spider Solitaire. The cards are shuffled before dealing into piles based on the `$initial` section.
+The first section in the file should describe the number and type of cards used in the game. This is described as some number of decks, each containing some combination of suits. For example, `DECK 4 {SPADES, HEARTS}` describes a game that is played with 4 deck of cards, each containing only Spades and Hearts (26 cards per deck). This is the set of cards required to play 2-Suit Spider Solitaire. By default, all ranks are included, but optionally ranks can be defined to limit which card ranks are in the deck. For example, in Wish Solitaire variant only card ranks 6 and above are included. This is defined as `DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS} {6, 7, 8, 9, 10, J, Q, K}`.
+
+The cards are shuffled before dealing into piles based on the `$initial` section.
 
 ## `$initial`
 
 ```sgdl
-[DRAW <count> <draw_def>]
-<initial_rule><nl>*
+[<draw_def>]
+<initial_def>*
 ```
 
 This section in the GDL describes the initial position of cards. The initial position of cards are always described as a set of piles. Note that this means some games with more complicated positioning for cards, such as Pyramid or TriPeaks, cannot be defined with the current grammar.
@@ -50,15 +72,23 @@ The third alement of the description of a pile is optional, and if included show
 - `FACE_LAST`, meaning that only the last (top) card in the pile will be face up. Note that, when the top card is moved, another card will become the top card and will be automatically turned face up, if not already. An example of this are the `COLUMN` piles in Spider or Klondike.
 - `FACE_ALL`, meaning that all cards in this column are initially face up. Examples of this are `COLUMN`s in Free Cell and Simple Simon.
 - `FACE_ALTERNATE_LAST`, meaning that cards in the column start alternating between face up and face down, in a way that the top card always starts face up. Note that, again, any cards at the top of the column will be automatically face up. An example of this is Legion, which is a variation of Klondike.
+- `FACE_HALF`, meaning that the first half of cards in the column are face down, while the second half is face up. This is used in variants such as Wasp or Scorpion.
 - Support for custom face types will be added later, since some Solitaire games such as Scorpion or Aunt Mary start with more unconventional pile faces.
 
-The final element of describing a pile is the set of starting cards. When a pile doesn't start empty, by default the starting cards are dealt from the shuffled deck. However, if the pile starts with a predetermined set of cards in some order, those cards should be mentioned here. For example, Blind Alley starts with the 4 Ace cards in the 4 `FOUNDATION` piles.
+The final element of describing a pile is the set of starting cards. By default the starting cards are dealt from the shuffled deck. However, if the pile starts with a predetermined set of cards in some order, those cards should be mentioned here. For example, Blind Alley starts with the 4 Ace cards in the 4 `FOUNDATION` piles, which are described as:
+
+```sgdl
+FOUNDATION 1 {H1}
+FOUNDATION 1 {D1}
+FOUNDATION 1 {C1}
+FOUNDATION 1 {S1}
+```
 
 ## `$moves`
 
 ```sgdl
-<move_rule><nl>*
-<move_stack_rule><nl>*
+<move_rule>*
+<move_stack_rule>*
 [<draw_rule>]
 ```
 
@@ -68,7 +98,8 @@ All the moves in the game have one of the following types: `MOVE`, `MOVE_STACK`,
 ### `MOVE`
 
 ```sgdl
-MOVE <piles_or_D> <piles><nl><move_conds>
+MOVE <piles_or_D> <piles>
+<move_conds>
 ```
 
 This describes the conditions for moving a single card from one pile to another. Note that you can move from a DRAW pile to some other pile, but you cannot move a card to the DRAW pile.
@@ -76,7 +107,8 @@ This describes the conditions for moving a single card from one pile to another.
 ### `MOVE_STACK`
 
 ```sgdl
-MOVE_STACK <piles> <piles><nl><stack_conds>
+MOVE_STACK <piles> <piles>
+<stack_conds>
 ```
 
 This describes the conditions for moving a stack of cards (also called a "run") from one pile to another. You cannot move stacks to or from a DRAW pile.
@@ -85,18 +117,25 @@ To avoid ambiguity, MOVE_STACK is only considered when the stack size is greater
 
 ### `DRAW`
 
-When a draw pile is available, DRAW as an action is immediately considered a valid action in the game and does not need to be defined separately. However, in case there are rules for drawing cards, DRAW can be redefined here to describe the DRAW rules. For example, in most variations of Spider, cards can be drawn from the "deal" draw pile when non of the `COLUMN`s are empty.
+When a draw pile is available, DRAW as an action is immediately considered a valid action in the game and does not need to be defined separately. However, in case there are rules for drawing cards, DRAW can be redefined here to describe the DRAW rules. For example, in most variations of Spider, cards can be drawn from the "deal" draw pile when non of the `COLUMN`s are empty. This is defined as:
+
+```sgdl
+DRAW
+PILE ALL COLUMN Size > 0
+```
 
 ### Conditions
 
 The set of conditions for checking the validity of an action are defiend after every action. These conditions, which can be added together using `AND` and `OR` keywords, have different types and can be used for different actions based on their type.
 
-#### Conditions valid for MOVE and MOVE_STACK
+#### Conditions valid for `MOVE` and `MOVE_STACK`
 
 Move actions involve a source card (the card being moved in `MOVE`, or the top card of the stack being moved in `MOVE_STACK`) and a destination pile.
 
 - `DEST Empty`: Destination pile should be empty
 - `DEST Size <op> <count>`: Destination pile should have a certain size (e.g. == 13, > 0, etc.)
+- `DEST Suit <suits>`: Destination card should have one of the suits described here
+- `DEST Rank <ranks>`: Destination card should have one of the ranks described here
 - `SRC Suit <suits>`: Source card should have one of the suits described here
 - `SRC Rank <ranks>`: Source card should have one of the ranks described here
 - `DESTSRC Suit alternate_color`: Final card in the destianation pile and the source card should have alternating colors (black and red, or red and black). Note that the destination cannot be empty.
@@ -104,9 +143,12 @@ Move actions involve a source card (the card being moved in `MOVE`, or the top c
 - `DESTSRC Suit match`: Similar to the previous case, but the suits should be the same (as opposed to suit colors)
 - `DESTSRC Rank ascending`: Final card in the destianation pile and the source card should have ascending rank (consecutive numbers that are strictly ascending)
 - `DESTSRC Rank descending`: Similar to the previous case, but descending
+- `DESTSRC Rank equal`: Similar to the previous case, but equal ranks
+- `DESTSRC Rank add_13`: Similar to the previous case, but their ranks should add up to 13
+- `DESTSRC Rank add_14`: Similar to the previous case, but their ranks should add up to 14
 
 
-#### Conditions valid for MOVE_STACK
+#### Conditions valid for `MOVE_STACK`
 
 These conditions are only meaningful when moving a stack of cards. Similar to the ones above, they can involve a destiantion column, a source card (top card of the stack), and the stack of cards being moved.
 
@@ -115,9 +157,12 @@ These conditions are only meaningful when moving a stack of cards. Similar to th
 - `SRCSTACK Suit match`: Cards in the stack should all have the same suit
 - `SRCSTACK Rank ascending`: Ranks of the cards in the stack should be ascending (consecutive numbers with strictly ascending ranks)
 - `SRCSTACK Rank descending`: Ranks of the cards in the stack should be ascending (consecutive numbers with strictly ascending ranks)
+- `SRCSTACK Rank equal`: Ranks of the cards in the stack should be equal
+- `SRCSTACK Rank add_13`: Ranks of every two consecutive cards in the stack should add up to 13
+- `SRCSTACK Rank add_14`: Ranks of every two consecutive cards in the stack should add up to 14
 - `SRCSTACK Size <op> <count>`: Size of the stack should follow some rule (e.g. == 13, > 0, etc.)
 
-#### Conditions valid for DRAW/WIN
+#### Conditions valid for `DRAW`/`$win`
 
 - `PILE ALL <pileset> Size <op> <count>`: All piles of some name should have sizes that follows some rule (e.g. == 13, > 0, etc)
 - `PILE ANY <pileset> Size <op> <count>`: Similar to the previous one, but as long of one of the piles with a name in this list follows the rule, this is considered true.
@@ -177,8 +222,8 @@ This means that you can move from the a card from a `DRAW` pile, `COLUMN` pile o
 
 ```sgdl
 $auto
-<move_rule><nl>*
-<move_stack_rule><nl>*
+<move_rule>*
+<move_stack_rule>*
 ```
 
 The `$auto` section describes moves and conditions for them that will happen automatically in the game. For example, in Spider whenever a stack of cards is created with the same suit and ranks going from King to Ace, the stack is automatically moved to a `FOUNDATION` column. Note that since these moves are not performed by the player, they do not need to follow the rules described in `$moves`. The example above is described as follows:
