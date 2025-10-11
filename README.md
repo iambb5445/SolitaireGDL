@@ -168,8 +168,11 @@ usage: simulate_many.py [-h] [--bot BOT] [--sampling-seed SAMPLING_SEED] [--game
                         [--max-moves MAX_MOVES] [--max-count MAX_COUNT] [--game-count GAME_COUNT]   
                         [--sampling-rate SAMPLING_RATE]
                         [--invalid-action-rate INVALID_ACTION_RATE]
-                        [--bot-action-rate BOT_ACTION_RATE]
+                        [--bot-action-rate BOT_ACTION_RATE] [--thread-count THREAD_COUNT]
                         filename
+
+We have intentionally chosen default values that will ensure a fast response. For creating
+balanced datasets, these default values should be changed.
 
 positional arguments:
   filename              Name of the SGDL file defining game rules. Refer to games/ for examples.    
@@ -199,7 +202,9 @@ options:
                         dataset between valid/invalid responses.
   --bot-action-rate BOT_ACTION_RATE
                         Rate of bot actoins to sample (between 0 and 1). We avoid bias, we don't    
-                        want to always (or ever) sample bot actions when choosing a valid action.
+                        want to always (or ever) sample bot actions when choosing a valid action.   
+  --thread-count THREAD_COUNT
+                        Number of threads to run the simulation.
 ```
 For the arguments, note that we have intentionally lowered the **default values** for a **lower scale simulation** (lower number of moves, games, etc.) to ensure the simulation will be performed fast. To create useful and balanced datasets these values should be chosen more carefully.
 
