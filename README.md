@@ -12,7 +12,7 @@ Our work on this research includes multiple components, spread across **differen
      * **Creating datasets** by sampling during simulation
 2. A [second repository](https://github.com/iambb5445/SolitaireLLMBenchmark) contains code for using the datasets created with this framework for testing and training Large Language Models.
 3. Datasets used in the paper are included both on [huggingface](https://huggingface.co/datasets/bbateni/Solitaire-Rule-Reasoning-Benchmark) and [github](https://github.com/iambb5445/SolitaireLLMBenchmark/tree/main/dataset).
-4. Finally, a web version of our Solitaire framework can be accessed via this [link](https://iambb5445.github.io/SolitaireGDLWeb/index.html). Note that this version only allows for playing games and modifying game rules by changing the underlying SGDL, but does not provde a way to simulate the game using bots or create datasets.
+4. Finally, we created [a web version of our Solitaire framework](https://iambb5445.github.io/SolitaireGDLWeb/index.html). Note that this version only allows for playing games and modifying game rules by changing the underlying SGDL, but does not provde a way to simulate the game using bots or create datasets.
 
 <img width="1312" height="331" alt="image" src="https://github.com/user-attachments/assets/37853580-3695-4b96-a561-9e103c8f7d44" />
 
