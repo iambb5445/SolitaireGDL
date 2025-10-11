@@ -201,6 +201,7 @@ options:
                         Rate of bot actoins to sample (between 0 and 1). We avoid bias, we don't    
                         want to always (or ever) sample bot actions when choosing a valid action.
 ```
+For the arguments, note that we have intentionally lowered the **default values** for a **lower scale simulation** (lower number of moves, games, etc.) to ensure the simulation will be performed fast. To create useful and balanced datasets these values should be chosen more carefully.
 
 After running a simulation, the terminal show win percentage of the bots (out of number of games played), number of moves performed in each game (before exhausting all reachable state, winning, or reaching the maximum number of moves), average move count, how long was the simulation, and finally where the dataset is saved.
 
