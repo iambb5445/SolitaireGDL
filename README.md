@@ -5,7 +5,7 @@ The code and dataset available here are part of the research presented in "LLM G
 ## Overview
 
 Our work on this research includes multiple components, spread across different sources.
-1. The Solitaire framework Solitaire framework in <ins>**the current repository**</ins> allows for creating and simulating many different variants using a custom Solitaire Game Description Langauge (SGDL) for defining the rules. This allows for:
+1. The Solitaire framework in <ins>**the current repository**</ins> allows for creating and simulating many different variants using a custom Solitaire Game Description Langauge (SGDL) for defining the rules. This allows for:
      * **Playing** Solitaire variants based on the rules encoded in the GDL, either through the terminal or a custom GUI
      * **Modifying the rules** by changing the GDL
      * **Simulating** gameplay using the available general game-playing agents
