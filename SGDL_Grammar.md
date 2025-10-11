@@ -16,7 +16,7 @@ Some of the keywords used here are:
 * <draw_def>: Defined in the [Draw](#draw) section
 * <initial_def>: Defined in the [Other Piles](#other-piles) section
 * <move_rule>: Defined in the [`MOVE`](#move) section
-* <move_stack_rule>: Defined in the [`MOVE_STACK`](#move-stack) section
+* <move_stack_rule>: Defined in the [`MOVE_STACK`](#move_stack) section
 * <draw_rule>: Defined in the [`DRAW`](#draw-1) section
 * <move_conds>: Any condition in [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
 * <stack_conds>: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move-stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for- move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
