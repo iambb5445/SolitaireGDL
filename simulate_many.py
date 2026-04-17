@@ -10,6 +10,8 @@ import time
 import random
 import sys
 
+thread_count = 1
+
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
         self.game_id: int = game_id
@@ -51,10 +53,10 @@ def sample(sample_rnd: random.Random, invalid_actions_rate: float, bot_action_ra
                 return sample
 
 
-def simulate_one(game_id: int, player: Player, game_filename: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
+def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
                  sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0, bot_action_rate: float = 0) -> tuple[Game, int, list[Sample]]:
     sample_rnd = random.Random(sampling_seed)
-    game = Parser.from_file(game_filename, game_seed, False, True)
+    game = Parser.parse(game_desc, game_seed, False, True)
     game_samples: list[Sample] = []
     move_count = 0
     backtrack_trace: list[Game] = []
@@ -83,14 +85,14 @@ def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|No
     assert len(seeds) == count
     return seeds
 
-def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_filename: str, player_creator: Callable[[], Player],
+def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_desc: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],
                         sampling_rate: float, invalid_actions_rate: float, bot_action_rate: float) -> tuple[list[Game], list[int], list[Sample]]:
     game_seeds = get_seeds(game_seeds, count)
     sampling_seeds = get_seeds(sampling_seeds, count)
     if thread_count == 1:
         results = [simulate_one(
-            game_id, player_creator(), game_filename, game_seed, max_moves, backtracking,
+            game_id, player_creator(), game_desc, game_seed, max_moves, backtracking,
             sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
         ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds)))]
     else:
@@ -129,6 +131,8 @@ if __name__ == '__main__':
     game_filename: str = args.filename
     max_sample_count: int|None = args.max_count
     thread_count = args.thread_count
+    with open(game_filename, 'r') as f:
+        gdl = f.read()
     # game_filename = 'games/klondike.sgdl'
     # simulate_for_player(50, 1000, game, lambda: RandomPlayer(None))
     # simulate_for_player(50, 10000, game, lambda: RandomNoRepeatPlayer(None, spider_heuristic))
@@ -143,7 +147,7 @@ if __name__ == '__main__':
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
     games, move_counts, samples = simulate_for_player(
-        args.game_count, args.max_moves, True, game_filename, lambda: players[args.bot](None),
+        args.game_count, args.max_moves, True, gdl, lambda: players[args.bot](None),
         args.game_seed, args.sampling_seed, args.sampling_rate,
         args.invalid_action_rate, args.bot_action_rate
     )

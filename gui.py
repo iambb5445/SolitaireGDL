@@ -419,7 +419,14 @@ if __name__ == '__main__':
     sgdl_filename: str = args.filename
     seed = args.seed
 
-    game = Parser.from_file(sgdl_filename, seed, True, True)
+    if sgdl_filename == "r":
+        from genetic import SGDLGene
+        from random import Random
+        sgdl_gene = SGDLGene.get_random(Random(42))
+        input()
+        game = Parser.parse(sgdl_gene.get_gdl(), seed, True, True)
+    else:
+        game = Parser.from_file(sgdl_filename, seed, True, True)
     
     TextureRepo.load_textures()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
