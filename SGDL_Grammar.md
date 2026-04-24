@@ -1,26 +1,26 @@
 # SGDL Grammar
 
-This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in `games` directory, such as [Spider SGDL](games/spider.sgdl) and [Klondike SGDL](games/klondike.sgdl).
+This document describes the format of a Solitaire Game Description Language (SGDL) file. Example sgdl files can be found in [`games`](/games) directory, such as [Spider SGDL](games/spider_family/spider.sgdl) and [Klondike SGDL](games/klondike_family/klondike.sgdl).
 
 Some of the keywords used here are:
-* <count>: A non-negative integer
-* <count_or_u>: A non-negative integer, or `U` for unlimited.
-* <op>: A comparison operator. Possible values are "==", ">", "<", ">=", "<=".
-* <suits>: One or more suits. Possible suits are SPADES, HEARTS, CLUBS, DIAMONDS. If more than one, they should be enclosed in `{` `}` and seperated by `,`, for example: `{SPADES, HEARTS}`. If only 1, `{` `}` can be omitted.
-* <ranks>: One or more ranks. Possible ranks are 1, 2, ..., 10, J, Q, K. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
-* <pile>: The name of a pile. This can be any string without whitespaces, but it has to be one of piles defined in [`$initial`](#initial).
-* <piles>: One or more <pile>. If more than one, they should be enclosed in `{` `}`.
-* <piles_or_D>: One or more <pile>, but this can also include the `DRAW` pile. If more than one, they should be enclosed in `{` `}`.
-* <pile_face>: Initial facing positin for a pile. Possible values are described in the [Other Piles](#other-piles) section below.
-* <cards>: One or more cards. Each card is defined as <rank><short-suit>, where <rank> is one of 1, 2, ..., 10, J, Q, K and <short-suit> is one of S, H, C, D. For example, `8D` is 8 of diamonds. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
-* <draw_def>: Defined in the [Draw](#draw) section
-* <initial_def>: Defined in the [Other Piles](#other-piles) section
-* <move_rule>: Defined in the [`MOVE`](#move) section
-* <move_stack_rule>: Defined in the [`MOVE_STACK`](#move-stack) section
-* <draw_rule>: Defined in the [`DRAW`](#draw-1) section
-* <move_conds>: Any condition in [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
-* <stack_conds>: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move-stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for- move-and-move-stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
-* <general_conds>: Any condition in [Conditions valid for `DRAW`/`$win`](#conditions-valid-for-drawwin), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* `<count>`: A non-negative integer
+* `<count_or_u>`: A non-negative integer, or `U` for unlimited.
+* `<op>`: A comparison operator. Possible values are "==", ">", "<", ">=", "<=".
+* `<suits>`: One or more suits. Possible suits are SPADES, HEARTS, CLUBS, DIAMONDS. If more than one, they should be enclosed in `{` `}` and seperated by `,`, for example: `{SPADES, HEARTS}`. If only 1, `{` `}` can be omitted.
+* `<ranks>`: One or more ranks. Possible ranks are 1, 2, ..., 10, J, Q, K. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
+* `<pile>`: The name of a pile. This can be any string without whitespaces, but it has to be one of piles defined in [`$initial`](#initial).
+* `<piles>`: One or more <pile>. If more than one, they should be enclosed in `{` `}`.
+* `<piles_or_D>`: One or more <pile>, but this can also include the `DRAW` pile. If more than one, they should be enclosed in `{` `}`.
+* `<pile_face>`: Initial facing positin for a pile. Possible values are described in the [Other Piles](#other-piles) section below.
+* `<cards>`: One or more cards. Each card is defined as <rank><short-suit>, where <rank> is one of 1, 2, ..., 10, J, Q, K and <short-suit> is one of S, H, C, D. For example, `8D` is 8 of diamonds. If more than one, they should be enclosed in `{` `}` and seperated by `,`. If only 1, `{` `}` can be omitted.
+* `<draw_def>`: Defined in the [Draw](#draw) section
+* `<initial_def>`: Defined in the [Other Piles](#other-piles) section
+* `<move_rule>`: Defined in the [`MOVE`](#move) section
+* `<move_stack_rule>`: Defined in the [`MOVE_STACK`](#move_stack) section
+* `<draw_rule>`: Defined in the [`DRAW`](#draw-1) section
+* `<move_conds>`: Any condition in [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move_stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* `<stack_conds>`: Any condition in [Conditions valid for `MOVE_STACK`](#conditions-valid-for-move_stack) or [Conditions valid for `MOVE` and `MOVE_STACK`](#conditions-valid-for-move-and-move_stack), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
+* `<general_conds>`: Any condition in [Conditions valid for `DRAW`/`$win`](#conditions-valid-for-drawwin), possibly more than one, combined with ANDs and ORs as defined in [Conditions](#conditions)
 
 An sgdl file should contain the following sections:
 
@@ -127,6 +127,27 @@ PILE ALL COLUMN Size > 0
 ### Conditions
 
 The set of conditions for checking the validity of an action are defiend after every action. These conditions, which can be added together using `AND` and `OR` keywords, have different types and can be used for different actions based on their type.
+
+For adding conditions together, start by using the connecting operator (`AND` or `OR`), then use indentation for creating a block of conditions where all of them are combined using the operator. For example:
+```sgdl
+AND
+    <cond_a>
+    <cond_b>
+```
+Note that each condition can recurstively include subconditions as well.
+```sgdl
+AND
+    <cond_a>
+    OR
+        <cond_b>
+        <cond_c>
+    <cond_d>
+    OR
+        AND
+            <cond_e>
+            <cond_f>
+        <cond_g>
+```
 
 #### Conditions valid for `MOVE` and `MOVE_STACK`
 
