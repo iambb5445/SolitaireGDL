@@ -120,7 +120,7 @@ RG = TypeVar('RG', bound='Reducible')
 
 class Reducible(ABC):
     @abstractmethod
-    def get_reduced(self: RG, rnd: Random) -> RG | None:
+    def get_reduced(self: RG, rnd: Random|None, iter: int) -> RG | None:
         raise NotImplementedError
 
 class DeckGene(GenoType):
@@ -643,13 +643,30 @@ class ConditionGene(GenoType, Reducible):
     def copy(self) -> ConditionGene:
         return ConditionGene(self.root, [(arg.copy(), s, e) for arg, s, e in self.root_args], [subcond.copy() for subcond in self.subconds], self.type, self.get_pileset)
     
-    def get_reduced(self: ConditionGene, rnd: Random) -> ConditionGene | None:
+    def _find_subcond(self, iter: int) -> tuple[None|ConditionGene, int]:
+        new_iter = 0
+        to_reduce = None
+        for subcond in self.subconds:
+            if new_iter + subcond.size > iter:
+                to_reduce = subcond
+                break
+            new_iter += subcond.size
+        if to_reduce is None:
+            return None, iter
+        return to_reduce, iter - new_iter
+    
+    def get_reduced(self: ConditionGene, rnd: Random|None, iter: int) -> ConditionGene | None:
         if self.is_base():
             return None
         ret = self.copy()
         weights = [subcond.size/ret.size for subcond in ret.subconds]
-        to_reduce = rnd.choices(ret.subconds, weights)[0]
-        reduced = to_reduce.get_reduced(rnd)
+        if rnd is not None:
+            to_reduce = rnd.choices(ret.subconds, weights)[0]
+        else:
+            to_reduce, iter = ret._find_subcond(iter)
+            if to_reduce is None:
+                return None
+        reduced = to_reduce.get_reduced(rnd, iter)
         if reduced is not None:
             ret.subconds = [subcond if subcond != to_reduce else reduced for subcond in ret.subconds]
         else:
@@ -744,8 +761,8 @@ class MoveGene(GenoType, Reducible):
     def copy(self) -> MoveGene:
         return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
     
-    def get_reduced(self: MoveGene, rnd: Random) -> MoveGene | None:
-        reduced_cond = self.cond.get_reduced(rnd)
+    def get_reduced(self: MoveGene, rnd: Random|None, iter: int) -> MoveGene | None:
+        reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
         return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond)
@@ -777,8 +794,8 @@ class MoveStackGene(GenoType, Reducible):
     def copy(self) -> MoveStackGene:
         return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
     
-    def get_reduced(self: MoveStackGene, rnd: Random) -> MoveStackGene | None:
-        reduced_cond = self.cond.get_reduced(rnd)
+    def get_reduced(self: MoveStackGene, rnd: Random|None, iter: int) -> MoveStackGene | None:
+        reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
         return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond)
@@ -797,8 +814,8 @@ class DrawMoveGene(GenoType, Reducible):
     def copy(self) -> DrawMoveGene:
         return DrawMoveGene(self.cond.copy())
     
-    def get_reduced(self: DrawMoveGene, rnd: Random) -> DrawMoveGene | None:
-        reduced_cond = self.cond.get_reduced(rnd)
+    def get_reduced(self: DrawMoveGene, rnd: Random|None, iter: int) -> DrawMoveGene | None:
+        reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
         return DrawMoveGene(reduced_cond)
@@ -867,38 +884,59 @@ class MovesGene(GenoType, Reducible):
             self.draw_move if self.draw_move is None else self.draw_move.copy()
         )
     
-    def get_reduced(self: MovesGene, rnd: Random) -> MovesGene | None:
+    def _find_move(self, iter: int, moves: list[MoveGene]|list[MoveStackGene]) -> tuple[None|MoveGene|MoveStackGene, int]:
+        new_iter = 0
+        to_reduce = None
+        for move in moves:
+            if new_iter + move.cond.size > iter:
+                to_reduce = move
+                break
+            new_iter += move.cond.size
+        return to_reduce, iter - new_iter
+    
+    def get_reduced(self: MovesGene, rnd: Random|None, iter: int) -> MovesGene | None:
         ret = self.copy()
         target_choices = [1, 2, 3]
-        rnd.shuffle(target_choices)
+        if rnd is not None:
+            rnd.shuffle(target_choices)
         if len(ret.moves) == 0: target_choices.remove(1)
         if len(ret.move_stacks) == 0: target_choices.remove(2)
         if ret.draw_move is None: target_choices.remove(3)
         for target_choice in target_choices: # TODO make this look nicer
             if target_choice == 1:
-                p = uniform([move.cond.size for move in ret.moves])
-                to_reduce = rnd.choices(ret.moves, p)[0]
-                reduced = to_reduce.get_reduced(rnd)
+                if rnd is not None:
+                    p = uniform([move.cond.size for move in ret.moves])
+                    to_reduce = rnd.choices(ret.moves, p)[0]
+                else:
+                    to_reduce, iter = self._find_move(iter, ret.moves)
+                    if to_reduce is None:
+                        continue
+                reduced = to_reduce.get_reduced(rnd, iter)
                 if reduced is not None:
                     ret.moves = [move if move != to_reduce else reduced for move in ret.moves]
                     return ret
-                elif len(ret.moves) > 0:
-                    ret.moves = [move for move in ret.moves if move != to_reduce]
-                    return ret
+                assert len(ret.moves) > 0
+                ret.moves = [move for move in ret.moves if move != to_reduce]
+                return ret
             elif target_choice == 2:
-                p = uniform([move.cond.size for move in ret.move_stacks])
-                to_reduce = rnd.choices(ret.move_stacks, p)[0]
-                reduced = to_reduce.get_reduced(rnd)
+                if rnd is not None:
+                    p = uniform([move.cond.size for move in ret.move_stacks])
+                    to_reduce = rnd.choices(ret.move_stacks, p)[0]
+                else:
+                    to_reduce, iter = self._find_move(iter, ret.move_stacks)
+                    if to_reduce is None:
+                        continue
+                reduced = to_reduce.get_reduced(rnd, iter)
                 if reduced is not None:
                     ret.move_stacks = [move if move != to_reduce else reduced for move in ret.move_stacks]
                     return ret
-                elif len(ret.move_stacks) > 0:
-                    ret.move_stacks = [move for move in ret.move_stacks if move != to_reduce]
-                    return ret
+                assert len(ret.move_stacks) > 0
+                ret.move_stacks = [move for move in ret.move_stacks if move != to_reduce]
+                return ret
             elif target_choice == 3:
-                if ret.draw_move is not None:
-                    ret.draw_move = ret.draw_move.get_reduced(rnd)
-                    return ret
+                assert ret.draw_move is not None
+                ret.draw_move = ret.draw_move.get_reduced(rnd, iter)
+                return ret
         return None
 
 class WinGene(GenoType, Reducible):
@@ -915,8 +953,8 @@ class WinGene(GenoType, Reducible):
     def copy(self) -> WinGene:
         return WinGene(self.cond.copy())
     
-    def get_reduced(self: WinGene, rnd: Random) -> WinGene | None:
-        reduced_cond = self.cond.get_reduced(rnd)
+    def get_reduced(self: WinGene, rnd: Random|None, iter: int) -> WinGene | None:
+        reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
         return WinGene(reduced_cond)
@@ -966,16 +1004,23 @@ class SGDLGene(GenoType, Reducible):
     def copy(self) -> SGDLGene:
         return SGDLGene(self.deck.copy(), self.setup.copy(), self.moves.copy(), self.win.copy())
 
-    def get_reduced(self, rnd: Random) -> SGDLGene | None:
+    def get_reduced(self, rnd: Random|None, iter: int) -> SGDLGene | None:
         choices = [1, 2]
-        rnd.shuffle(choices)
+        if rnd is not None:
+            rnd.shuffle(choices)
+        else:
+            choices = [2, 1] # because it's easier to know if win size is not big enough for iter
         for choice in choices:
             if choice == 1:
-                moves = self.moves.get_reduced(rnd)
+                moves = self.moves.get_reduced(rnd, iter)
                 if moves is not None:
                     return SGDLGene(self.deck.copy(), self.setup.copy(), moves, self.win.copy())
             elif choice == 2:
-                win = self.win.get_reduced(rnd)
+                if rnd is not None or iter < self.win.cond.size:
+                    win = self.win.get_reduced(rnd, iter)
+                else:
+                    iter -= self.win.cond.size
+                    continue
                 if win is not None:
                     return SGDLGene(self.deck.copy(), self.setup.copy(), self.moves.copy(), win)
         return None

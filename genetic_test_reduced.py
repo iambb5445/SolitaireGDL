@@ -17,7 +17,7 @@ with Profile() as profile:
         verdict = genetic.evaluate_gdl(gdl, True, 100)
         print(verdict)
         print("------------------")
-        gene = gene.get_reduced(rnd)
+        gene = gene.get_reduced(rnd, 0)
         if gene is None:
             print("NONE")
             break
@@ -26,4 +26,5 @@ with Profile() as profile:
             .strip_dirs()
             .sort_stats(SortKey.CALLS)
             .print_stats()
+            # .dump_stats("out4_time10.prof")
     )
