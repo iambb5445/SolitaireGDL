@@ -8,8 +8,10 @@ from typing import Callable, Sequence
 import time
 import random
 import sys
+import time
 
 thread_count = 1
+max_time_per_sim = 20 # seconds
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
@@ -59,13 +61,14 @@ def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|No
     game_samples: list[Sample] = []
     move_count = 0
     backtrack_trace: list[Game] = []
+    start_time = time.time()
     while not game.is_win():
         action: str|None = player.decide_action(game.copy())
         if backtracking:
             while action is None and len(backtrack_trace) > 0:
                 game = backtrack_trace.pop()
                 action: str|None = player.decide_action(game.copy())
-        if action is None or move_count == max_moves:
+        if action is None or move_count == max_moves or (time.time() - start_time) > max_time_per_sim:
             return game, move_count, game_samples
         if sample_rnd.random() < sample_rate:
             game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action, game_id))
