@@ -3,6 +3,7 @@ from enum import StrEnum, EnumMeta
 import random
 from abc import ABC, abstractmethod
 from diffs import Diffs
+import functools
 
 # General rules:
 # top of a stack of cards always automatically turns face up
@@ -128,9 +129,11 @@ class Card(Viewable, Hashable):
         num = suit_number * 13 + (self.rank - 1)
         return (num * 2 + (1 if self.face_down else 0)) % Hashable.MOD
     
+    MAX_EFFICIENT_HASH: int = ((3 * 13 + 12) * 2 + 1) % Hashable.MOD
     @staticmethod
     def get_max_efficient_hash() -> int:
-        return ((3 * 13 + 12) * 2 + 1) % Hashable.MOD
+        # return ((3 * 13 + 12) * 2 + 1) % Hashable.MOD
+        return Card.MAX_EFFICIENT_HASH
 
 class Deck:
     def __init__(self, times:int=1, suits:list[Suit]|None=None, ranks:list[int]|None=None) -> None:
@@ -200,8 +203,10 @@ class Pile(Viewable, Hashable):
             num %= Hashable.MOD
         return num
     
+    MAX_EFFICIENT_HASH: int = functools.reduce(lambda num, _: (num * (Card.MAX_EFFICIENT_HASH + 1) + Card.MAX_EFFICIENT_HASH) % Hashable.MOD, range(100), 0)
     @staticmethod
     def get_max_efficient_hash() -> int: # todo save this
+        return Pile.MAX_EFFICIENT_HASH
         num = 0
         for _ in range(100):
             num *= Card.get_max_efficient_hash() + 1
