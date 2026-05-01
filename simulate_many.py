@@ -3,7 +3,6 @@ from parser import Parser
 from player import Player, RandomPlayer, RandomNoRepeatPlayer, MCTSPlayer, WinHeuristic, ActionCountHeuristic, SpiderHeuristic, NoDrawHeuristic, MergedHeuristic, DFSPlayer
 from simulate import players
 from game import Game
-from joblib import delayed, Parallel
 from tqdm import tqdm
 from typing import Callable, Sequence
 import time
@@ -96,8 +95,9 @@ def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, gam
             sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
         ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds)))]
     else:
+        from joblib import delayed, Parallel
         results = Parallel(n_jobs=thread_count)(delayed(simulate_one)(
-            game_id, player_creator(), game_filename, game_seed, max_moves, backtracking,
+            game_id, player_creator(), game_desc, game_seed, max_moves, backtracking,
             sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate
         ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds))))
     # assert isinstance(results, list) and results is all(isinstance(item, (Game, int)) for item in results), "Parallel jobs have not resulted in an output of type list"
