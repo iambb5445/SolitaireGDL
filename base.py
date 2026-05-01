@@ -288,8 +288,8 @@ class RotateDrawPile(Pile):
         assert draw_count > 0, "In Rotate Draw, draw count should be positive"
         assert view_count is None or view_count > 0, "In Rotate Draw, view count should be positive (or unlimited)"
         assert max_redeals is None or max_redeals >= 0, "In Rotate Draw, max redeals cannot be negative"
-        if max_redeals is not None and view_count is not None:
-            print("[Warning] A limited view count with limited redeals can make cards inaccessible")
+        # if max_redeals is not None and view_count is not None:
+        #     print("[Warning] A limited view count with limited redeals can make cards inaccessible")
 
     def diff(self, other: Pile) -> Diffs:
         if not isinstance(other, RotateDrawPile):

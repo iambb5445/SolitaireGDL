@@ -32,7 +32,6 @@ for ind, (gdl, seed) in enumerate(zip(gdls, seeds)):
 for key, val in verdict_counts.items():
     # print(f"{val:0{count_width}d}/{count} ({val*100/count:05.1f}%) of verdicts are {key}")
     print(f"{val:0{count_width}d}/{count} ({val*100/count:.0f}%)\tof verdicts are {key}")
-print("PRE-REDUCTION RESULTS")
 cores: list[genetic.SGDLGene] = []
 core_gdls: list[str] = []
 for ind, (gene, gdl, verdict) in enumerate(zip(population, gdls, verdicts)):
