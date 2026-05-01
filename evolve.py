@@ -7,7 +7,7 @@ def get_seed(rnd: Random):
     return rnd.randint(0, 10000000)
 
 verdict = genetic.Verdict.OK
-count = 2
+count = 100
 count_width = len(str(count))
 seeds = [get_seed(rnd) for _ in range(count)]
 population = [genetic.SGDLGene.get_random(Random(seed)) for seed in seeds]
@@ -19,7 +19,7 @@ for gdl, seed in zip(gdls, seeds):
     verdict = genetic.evaluate_gdl(gdl, False)
     verdicts.append(verdict)
     verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
-    print(f" $$$ {gdl.split()[0]} evaluated as {verdicts[-1]}, seed = {seed}")
+    print(f" $$$ {gdl.splitlines()[0]} evaluated as {verdicts[-1]}, seed = {seed}")
 for key, val in verdict_counts.items():
     # print(f"{val:0{count_width}d}/{count} ({val*100/count:05.1f}%) of verdicts are {key}")
     print(f"{val:0{count_width}d}/{count} ({val*100/count:.0f}%)\tof verdicts are {key}")
@@ -29,13 +29,13 @@ for gdl, verdict in zip(gdls, verdicts):
         print(gdl)
         print("***")
 cores: list[genetic.SGDLGene] = []
-core_gdls = []
+core_gdls: list[str] = []
 for gene, gdl, verdict in zip(population, gdls, verdicts):
     if verdict == genetic.Verdict.OK:
         cores.append(gene.get_reduced_to_core(Random(get_seed(rnd)), False, verdict))
         core_gdls.append(cores[-1].get_gdl())
-        name = core_gdls[-1].split()[0]
-        print(f" &&& {gdl.split()[0]} reduced to {name}")
+        name = core_gdls[-1].splitlines()[0]
+        print(f" &&& {gdl.splitlines()[0]} reduced to {name}")
 print("FINAL RESULTS")
 for core_gdl in core_gdls:
     print(core_gdl)
