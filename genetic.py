@@ -1034,6 +1034,33 @@ class SGDLGene(GenoType, Reducible):
             name_seed += ord(c)
             name_seed %= 1000000007
         return GenoType.get_random_name(Random(name_seed)).capitalize()
+    
+    def _get_all_reductions(self) -> list[SGDLGene]:
+        all_reductions = []
+        iter = 0
+        while True:
+            new_gene = self.get_reduced(None, iter)
+            iter += 1
+            if new_gene is None:
+                break
+            all_reductions.append(new_gene)
+        return all_reductions
+    
+    def get_reduced_to_core(self, rnd: Random|None, should_log: bool, target_verdict: Verdict, move_count: int = 1000, game_count: int = 10) -> SGDLGene:
+        if should_log:
+            print(self.get_gdl())
+            print("***")
+        all_reductions = self._get_all_reductions()
+        if rnd is not None:
+            rnd.shuffle(all_reductions)
+        for reduction in all_reductions:
+            gdl = reduction.get_gdl()
+            verdict = evaluate_gdl(gdl, False, move_count, game_count)
+            if should_log:
+                print(f"&&& evaluated {gdl.split()[0]} as {verdict}")
+            if verdict == target_verdict:
+                return reduction.get_reduced_to_core(rnd, should_log, target_verdict, move_count, game_count)
+        return self
 
 from enum import StrEnum
 from utility import Logger
