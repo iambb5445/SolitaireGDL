@@ -359,6 +359,35 @@ class Parser:
             raise Exception(f"Action not recognized: {s}")
         
     @staticmethod
+    def get_cards_of_action_in_game(s: str, game: Game) -> list[Card]:
+        from game import MoveArgs, MoveStackArgs
+        parts = s.split()
+        if parts[0] == 'draw':
+            return []
+        elif parts[0] == 'move':
+            args = MoveArgs.from_pos(game, Parser.parse_pile_position(parts[1]), Parser.parse_stack_position(parts[2]), False)
+            return [args.src_pile.peak()]
+        elif parts[0] == 'move_stack':
+            src_pos = Parser.prase_run_pos(parts[1])
+            args = MoveStackArgs.from_pos(game, src_pos, Parser.parse_stack_position(parts[2]), False)
+            return args.src_pile.get_many(src_pos.from_ind)
+        else:
+            raise Exception(f"Action not recognized: {s}")
+        
+    @staticmethod
+    def get_piles_of_action_in_game(s: str) -> list[str]:
+        parts = s.split()
+        if parts[0] == 'draw':
+            return [DrawPilePos().__str__()] # technically draw targets are also used, but it's fine not to count them
+        elif parts[0] == 'move':
+            return [parts[1], parts[2]] # I can convert these to stackpilepos and back to string, but it would be the same
+        elif parts[0] == 'move_stack':
+            stack_str, ind_str = parts[1].split(':')
+            return [stack_str, parts[2]]
+        else:
+            raise Exception(f"Action not recognized: {s}")
+        
+    @staticmethod
     def get_action_summary(s: str, game: Game, all_resolutions: bool = True, explain: bool = True) -> str:
         parts = s.split()
         if parts[0] == 'draw':

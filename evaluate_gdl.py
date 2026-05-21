@@ -3,6 +3,7 @@ from utility import Logger
 from simulate_many import simulate_for_player, players
 from base import Card
 from parser import Parser
+from game import Game
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -11,6 +12,85 @@ class Verdict(StrEnum):
     BIPOLAR = "BIPOLAR"
     EXTRA = "EXTRA"
     OK = "OK"
+
+
+def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, check_trace: bool = True, should_log: bool = False):
+    logger = Logger(should_log)
+    import pandas as pd
+    logger.info("gdl")
+    logger.info(gdl)
+    game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
+        game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
+        0, 0, 0, 0, 1, check_trace
+    )
+    game_name = game_ends[0].name
+    wins: list[bool] = [game.is_win() for game in game_ends]
+    win_percentage = sum(wins)/len(wins)
+    exhausted = [move_count == max_move_count for move_count in move_counts]
+    exhausted_percentage = sum(exhausted)/len(exhausted)
+    card_usage = [get_card_usage(start, end, logger) for start, end in zip(game_starts, game_ends)]
+    pile_usage = [get_pile_usage(game, trace, logger) for game, trace in zip(game_starts, traces)]
+    df = pd.DataFrame({
+        "Game": [game_name] * game_count,
+        "Win": wins,
+        # "Win Percentage": [win_percentage] * len(games),
+        "Move Count": move_counts,
+        "Exhausted": exhausted,
+        # "Exhausted Percentage": [exhausted] * len(games),
+        "Card Usage": card_usage,
+        "Pile Usage": pile_usage
+    })
+    return df
+
+def get_card_usage(game_start: Game, game_end: Game, logger: Logger) -> float:
+    # I can use Parser.get_cards_of_action_in_game, but it's faster to compare the final position of cards
+    # even though it's not accurate since a card can move and then return
+    # or two cards with same value may swap
+    logger.info("start")
+    logger.info(game_start.get_state_view())
+    logger.info("end")
+    logger.info(game_end.get_state_view())
+    cards = game_start.get_all_cards()
+    card_set: set[str] = set()
+    used_count = 0
+    all_count = 0
+    for card in cards:
+        card_copy = card.copy()
+        card_copy.face(True)
+        card_str = card_copy.__str__()
+        if card_str not in card_set:
+            card_set.add(card_str)
+            start_positions = set(game_start.get_card_positions(card))
+            end_positions = set(game_end.get_card_positions(card))
+            assert len(start_positions) == len(end_positions)
+            in_both = start_positions & end_positions
+            all_count += len(start_positions)
+            used_count += len(start_positions) - len(in_both)
+            logger.info(f"adding {card_str}")
+            logger.info(f"\tstart positions: {start_positions}")
+            logger.info(f"\tend positions: {end_positions}")
+            logger.info(f"\tall count: {all_count}")
+            logger.info(f"\tused count: {used_count}")
+    assert all_count == len(cards), f"{all_count} is not same as {len(cards)}"
+    return used_count/all_count
+
+def get_pile_usage(game: Game, trace: list[str], logger: Logger) -> float:
+    pile_positions_used: set[str] = set()
+    for action in trace:
+        pile_positions_used.update(Parser.get_piles_of_action_in_game(action))
+    all_pile_positions: set[str] = set()
+    for pilename in game.name_to_piles.keys():
+        all_pile_positions.update([pile_pos.__str__() for pile_pos in game._get_pile_positions(pilename)])
+    if game.draw_pile is not None:
+        all_pile_positions.add("DRAW")
+    logger.info("All pile positions:")
+    logger.info(str(all_pile_positions))
+    logger.info("Pile positions used:")
+    logger.info(str(pile_positions_used))
+    logger.info("Trace:")
+    logger.info(str(trace))
+    assert len(pile_positions_used & all_pile_positions) == len(pile_positions_used), f"{pile_positions_used.difference(all_pile_positions)} are not valid pile positions"
+    return len(pile_positions_used)/len(all_pile_positions)
 
 def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_count: int = 10, check_trace: bool = False) -> Verdict:
     logger = Logger(should_log)

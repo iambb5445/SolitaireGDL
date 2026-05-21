@@ -170,6 +170,13 @@ class Pile(Viewable, Hashable):
     
     def get_all_cards(self) -> list[Card]:
         return self.cards
+    
+    def get_indices(self, card: Card) -> list[int]:
+        indices = []
+        for i, my_card in enumerate(self.cards):
+            if card.rank == my_card.rank and card.suit == my_card.suit:
+                indices.append(i)
+        return indices
 
     @abstractmethod
     def copy(self) -> Pile:

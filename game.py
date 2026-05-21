@@ -376,6 +376,17 @@ class Game(Viewable, Hashable):
             all_piles += piles
         return all_piles
 
+    def get_card_positions(self, card: Card) -> list[str]:
+        positions: list[str] = []
+        piles = self.get_all_piles()
+        for pile in piles:
+            indices = pile.get_indices(card)
+            if isinstance(pile, Stack):
+                positions += [f"{pile.name}[{pile.ind}]:{index}" for index in indices]
+            else:
+                positions += [f"{pile.name}:{index}" for index in indices]
+        return positions
+
     def is_win(self):
         assert self.started, "Cannot check the win condition if game has not started"
         assert self.win_conditions is not None, "No win condition defined for the game"
