@@ -39,12 +39,12 @@ if __name__ == '__main__':
             'games\\klondike_family\\miniwestcliff.sgdl',
         ]
         for game_filename in game_filenames:
-            games, move_counts, samples = simulate_for_player(simulation_count_per_game, max_move_count, True, game_filename, lambda: DFSPlayer(
+            games, move_counts, samples, _, _ = simulate_for_player(simulation_count_per_game, max_move_count, True, game_filename, lambda: DFSPlayer(
                 MergedHeuristic(
                     [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
                     [1, 1, 3]
                     )
-                ), None, None, 0, 0, 0)
+                ), None, None, 0, 0, 0, False)
             wins: list[bool] = [game.is_win() for game in games]
             data.append({'filename': game_filename, 'game': games[0].name, "max_move_count": max_move_count, 'wins': wins, 'move_counts': move_counts})
         with open(out_filename, 'w') as f:

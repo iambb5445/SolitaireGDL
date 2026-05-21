@@ -3,7 +3,6 @@ import genetic
 
 seed = 336289545 # Nouq
 
-verdict = genetic.Verdict.OK
 gene = genetic.SGDLGene.get_random(Random(seed))
 rnd = Random(42)
 print("base GDL")

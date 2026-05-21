@@ -1,5 +1,6 @@
 from random import Random
 import genetic
+from evaluate_gdl import evaluate_gdl, Verdict
 import sys
 import os
 
@@ -11,17 +12,17 @@ os.makedirs(out_dir, exist_ok=False)
 def get_seed(rnd: Random):
     return rnd.randint(0, 10000000)
 
-verdict = genetic.Verdict.OK
+verdict = Verdict.OK
 count = 100
 count_width = len(str(count))
 seeds = [get_seed(rnd) for _ in range(count)]
 population = [genetic.SGDLGene.get_random(Random(seed)) for seed in seeds]
 gdls = [gene.get_gdl() for gene in population]
 print("Evaluating population")
-verdicts: list[genetic.Verdict] = []
-verdict_counts: dict[genetic.Verdict, int] = {}
+verdicts: list[Verdict] = []
+verdict_counts: dict[Verdict, int] = {}
 for ind, (gdl, seed) in enumerate(zip(gdls, seeds)):
-    verdict = genetic.evaluate_gdl(gdl, False)
+    verdict = evaluate_gdl(gdl, False)
     verdicts.append(verdict)
     verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
     name = gdl.splitlines()[0]
@@ -35,7 +36,7 @@ for key, val in verdict_counts.items():
 cores: list[genetic.SGDLGene] = []
 core_gdls: list[str] = []
 for ind, (gene, gdl, verdict) in enumerate(zip(population, gdls, verdicts)):
-    if verdict == genetic.Verdict.OK:
+    if verdict == Verdict.OK:
         cores.append(gene.get_reduced_to_core(Random(get_seed(rnd)), False, verdict))
         core_gdls.append(cores[-1].get_gdl())
         name = core_gdls[-1].splitlines()[0]

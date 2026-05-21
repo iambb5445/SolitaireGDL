@@ -5,6 +5,7 @@ from enum import Enum
 from base import Suit, Stack
 from abc import ABC, abstractmethod
 from typing import Sequence, Type, Callable, TypeVar
+from evaluate_gdl import evaluate_gdl, Verdict
 
 def coin_flip(rnd: Random) -> bool:
     return rnd.randint(0, 1) == 0
@@ -1061,49 +1062,6 @@ class SGDLGene(GenoType, Reducible):
             if verdict == target_verdict:
                 return reduction.get_reduced_to_core(rnd, should_log, target_verdict, move_count, game_count)
         return self
-
-from enum import StrEnum
-from utility import Logger
-from simulate_many import simulate_for_player, players
-class Verdict(StrEnum):
-    UNKNOWN = "UNKNOWN"
-    IMPOSSIBLE = "IMPOSSIBLE"
-    TRIVIAL = "TRIVIAL"
-    BIPOLAR = "BIPOLAR"
-    OK = "OK"
-
-def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_count: int = 10) -> Verdict:
-    logger = Logger(should_log)
-    games, move_counts, samples = simulate_for_player(
-        game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
-        0, 0, 0, 0, 1
-    )
-    wins: list[bool] = [game.is_win() for game in games]
-    win_percentage = sum(wins)/len(wins)
-    win_move_counts = [move_count for win, move_count in zip(wins, move_counts) if win]
-    exhausted = [move_count == max_move_count for move_count in move_counts]
-    exhausted_percentage = sum(exhausted)/len(exhausted)
-    logger.info("result for " + games[0].name)
-    logger.info(f"wins: {wins}")
-    logger.info(f"win percentage: {win_percentage}, exhausted: {exhausted_percentage}")
-    logger.info(f"move counts: {move_counts}")
-    logger.info(f"average move count: {sum(move_counts)/len(move_counts)}")
-    logger.info(f"win move count: {win_move_counts}")
-    logger.info(f"average win move count: {(sum(win_move_counts)/len(win_move_counts)) if len(win_move_counts) > 0 else 'NaN'}")
-    # win_percentages.append(win_percentage)
-    # exhausted_percentages.append(exhausted_percentage)
-    if exhausted_percentage > 0.9:
-        verdict = Verdict.UNKNOWN
-    elif sum(wins) == 0:
-        verdict = Verdict.IMPOSSIBLE
-    elif sum(wins) == len(wins) and sum(win_move_counts)/len(win_move_counts) < 20:
-        verdict = Verdict.TRIVIAL
-    elif sum(win_move_counts)/len(win_move_counts) < 20:
-        verdict = Verdict.BIPOLAR
-    else:
-        verdict = Verdict.OK
-    logger.info(f"VERDICT: {str(verdict)}")
-    return verdict
 
 if __name__ == "__main__":
     # win_percentages = []

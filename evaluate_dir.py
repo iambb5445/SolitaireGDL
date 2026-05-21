@@ -1,7 +1,7 @@
 import sys
 import os
 from parser import Parser
-from genetic import evaluate_gdl, Verdict
+from evaluate_gdl import evaluate_gdl, Verdict
 
 filepath = sys.argv[1]
 step = int(sys.argv[2])
