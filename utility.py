@@ -20,13 +20,31 @@ class TextUtil:
         return color + text + reset
     
 class Logger:
-    def __init__(self, active: bool):
+    def __init__(self, active: bool, filename: str|None=None, storage_size: int=1):
         self.active = active
         self.static_activate = active
+        self.filename = filename
+        if filename is not None:
+            import os
+            # possibly instead of throwing errors, change filename to unique name or None as a fallback option?
+            assert not os.path.isfile(filename), f"cannot log in file singe {filename} already exists."
+        self.storage = ""
+        self.storage_size = storage_size
     
     def info(self, s: str) -> None:
         if self.active:
-            print(s)
+            if self.filename is None:
+                print(s)
+            else:
+                self.storage += s + "\n"
+                if len(self.storage) >= self.storage_size:
+                    self.flush_storage()
+    
+    def flush_storage(self): # this should be manually called from outside if storage size is more than 1
+        if self.filename is not None:
+            with open(self.filename, "a") as f:
+                f.write(self.storage)
+                self.storage = ""
 
     def info_from(self, l: list[str|tuple[Callable, list]]):
         s = ''

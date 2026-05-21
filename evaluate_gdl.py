@@ -4,6 +4,7 @@ from simulate_many import simulate_for_player, players
 from base import Card
 from parser import Parser
 from game import Game
+import pandas as pd
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -13,15 +14,17 @@ class Verdict(StrEnum):
     EXTRA = "EXTRA"
     OK = "OK"
 
+def get_verdict_from_results(df: pd.DataFrame):
+    # TODO
+    pass
 
-def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, check_trace: bool = True, should_log: bool = False):
-    logger = Logger(should_log)
-    import pandas as pd
+def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, should_log: bool = False, save_as: str|None = None, log_at: str|None = None):
+    logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
     game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
         game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
-        0, 0, 0, 0, 1, check_trace
+        0, 0, 0, 0, 1, True
     )
     game_name = game_ends[0].name
     wins: list[bool] = [game.is_win() for game in game_ends]
@@ -40,6 +43,8 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
         "Card Usage": card_usage,
         "Pile Usage": pile_usage
     })
+    if save_as is not None:
+        df.to_csv(save_as)
     return df
 
 def get_card_usage(game_start: Game, game_end: Game, logger: Logger) -> float:
@@ -60,15 +65,14 @@ def get_card_usage(game_start: Game, game_end: Game, logger: Logger) -> float:
         card_str = card_copy.__str__()
         if card_str not in card_set:
             card_set.add(card_str)
-            start_positions = set(game_start.get_card_positions(card))
-            end_positions = set(game_end.get_card_positions(card))
-            assert len(start_positions) == len(end_positions)
-            in_both = start_positions & end_positions
-            all_count += len(start_positions)
-            used_count += len(start_positions) - len(in_both)
+            start_positions = game_start.get_card_positions(card)
+            end_positions = game_end.get_card_positions(card)
             logger.info(f"adding {card_str}")
             logger.info(f"\tstart positions: {start_positions}")
             logger.info(f"\tend positions: {end_positions}")
+            assert len(start_positions) == len(end_positions), f"{len(start_positions)} start positions but {len(end_positions)} end positions"
+            used_count += len([position for position in end_positions if position not in start_positions])
+            all_count += len(start_positions)
             logger.info(f"\tall count: {all_count}")
             logger.info(f"\tused count: {used_count}")
     assert all_count == len(cards), f"{all_count} is not same as {len(cards)}"
@@ -92,11 +96,11 @@ def get_pile_usage(game: Game, trace: list[str], logger: Logger) -> float:
     assert len(pile_positions_used & all_pile_positions) == len(pile_positions_used), f"{pile_positions_used.difference(all_pile_positions)} are not valid pile positions"
     return len(pile_positions_used)/len(all_pile_positions)
 
-def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_count: int = 10, check_trace: bool = False) -> Verdict:
+def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_count: int = 10) -> Verdict:
     logger = Logger(should_log)
     games, move_counts, samples, traces, starting_games = simulate_for_player(
         game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
-        0, 0, 0, 0, 1, check_trace
+        0, 0, 0, 0, 1, False
     )
     wins: list[bool] = [game.is_win() for game in games]
     win_percentage = sum(wins)/len(wins)
@@ -122,16 +126,5 @@ def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_co
         verdict = Verdict.BIPOLAR
     else:
         verdict = Verdict.OK
-        precentage_cards_used: list[float] = []
-        if check_trace:
-            cards_moved: set[Card] = set()
-            for starting_game, trace in zip(starting_games, traces):
-                game = starting_game.copy()
-                for action in trace:
-                    cards = Parser.get_cards_of_action_in_game(action, game)
-                    cards_moved.add(*cards)
-                    Parser.perform_action_in_game(action, game)
-                precentage_cards_used.append(len(cards_moved) / len(starting_game.get_all_cards()))
-            logger.info(f"percentage of cards used: {(sum(win_move_counts)/len(win_move_counts)) if len(win_move_counts) > 0 else 'NaN'}")
     logger.info(f"VERDICT: {str(verdict)}")
     return verdict

@@ -381,7 +381,10 @@ class Game(Viewable, Hashable):
         piles = self.get_all_piles()
         for pile in piles:
             indices = pile.get_indices(card)
-            if isinstance(pile, Stack):
+            if pile.name == "DRAW":
+                # TODO shouldn't need this after latest change
+                positions += ["DRAW"] * len(indices) # because the actual position index might change in rotating draw
+            elif isinstance(pile, Stack):
                 positions += [f"{pile.name}[{pile.ind}]:{index}" for index in indices]
             else:
                 positions += [f"{pile.name}:{index}" for index in indices]

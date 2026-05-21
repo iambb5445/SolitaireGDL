@@ -308,6 +308,13 @@ class RotateDrawPile(Pile):
         diff.add_count_diff(self.len(), other.len())
         return diff
 
+    def get_indices(self, card: Card) -> list[int]:
+        indices = []
+        for i, my_card in enumerate(self.get_all_cards()):
+            if card.rank == my_card.rank and card.suit == my_card.suit:
+                indices.append(i)
+        return indices
+
     def get_all_cards(self) -> list[Card]:
         return self.cards + self.backpile + self.drawn
     
