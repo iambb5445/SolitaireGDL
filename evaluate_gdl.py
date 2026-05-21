@@ -1,6 +1,6 @@
 from enum import StrEnum
 from utility import Logger
-from simulate_many import simulate_for_player, players
+from simulate_many import simulate_for_player, players, get_seeds
 from base import Card
 from parser import Parser
 from game import Game
@@ -22,9 +22,11 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
+    experiment_seed = 0
+    game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset
     game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
         game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
-        0, 0, 0, 0, 1, True
+        game_seeds, 0, 0, 0, 1, True
     )
     game_name = game_ends[0].name
     wins: list[bool] = [game.is_win() for game in game_ends]
@@ -35,6 +37,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     pile_usage = [get_pile_usage(game, trace, logger) for game, trace in zip(game_starts, traces)]
     df = pd.DataFrame({
         "Game": [game_name] * game_count,
+        "Seed": game_seeds,
         "Win": wins,
         # "Win Percentage": [win_percentage] * len(games),
         "Move Count": move_counts,
