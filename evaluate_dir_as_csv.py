@@ -9,6 +9,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
     parser.add_argument('step', type=int, nargs="?", default=1, help="Step value in case not all files need to be evaluated (used mostly for testing purposes).")
+    parser.add_argument('max_move_count', type=int, nargs="?", default=2000, help="Maximum number of moves to perform per game.")
+    parser.add_argument('game_count', type=int, nargs="?", default=10, help="Number of games to simulate.")
     parser.add_argument('outpath', type=str, help="Path to save the csv results of evaluation.")
     parser.add_argument('--add-timestamp', action="store_true", help="If true, will make a directory in outpath based on timestamp.")
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the evaluation logs.")
@@ -20,6 +22,8 @@ if __name__ == "__main__":
     add_timestamp = args.add_timestamp
     should_log = args.should_log
     ignore_errors = args.ignore_errors
+    max_move_count = args.max_move_count
+    game_count = args.game_count
 
     print(f"Evaluating games in {dir}" + (f" with step {step}" if step != 1 else ""))
 
@@ -37,13 +41,13 @@ if __name__ == "__main__":
     dfs: list[pd.DataFrame] = []
     for i, gdl in enumerate(gdls):
         name = gdl.splitlines()[0]
-        out_filename: str = os.path.join(outpath, f"{i}_{name}.csv")
+        csv_filename: str = os.path.join(outpath, f"{i}_{name}.csv")
         # I'm using the if here to prevent errors if path exists but log set to None
         # this logic can't be in logger, since logger doesn't know if logs are gonna get activated at some point (and I don't want a logger runtime check)
         log_filename: str|None = os.path.join(outpath, f"{i}_{name}.log") if should_log else None
         try:
             # TODO add verdict
-            dfs.append(get_evaluation_results(gdl, should_log=should_log, save_as=out_filename, log_at=log_filename))
+            dfs.append(get_evaluation_results(gdl, max_move_count, game_count, should_log=should_log, save_as=csv_filename, log_at=log_filename))
         except Exception as e:
             print(f"Error parsing/evaluating {name}")
             print(e)
