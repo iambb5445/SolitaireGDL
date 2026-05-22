@@ -1,19 +1,20 @@
 from parser import Parser
 from utility import Logger
 import sys
-from player import RandomPlayer, RandomNoRepeatPlayer, DFSPlayer, MergedHeuristic, ActionCountHeuristic, NoDrawHeuristic, WinHeuristic
+from player import RandomPlayer, RandomNoRepeatPlayer, DFSPlayer, MergedHeuristic, ActionCountHeuristic, NoDrawHeuristic, WinHeuristic, MCTSPlayer
 import argparse
+
+global_heuristic = lambda: MergedHeuristic(
+            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
+            [1, 1, 3]
+            )
 
 players = {
     "random": lambda seed: RandomPlayer(seed),
     "random-no-repeat": lambda seed: RandomNoRepeatPlayer(seed),
     "dfs": lambda seed: DFSPlayer(None),
-    "dfs-heuristic" : lambda seed: DFSPlayer(
-        MergedHeuristic(
-            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
-            [1, 1, 3]
-            )
-        )
+    "dfs-heuristic" : lambda seed: DFSPlayer(global_heuristic()),
+    "mcts-player": lambda seed: MCTSPlayer(0.2, None, 0, lambda: RandomNoRepeatPlayer(None, global_heuristic()), global_heuristic())
 }
 
 if __name__ == '__main__':

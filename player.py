@@ -181,23 +181,24 @@ class MCTSNode:
         return MCTSChild(new_state, self, performed_action)
     
 class MCTSChild(MCTSNode):
-    def __init__(self, state: Game, parent: MCTSNode, action: str) -> None:
+    def __init__(self, state: Game, parent: MCTSNode, action: str, explore_factor: float = 0.5) -> None:
         super().__init__(state)
         self.parent = parent
         self.action = action
+        self.explore_factor = explore_factor
 
     @property
-    def ucb(self, explore_factor: float = 0.5):
+    def ucb(self):
         if self.visits == 0:
-            return 0 if explore_factor == 0 else math.inf
+            return 0 if self.explore_factor == 0 else math.inf
         else:
             exploit_term = self.reward / self.visits
             explore_term = math.sqrt(math.log(self.parent.visits) / self.visits)
-            return exploit_term + explore_factor * explore_term
+            return exploit_term + self.explore_factor * explore_term
 
 class MCTSPlayer(Player):
     HASH_TYPE = int
-    def __init__(self, time_budget: int, seed: int|None, max_rollout_depth: int,
+    def __init__(self, time_budget: float, seed: int|None, max_rollout_depth: int,
                  rollout_strategist_gen: Callable[[], Player], reward_func: StateEval) -> None:
         self.time_budget = time_budget
         self.random = random.Random(seed)
@@ -260,22 +261,22 @@ class MCTSPlayer(Player):
     def _get_best_action(self, node: MCTSNode) -> str|None:
         if node.is_leaf():
             return None
-        best_children = get_max_elements(node.get_children(), lambda child: child.reward/child.visits)
+        best_children = get_max_elements(node.get_children(), lambda child: ((child.reward/child.visits) if child.visits > 0 else 0))
         return self.random.choice(best_children).action
     
     def decide_action(self, current_state: Game) -> str | None:
         start_time = time.time()
-        node = self.hash_to_node.get(self._get_hash(current_state), None)
-        if node is None:
-            node = MCTSNode(current_state)
-            self._register_hash(node)
+        root = self.hash_to_node.get(self._get_hash(current_state), None)
+        if root is None:
+            root = MCTSNode(current_state)
+            self._register_hash(root)
         node_count = 0
         while time.time() - start_time < self.time_budget:
-            node = self._select_node(node)
+            node = self._select_node(root)
             reward = self._rollout(self._get_state_copy(node.state))
             self._backpropagate(node, reward)
             node_count += 1
-        best_action = self._get_best_action(node)
+        best_action = self._get_best_action(root)
         print(node_count)
         if best_action is None:
             return str(self.random.choice(current_state.get_possible_actions(True)))

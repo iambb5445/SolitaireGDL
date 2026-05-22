@@ -135,7 +135,7 @@ if __name__ == '__main__':
     start_time = time.time()
     parser = argparse.ArgumentParser(description="We have intentionally chosen default values that will ensure a fast response. For creating balanced datasets, these default values should be changed.")
     parser.add_argument('filename', type=str, help="Name of the SGDL file defining game rules. Refer to games/ for examples.")
-    parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {players.keys()}")
+    parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {list(players.keys())}, default: dfs-heuristic")
     parser.add_argument('--sampling-seed', type=int, default=None, help="Integer seed to be used for choosing the samples, random by default.")
     parser.add_argument('--game-seed', type=int, default=None, help="Integer seed to be used for shuffling the games, random by default.")
     parser.add_argument('--max-moves', type=int, default=100, help="Maximum number of moves in a game before stopping the sampling process (per game). Set to None using the code to continue until exhausting all the states the bot can reach.")
