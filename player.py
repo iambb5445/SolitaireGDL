@@ -31,6 +31,9 @@ class MergedHeuristic(StateEval):
     
     def get_normalized_value(self, state: Game, action: str|None) -> float:
         return sum(state_eval.get_value(state, action) * weight for state_eval, weight in zip(self.state_evals, self.weights)) / sum(self.weights)
+    
+    def __str__(self) -> str:
+        return f"MergedHeuristic({', '.join([str(state_eval) for state_eval in self.state_evals])}){self.weights}"
 
 class WinHeuristic(StateEval):
     def __init__(self) -> None:
@@ -40,6 +43,9 @@ class WinHeuristic(StateEval):
         if state.is_win():
             return 1
         return 0
+
+    def __str__(self) -> str:
+        return "WinHeuristic()"
     
 class NoDrawHeuristic(StateEval):
     def __init__(self) -> None:
@@ -49,6 +55,9 @@ class NoDrawHeuristic(StateEval):
         if action is not None and str(action).startswith('draw'):
             return 0
         return 1
+    
+    def __str__(self) -> str:
+        return "NoDrawHeuristic()"
     
 class SpiderHeuristic(StateEval):
     def __init__(self) -> None:
@@ -68,6 +77,9 @@ class SpiderHeuristic(StateEval):
                     break
             score += stack_size * stack_size
         return score
+    
+    def __str__(self) -> str:
+        return "SpiderHeuristic()"
 
 class ActionCountHeuristic(StateEval):
     def __init__(self) -> None:
@@ -77,6 +89,9 @@ class ActionCountHeuristic(StateEval):
         if state.is_win():
             return int(1000) # an estimate
         return len(state.get_possible_actions(True))
+    
+    def __str__(self) -> str:
+        return "ActionCountHeuristic()"
 
 class Player(ABC):
     # This function returns an str instead of a GameAction,
@@ -101,6 +116,7 @@ class Player(ABC):
     
 class RandomPlayer(Player):
     def __init__(self, seed: int|None = None, heuristic: StateEval|None=None) -> None:
+        self.seed = seed
         self.random = random.Random(seed)
         self.heuristic = heuristic
 
@@ -116,6 +132,9 @@ class RandomPlayer(Player):
         state_actions = self._get_state_actions(current_state)
         action = self._weighted_choice(state_actions)
         return action if action is not None else None
+    
+    def __str__(self) -> str:
+        return f"RandomPlayer(seed={self.seed}, heuristic={str(self.heuristic)})"
     
 class NoRepeatPlayer(Player):
     HASH_TYPE = int # TODO generic
@@ -148,6 +167,9 @@ class DFSPlayer(NoRepeatPlayer):
             not_none_heuristic: StateEval = self.heuristic # otherwise, next line will raise typing errors, even though it's correct
             return max(state_actions, key=lambda state_action: not_none_heuristic.get_value(state_action[0], state_action[1]))[1]
         return state_actions[0][1]
+    
+    def __str__(self) -> str:
+        return f"DFSPlayer(heuristic={str(self.heuristic)})"
 
 class RandomNoRepeatPlayer(RandomPlayer, NoRepeatPlayer):
     def __init__(self, seed:int|None = None, heuristic: StateEval|None = None) -> None:
@@ -160,6 +182,9 @@ class RandomNoRepeatPlayer(RandomPlayer, NoRepeatPlayer):
         state_actions = self._get_new_state_actions(current_state)
         action = self._weighted_choice(state_actions)
         return str(action) if action is not None else None
+    
+    def __str__(self) -> str:
+        return f"RandomNoRepeatPlayer(seed={self.seed}, heuristic={self.heuristic})"
 
 class MCTSNode:
     def __init__(self, state: Game) -> None:
@@ -200,6 +225,7 @@ class MCTSPlayer(Player):
     HASH_TYPE = int
     def __init__(self, time_budget: float, seed: int|None, max_rollout_depth: int,
                  rollout_strategist_gen: Callable[[], Player], reward_func: StateEval) -> None:
+        self.seed = seed
         self.time_budget = time_budget
         self.random = random.Random(seed)
         self.hash_to_node: dict[MCTSPlayer.HASH_TYPE, MCTSNode] = {}
@@ -277,7 +303,13 @@ class MCTSPlayer(Player):
             self._backpropagate(node, reward)
             node_count += 1
         best_action = self._get_best_action(root)
-        print(node_count)
+        # print(node_count)
         if best_action is None:
             return str(self.random.choice(current_state.get_possible_actions(True)))
         return best_action
+    
+    def __str__(self) -> str:
+        return f"MCTSPlayer(time_budget={self.time_budget}, seed={self.seed}, " + \
+            f"max_rollout_depth={self.max_rollout_depth}, " + \
+            f"rollout_strategist_gen={str(self.rollout_strategist_gen())}, " + \
+            f"reward_function={self.reward_func})"

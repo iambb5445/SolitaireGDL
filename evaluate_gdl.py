@@ -24,6 +24,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
+    logger.info(str(player_creator()))
     experiment_seed = get_seed(None)
     logger.info(f"Experiment seed: {experiment_seed}")
     game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset

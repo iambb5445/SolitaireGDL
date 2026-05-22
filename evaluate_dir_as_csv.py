@@ -10,7 +10,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
     parser.add_argument('step', type=int, nargs="?", default=1, help="Step value in case not all files need to be evaluated (used mostly for testing purposes).")
-    parser.add_argument('max_move_count', type=int, nargs="?", default=2000, help="Maximum number of moves to perform per game.")
+    parser.add_argument('max_move_count', type=int, nargs="?", default=1000, help="Maximum number of moves to perform per game.")
     parser.add_argument('game_count', type=int, nargs="?", default=10, help="Number of games to simulate.")
     parser.add_argument('outpath', type=str, help="Path to save the csv results of evaluation.")
     parser.add_argument('--add-timestamp', action="store_true", help="If true, will make a directory in outpath based on timestamp.")
