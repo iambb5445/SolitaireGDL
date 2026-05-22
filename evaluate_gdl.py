@@ -5,7 +5,8 @@ from base import Card
 from parser import Parser
 from game import Game
 import pandas as pd
-import random
+from typing import Callable
+from player import Player
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -19,7 +20,7 @@ def get_verdict_from_results(df: pd.DataFrame):
     # TODO
     pass
 
-def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, should_log: bool = False, save_as: str|None = None, log_at: str|None = None):
+def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, player_creator: Callable[[], Player] = lambda: players["dfs-heuristic"](None), should_log: bool = False, save_as: str|None = None, log_at: str|None = None):
     logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
@@ -27,7 +28,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     logger.info(f"Experiment seed: {experiment_seed}")
     game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset
     game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
-        game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
+        game_count, max_move_count, True, gdl, player_creator,
         game_seeds, 0, 0, 0, 1, True
     )
     game_name = game_ends[0].name

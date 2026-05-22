@@ -4,6 +4,7 @@ from evaluate_gdl import get_evaluation_results
 import argparse
 import time
 import pandas as pd
+from simulate import players
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('--add-timestamp', action="store_true", help="If true, will make a directory in outpath based on timestamp.")
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the evaluation logs.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluate a batch of gdls that may be invalid.")
+    parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {list(players.keys())}, default: dfs-heuristic")
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir
     step = args.step
@@ -24,6 +26,7 @@ if __name__ == "__main__":
     ignore_errors = args.ignore_errors
     max_move_count = args.max_move_count
     game_count = args.game_count
+    player_creator = lambda: players[args.bot](None)
 
     print(f"Evaluating games in {dir}" + (f" with step {step}" if step != 1 else ""))
 
@@ -47,7 +50,7 @@ if __name__ == "__main__":
         log_filename: str|None = os.path.join(outpath, f"{i}_{name}.log") if should_log else None
         try:
             # TODO add verdict
-            dfs.append(get_evaluation_results(gdl, max_move_count, game_count, should_log=should_log, save_as=csv_filename, log_at=log_filename))
+            dfs.append(get_evaluation_results(gdl, max_move_count, game_count, player_creator=player_creator, should_log=should_log, save_as=csv_filename, log_at=log_filename))
         except Exception as e:
             print(f"Error parsing/evaluating {name}")
             print(e)
