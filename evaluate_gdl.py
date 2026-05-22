@@ -5,6 +5,7 @@ from base import Card
 from parser import Parser
 from game import Game
 import pandas as pd
+import random
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -22,7 +23,8 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
-    experiment_seed = 0
+    experiment_seed = random.randint(0, 10000000)
+    logger.info(f"Experiment seed: {experiment_seed}")
     game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset
     game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
         game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
