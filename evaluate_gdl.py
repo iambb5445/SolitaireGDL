@@ -13,12 +13,22 @@ class Verdict(StrEnum):
     IMPOSSIBLE = "IMPOSSIBLE"
     TRIVIAL = "TRIVIAL"
     BIPOLAR = "BIPOLAR"
-    EXTRA = "EXTRA"
+    EXTRA_CARD = "EXTRA_CARD"
+    EXTRA_PILE = "EXTRA_PILE"
     OK = "OK"
 
 def get_verdict_from_results(df: pd.DataFrame):
-    # TODO
-    pass
+    if df["Exhausted"].mean() > 0.9:
+        return Verdict.UNKNOWN
+    if df["Win"].mean() < 0.1:
+        return Verdict.IMPOSSIBLE
+    if df[df["Win"]]["Move Count"].mean() < 20: # not needed because of card usage unless the game is very few cards
+        return Verdict.TRIVIAL
+    if (df[df["Win"]]["Card Usage"] < 0.9).any():
+        return Verdict.EXTRA_CARD
+    if (df[df["Win"]]["Pile Usage"] < 0.8).any():
+        return Verdict.EXTRA_PILE
+    return Verdict.OK
 
 def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, player_creator: Callable[[], Player] = lambda: players["dfs-heuristic"](None), should_log: bool = False, save_as: str|None = None, log_at: str|None = None):
     logger = Logger(should_log, log_at)
