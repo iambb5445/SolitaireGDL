@@ -90,9 +90,14 @@ def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|No
         seeds = [None] * count
     elif isinstance(seeds, int):
         rnd = random.Random(seeds)
-        seeds = [rnd.randint(0, 10000000) for _ in range(count)]
+        seeds = [get_seed(rnd) for _ in range(count)]
     assert len(seeds) == count
     return seeds
+
+def get_seed(rnd: random.Random|None):
+    if rnd is None:
+        rnd = random.Random()
+    return rnd.randint(0, 10000000)
 
 def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_desc: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],
