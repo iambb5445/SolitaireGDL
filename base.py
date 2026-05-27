@@ -32,6 +32,19 @@ class Suit(BaseStrEnum):
             return 'Red'
         else:
             raise Exception(f"Suit color not recognized: {suit}")
+    
+class SuitFullNames(BaseStrEnum):
+    SPADES = 'SPADES'
+    HEARTS = 'HEARTS'
+    CLUBS = 'CLUBS'
+    DIAMONDS = 'DIAMONDS'
+        
+suit_full_name_mapping: dict[SuitFullNames, Suit] = {
+    SuitFullNames.SPADES: Suit.Spades,
+    SuitFullNames.HEARTS: Suit.Hearts,
+    SuitFullNames.CLUBS: Suit.Clubs,
+    SuitFullNames.DIAMONDS: Suit.Diamonds,
+}
 
 class Hashable(ABC):
     MOD = 1000000007
