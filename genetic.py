@@ -2,10 +2,12 @@ from __future__ import annotations
 from parser import Parser
 from random import Random
 from enum import Enum
-from base import Suit, Stack
+from base import Stack
+from base import SuitFullNames as SFN
 from abc import ABC, abstractmethod
-from typing import Sequence, Type, Callable, TypeVar
+from typing import Sequence, Callable, TypeVar
 from evaluate_gdl import evaluate_gdl, Verdict
+import condition as cond
 
 def coin_flip(rnd: Random) -> bool:
     return rnd.randint(0, 1) == 0
@@ -146,10 +148,10 @@ class DeckGene(GenoType):
         # EXCLUDED: custom ranks, weird suits
         for _ in range(Params.MAX_TRIES):
             count = rnd.choice([1, 2, 4, 8])
-            suits = rnd.choice([
-                ["SPADES"], ["SPADES", "HEARTS"], ["SPADES", "CLUBS"],
-                ["SPADES", "HEARTS", "CLUBS", "DIAMONDS"]
-            ])
+            suits = [str(suit) for suit in rnd.choice([
+                [SFN.SPADES], [SFN.SPADES, SFN.HEARTS], [SFN.SPADES, SFN.CLUBS],
+                list(SFN)
+            ])]
             deck = DeckGene(count, suits, None)
             if deck.card_count <= Params.MAX_CARD_COUNT:
                 return deck
@@ -174,26 +176,31 @@ class DeckGene(GenoType):
         ]
 
 class DealDrawDefGene(GenoType):
-    def __init__(self, card_count: int, draw_to: list[str], draw_to_options: list[str]) -> None:
+    def __init__(self, card_count: int, draw_to: list[str], setup: SetupGene) -> None:
         self.card_count = card_count
         self.draw_to = draw_to
-        self.draw_to_options = draw_to_options
+        self.setup = setup
     
     def get_gdl(self) -> str:
         return f"DRAW {self.card_count} DEAL {GenoType.list_to_gdl(self.draw_to)}\n"
     
     @staticmethod
-    def get_random(rnd: Random, card_count: int = 0, pilenames: list[str] = []) -> DealDrawDefGene:
-        draw_to = [name for name in rnd.sample(pilenames, k=rnd.randint(1, len(pilenames)))]
-        return DealDrawDefGene(card_count, draw_to, pilenames)
+    def get_random(rnd: Random, card_count: int = 0, setup: SetupGene|None = None) -> DealDrawDefGene:
+        assert setup is not None
+        draw_to_options = setup.get_pilenames(False, False)
+        draw_to = [name for name in rnd.sample(draw_to_options, k=rnd.randint(1, len(draw_to_options)))]
+        return DealDrawDefGene(card_count, draw_to, setup)
 
     def copy(self) -> DealDrawDefGene:
-        return DealDrawDefGene(self.card_count, [pile for pile in self.draw_to], self.draw_to_options)
+        return DealDrawDefGene(self.card_count, [pile for pile in self.draw_to], self.setup)
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
 
     @staticmethod
     def get_crossover_options() -> list[Callable[[DealDrawDefGene, DealDrawDefGene, Random], DealDrawDefGene]]:
         return [
-            lambda me, other, rnd: DealDrawDefGene(me.card_count, other.draw_to, me.draw_to_options),
+            lambda me, other, rnd: DealDrawDefGene(me.card_count, other.draw_to, me.setup),
         ]
 
     @staticmethod
@@ -342,17 +349,24 @@ class PileDefGene(GenoType):
 class SetupGene(GenoType):
     def __init__(self, draw: DealDrawDefGene|RotateDrawDefGene|None, piles: list[PileDefGene]) -> None:
         self.draw = draw
+        if isinstance(draw, DealDrawDefGene):
+            draw.set_setup(self)
         self.piles = piles
-        self.card_count = 0 if self.draw is None else self.draw.card_count + sum([pile.card_count for pile in self.piles])
+        self.card_count = (0 if self.draw is None else self.draw.card_count) + sum([pile.card_count for pile in self.piles])
     
     def get_gdl(self) -> str:
         return "$initial\n" + \
             ("" if self.draw is None else self.draw.get_gdl()) + \
             "".join([pile.get_gdl() for pile in self.piles])
     
-    def get_pilenames(self) -> list[str]:
-        return [pile.pilename for pile in self.piles]
-    
+    def get_pilenames(self, add_rotate_draw: bool, add_all_draw: bool) -> list[str]:
+        ret = [pile.pilename for pile in self.piles]
+        if add_rotate_draw and isinstance(self.draw, RotateDrawDefGene):
+            ret.append('DRAW')
+        elif add_all_draw and self.draw is not None:
+            ret.append('DRAW')
+        return ret
+
     @staticmethod
     def get_random(rnd: Random, card_count: int = 0) -> SetupGene:
         # EXCLUDED: custom starting cards in pile
@@ -364,7 +378,8 @@ class SetupGene(GenoType):
         while card_count > 0:
             choice = rnd.randint(0, 5)
             if choice == 0 and len(piles) > 0:
-                draw = DealDrawDefGene.get_random(rnd, card_count, [pile.pilename for pile in piles])
+                fake_setup = SetupGene(None, piles)
+                draw = DealDrawDefGene.get_random(rnd, card_count, fake_setup)
                 card_count -= draw.card_count
             elif choice == 1 and len(piles) > 0:
                 draw = RotateDrawDefGene.get_random(rnd, card_count)
@@ -374,9 +389,10 @@ class SetupGene(GenoType):
                 if piles[-1].pilename in special_pilenames:
                     special_pilenames.remove(piles[-1].pilename)
                 card_count -= piles[-1].card_count
-        return SetupGene(draw, piles)
+        return SetupGene(draw, piles) # will readjust fake_setup for draw pile
     
     def copy(self) -> SetupGene:
+        # will readjust setup for draw pile
         return SetupGene(self.draw if self.draw is None else self.draw.copy(), [pile.copy() for pile in self.piles])
     
     def _adjust_card_count_(self, intended_card_count: int, rnd: Random) -> SetupGene:
@@ -400,7 +416,7 @@ class SetupGene(GenoType):
         elif pile_index == len(self.piles):
             assert self.draw is not None
             if isinstance(self.draw, RotateDrawDefGene):
-                self.draw = DealDrawDefGene.get_random(rnd, self.draw.card_count, self.get_pilenames())
+                self.draw = DealDrawDefGene.get_random(rnd, self.draw.card_count, self)
             else:
                 self.draw = RotateDrawDefGene.get_random(rnd, self.draw.card_count)
         else:
@@ -409,13 +425,14 @@ class SetupGene(GenoType):
         return self
 
     def _add_a_pile_(self, rnd: Random)-> SetupGene:
+        pilenames = self.get_pilenames(False, False)
         if self.draw is None and coin_flip(rnd):
             if coin_flip(rnd):
-                self.draw = DealDrawDefGene.get_random(rnd, self.card_count//2, self.get_pilenames())
+                self.draw = DealDrawDefGene.get_random(rnd, self.card_count//2, self)
             else:
                 self.draw = RotateDrawDefGene.get_random(rnd, self.card_count//2)
         else:
-            special_pilenames = [name for name in Params.SPECIAL_PILENAMES if name not in self.get_pilenames()]
+            special_pilenames = [name for name in Params.SPECIAL_PILENAMES if name not in pilenames]
             self.piles.append(PileDefGene.get_random(rnd, self.card_count//2, False, special_pilenames)) # //2 is a rough estimate
         self._adjust_card_count_(self.card_count, rnd)
         return self
@@ -432,6 +449,7 @@ class SetupGene(GenoType):
     def get_crossover_options() -> list[Callable[[SetupGene, SetupGene, Random], SetupGene]]:
         # there should be no need for adjustments, becuase other should have the same card count
         return [
+            # will readjust setup for draw pile
             lambda me, other, rnd: SetupGene(other.draw, me.piles)._adjust_card_count_(me.card_count, rnd),
             lambda me, other, rnd: SetupGene(me.draw, other.piles)._adjust_card_count_(me.card_count, rnd),
         ]
@@ -478,7 +496,7 @@ class ConditionGene(GenoType, Reducible):
     class Op(Arg):
         @staticmethod
         def get_random(rnd: Random) -> ConditionGene.Op:
-            return ConditionGene.Op(rnd.choice([ "==", ">", "<", ">=", "<="]))
+            return ConditionGene.Op(str(rnd.choice(list(cond.MathOp))))
         
         @staticmethod
         def get_mutation_options() -> list[Callable[[ConditionGene.Op, Random], ConditionGene.Op]]:
@@ -496,7 +514,7 @@ class ConditionGene(GenoType, Reducible):
     class Suits(Arg):
         @staticmethod
         def get_random(rnd: Random) -> ConditionGene.Suits:
-            all_suits = ["SPADES", "HEARTS", "CLUBS", "DIAMONDS"]
+            all_suits = [str(suit) for suit in SFN]
             suits: list[str] = rnd.sample(all_suits, rnd.randint(1, len(all_suits)))
             return ConditionGene.Suits("{" + ", ".join(suits) + "}")
         
@@ -523,25 +541,30 @@ class ConditionGene(GenoType, Reducible):
             return [lambda me, rnd: ConditionGene.Ranks.get_random(rnd)]
     
     class Pileset(Arg):
-        def __init__(self, value: str, get_options: Callable[[], list[str]]) -> None:
+        def __init__(self, value: str, setup: SetupGene) -> None:
             super().__init__(value)
-            self.get_options = get_options
+            self.setup = setup
         
         @staticmethod
-        def get_random(rnd: Random, get_options: Callable[[], list[str]] = lambda: []) -> ConditionGene.Pileset:
-            return ConditionGene.Pileset(rnd.choice(get_options()), get_options)
+        def get_random(rnd: Random, setup: SetupGene|None = None) -> ConditionGene.Pileset:
+            assert setup is not None
+            options = setup.get_pilenames(False, True)
+            return ConditionGene.Pileset(rnd.choice(options), setup)
         
         @staticmethod
         def get_mutation_options() -> list[Callable[[ConditionGene.Pileset, Random], ConditionGene.Pileset]]:
-            return [lambda me, rnd: ConditionGene.Pileset.get_random(rnd, me.get_options)]
+            return [lambda me, rnd: ConditionGene.Pileset.get_random(rnd, me.setup)]
         
         def copy(self: ConditionGene.Pileset) -> ConditionGene.Pileset:
-            return ConditionGene.Pileset(self.value, self.get_options)
+            return ConditionGene.Pileset(self.value, self.setup)
+        
+        def set_setup(self, setup: SetupGene) -> None:
+            self.setup = setup
 
     class RankCond(Arg):
         @staticmethod
         def get_random(rnd: Random) -> ConditionGene.RankCond:
-            return ConditionGene.RankCond(rnd.choice(["ascending", "descending", "equal", "add_13", "add_14"]))
+            return ConditionGene.RankCond(rnd.choice([str(val) for val in cond.MultiRankCondition.MODE]))
         
         @staticmethod
         def get_mutation_options() -> list[Callable[[ConditionGene.RankCond, Random], ConditionGene.RankCond]]:
@@ -550,19 +573,19 @@ class ConditionGene(GenoType, Reducible):
     class SuitCond(Arg):
         @staticmethod
         def get_random(rnd: Random) -> ConditionGene.SuitCond:
-            return ConditionGene.SuitCond(rnd.choice(["alternate_color", "match_color", "match"]))
+            return ConditionGene.SuitCond(rnd.choice([str(val) for val in cond.MultiSuitCondition.MODE]))
         
         @staticmethod
         def get_mutation_options() -> list[Callable[[ConditionGene.SuitCond, Random], ConditionGene.SuitCond]]:
             return [lambda me, rnd: ConditionGene.SuitCond.get_random(rnd)]
 
     def __init__(self, root: str, root_args: list[tuple[Arg, int, int]], subconds: Sequence[ConditionGene],
-                 type: ConditionGene.CondType, get_pileset: Callable[[], list[str]]) -> None:
+                 type: ConditionGene.CondType, setup: SetupGene) -> None:
         self.root = root
         self.subconds = subconds
         self.root_args = root_args
         self.type = type
-        self.get_pileset = get_pileset
+        self.setup = setup
         self.size = 1 if self.is_base() else sum([subcond.size for subcond in self.subconds])
 
     def is_base(self) -> bool:
@@ -612,7 +635,7 @@ class ConditionGene(GenoType, Reducible):
         return rnd.choice(possible)
     
     @staticmethod
-    def get_random_base_condition(rnd: Random, type: CondType, get_pileset: Callable[[], list[str]]) -> ConditionGene:
+    def get_random_base_condition(rnd: Random, type: CondType, setup: SetupGene) -> ConditionGene:
         base = ConditionGene.get_random_base(rnd, type)
         args: list[tuple[ConditionGene.Arg, int, int]] = []
         def check_arg(s: str, i: int, val: str, factory: Callable[[], ConditionGene.Arg]):
@@ -623,26 +646,32 @@ class ConditionGene(GenoType, Reducible):
             check_arg(base, i, "<count>", lambda: ConditionGene.Count.get_random(rnd, Params.MAX_CARD_IN_COND))
             check_arg(base, i, "<suits>", lambda: ConditionGene.Suits.get_random(rnd))
             check_arg(base, i, "<ranks>", lambda: ConditionGene.Ranks.get_random(rnd))
-            check_arg(base, i, "<pileset>", lambda: ConditionGene.Pileset.get_random(rnd, get_pileset))
+            check_arg(base, i, "<pileset>", lambda: ConditionGene.Pileset.get_random(rnd, setup))
             check_arg(base, i, "<rankcond>", lambda: ConditionGene.RankCond.get_random(rnd))
             check_arg(base, i, "<suitcond>", lambda: ConditionGene.SuitCond.get_random(rnd))
-        return ConditionGene(base, args, [], type, get_pileset)
+        return ConditionGene(base, args, [], type, setup)
 
     @staticmethod
-    def get_random(rnd: Random, type: CondType = CondType.MOVE, get_pileset: Callable[[], list[str]] = lambda: [], exclude: str|None = None, depth: int = 0) -> ConditionGene:
+    def get_random(rnd: Random, type: CondType = CondType.MOVE, setup: SetupGene|None = None, exclude: str|None = None, depth: int = 0) -> ConditionGene:
+        assert setup is not None
         max_depth = Params.MAX_COND_DEPTH if type != ConditionGene.CondType.GLOBAL else Params.MAX_GLOBAL_COND_DEPTH
         choice = rnd.randint(0, 4) if depth < max_depth else 0
         if choice in [0, 1]:
-            return ConditionGene.get_random_base_condition(rnd, type, get_pileset)
+            return ConditionGene.get_random_base_condition(rnd, type, setup)
         root = "AND" if (choice == 2 or exclude == "OR") else "OR"
         exclude = root if Params.SIMPLE_CONDITION else None
         subcount = rnd.randint(2, Params.MAX_COND_BRANCH)
         return ConditionGene(root, [], [
-            ConditionGene.get_random(rnd, type, get_pileset, exclude, depth+1)
-            for _ in range(subcount)], type, get_pileset)
+            ConditionGene.get_random(rnd, type, setup, exclude, depth+1)
+            for _ in range(subcount)], type, setup)
     
     def copy(self) -> ConditionGene:
-        return ConditionGene(self.root, [(arg.copy(), s, e) for arg, s, e in self.root_args], [subcond.copy() for subcond in self.subconds], self.type, self.get_pileset)
+        return ConditionGene(self.root, [(arg.copy(), s, e) for arg, s, e in self.root_args], [subcond.copy() for subcond in self.subconds], self.type, self.setup)
+
+    def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
+        for subcond in self.subconds:
+            subcond.set_setup(setup)
     
     def _find_subcond(self, iter: int) -> tuple[None|ConditionGene, int]:
         new_iter = 0
@@ -682,14 +711,14 @@ class ConditionGene(GenoType, Reducible):
         self.subconds = other.subconds
         self.root_args = other.root_args
         self.type = other.type
-        self.get_pileset = other.get_pileset
+        self.setup = other.setup
         return self
     
     def _mutate_single_(self, rnd: Random) -> ConditionGene:
         if not self.is_base():
             return rnd.choice(self.subconds)._mutate_single_(rnd)
         if len(self.root_args) == 0 or coin_flip(rnd):
-            return self._become_(ConditionGene.get_random_base_condition(rnd, self.type, self.get_pileset))
+            return self._become_(ConditionGene.get_random_base_condition(rnd, self.type, self.setup))
         arg_index = rnd.randint(0, len(self.root_args) - 1)
         arg, s, e = self.root_args[arg_index]
         self.root_args[arg_index] = (arg.mutate(rnd), s, e)
@@ -703,14 +732,14 @@ class ConditionGene(GenoType, Reducible):
                 exclude = root if Params.SIMPLE_CONDITION else None
                 self._become_(ConditionGene(root, [], [
                     copy,
-                    ConditionGene.get_random(rnd, self.type, self.get_pileset, exclude, depth+1),
-                ], self.type, self.get_pileset))
+                    ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1),
+                ], self.type, self.setup))
             # else: nothing we can do but to retry and end up in another branch
         else: # AND or OR
             if depth == (Params.MAX_COND_DEPTH - 1) or (coin_flip(rnd) == 0 and len(self.subconds) < Params.MAX_COND_BRANCH):
                 if len(self.subconds) < Params.MAX_COND_BRANCH:
                     exclude = self.root if Params.SIMPLE_CONDITION else None
-                    self.subconds = [subcond for subcond in self.subconds] + [ConditionGene.get_random(rnd, self.type, self.get_pileset, exclude, depth+1)]
+                    self.subconds = [subcond for subcond in self.subconds] + [ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1)]
                 # else: both max depth and max branch is reached, adding conditions is not possible
             else:
                 exclude = self.root if Params.SIMPLE_CONDITION else None
@@ -734,7 +763,7 @@ class ConditionGene(GenoType, Reducible):
     def get_crossover_options() -> list[Callable[[ConditionGene, ConditionGene, Random], ConditionGene]]:
         # TODO
         return [
-            lambda me, other, rnd: ConditionGene(me.root, me.root_args, me.subconds, me.type, me.get_pileset)
+            lambda me, other, rnd: ConditionGene(me.root, me.root_args, me.subconds, me.type, me.setup)
         ]
     
     @staticmethod
@@ -756,11 +785,15 @@ class MoveGene(GenoType, Reducible):
             self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], get_pilenames: Callable[[], list[str]] = lambda: []) -> MoveGene:
-        return MoveGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE, get_pilenames))
+    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], setup: SetupGene|None = None) -> MoveGene:
+        assert setup is not None
+        return MoveGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE, setup))
     
     def copy(self) -> MoveGene:
         return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        self.cond.set_setup(setup)
     
     def get_reduced(self: MoveGene, rnd: Random|None, iter: int) -> MoveGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
@@ -789,11 +822,15 @@ class MoveStackGene(GenoType, Reducible):
             self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], get_pilenames: Callable[[], list[str]] = lambda: []) -> MoveStackGene:
-        return MoveStackGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE_STACK, get_pilenames))
+    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], setup: SetupGene|None = None) -> MoveStackGene:
+        assert setup is not None
+        return MoveStackGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE_STACK, setup))
     
     def copy(self) -> MoveStackGene:
         return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        self.cond.set_setup(setup)
     
     def get_reduced(self: MoveStackGene, rnd: Random|None, iter: int) -> MoveStackGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
@@ -809,11 +846,15 @@ class DrawMoveGene(GenoType, Reducible):
         return "DRAW\n" + self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, get_pilenames: Callable[[], list[str]] = lambda: []) -> DrawMoveGene:
-        return DrawMoveGene(ConditionGene.get_random(rnd, ConditionGene.CondType.GLOBAL, get_pilenames))
+    def get_random(rnd: Random, setup: SetupGene|None = None) -> DrawMoveGene:
+        assert setup is not None
+        return DrawMoveGene(ConditionGene.get_random(rnd, ConditionGene.CondType.GLOBAL, setup))
     
     def copy(self) -> DrawMoveGene:
         return DrawMoveGene(self.cond.copy())
+
+    def set_setup(self, setup: SetupGene) -> None:
+        self.cond.set_setup(setup)
     
     def get_reduced(self: DrawMoveGene, rnd: Random|None, iter: int) -> DrawMoveGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
@@ -853,11 +894,12 @@ class MovesGene(GenoType, Reducible):
         return starts, ends
     
     @staticmethod
-    def get_random(rnd: Random, get_pilenames: Callable[[], list[str]] = lambda: [], draw: DealDrawDefGene|RotateDrawDefGene|None = None) -> MovesGene:
+    def get_random(rnd: Random, setup: SetupGene|None=None) -> MovesGene:
+        assert setup is not None
         # EXCLUDE: more than 2 move or move_stack
-        pilenames = get_pilenames()
-        pilenames_or_D = pilenames + (["DRAW"] if isinstance(draw, RotateDrawDefGene) else [])
-        move_options = [(pilename_or_D, pilename) for pilename in pilenames for pilename_or_D in pilenames_or_D]
+        pilenames = setup.get_pilenames(False, False)
+        move_from_pilenames = setup.get_pilenames(True, False)
+        move_options = [(pilename_or_D, pilename) for pilename in pilenames for pilename_or_D in move_from_pilenames]
         move_stack_options = [(pilename, pilename2) for pilename2 in pilenames for pilename in pilenames]
         while True:
             move_count = rnd.randint(0, Params.MAX_MOVE_COUNT)
@@ -868,14 +910,14 @@ class MovesGene(GenoType, Reducible):
         for _ in range(move_count):
             if len(move_options) > 0:
                 starts, ends = MovesGene.get_action_ends(rnd, move_options)
-                moves.append(MoveGene.get_random(rnd, starts, ends, get_pilenames))
+                moves.append(MoveGene.get_random(rnd, starts, ends, setup))
         for _ in range(move_stack_count):
             if len(move_stack_options) > 0:
                 starts, ends = MovesGene.get_action_ends(rnd, move_stack_options)
-                move_stacks.append(MoveStackGene.get_random(rnd, starts, ends, get_pilenames))
+                move_stacks.append(MoveStackGene.get_random(rnd, starts, ends, setup))
         draw_move = None
-        if isinstance(draw, DealDrawDefGene) and coin_flip(rnd):
-            draw_move = DrawMoveGene.get_random(rnd, get_pilenames)
+        if isinstance(setup.draw, DealDrawDefGene) and coin_flip(rnd):
+            draw_move = DrawMoveGene.get_random(rnd, setup)
         return MovesGene(moves, move_stacks, draw_move)
     
     def copy(self) -> MovesGene:
@@ -884,6 +926,14 @@ class MovesGene(GenoType, Reducible):
             [move_stack.copy() for move_stack in self.move_stacks],
             self.draw_move if self.draw_move is None else self.draw_move.copy()
         )
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        for move in self.moves:
+            move.set_setup(setup)
+        for move_stack in self.move_stacks:
+            move_stack.set_setup(setup)
+        if self.draw_move is not None:
+            self.draw_move.set_setup(setup)
     
     def _find_move(self, iter: int, moves: list[MoveGene]|list[MoveStackGene]) -> tuple[None|MoveGene|MoveStackGene, int]:
         new_iter = 0
@@ -948,11 +998,15 @@ class WinGene(GenoType, Reducible):
         return "$win\n" + self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, get_pilenames: Callable[[], list[str]] = lambda: []) -> WinGene:
-        return WinGene(ConditionGene.get_random(rnd, ConditionGene.CondType.WIN, get_pilenames))
+    def get_random(rnd: Random, setup: SetupGene|None = None) -> WinGene:
+        assert setup is not None
+        return WinGene(ConditionGene.get_random(rnd, ConditionGene.CondType.WIN, setup))
     
     def copy(self) -> WinGene:
         return WinGene(self.cond.copy())
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        self.cond.set_setup(setup)
     
     def get_reduced(self: WinGene, rnd: Random|None, iter: int) -> WinGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
@@ -981,7 +1035,9 @@ class SGDLGene(GenoType, Reducible):
         self.deck = deck
         self.setup = setup
         self.moves = moves
+        self.moves.set_setup(setup)
         self.win = win
+        self.win.set_setup(setup)
         # check
         Parser.parse(self.get_gdl(), None, False, False)
 
@@ -996,10 +1052,8 @@ class SGDLGene(GenoType, Reducible):
     def get_random(rnd: Random) -> SGDLGene:
         deck = DeckGene.get_random(GenoType.get_rnd(rnd))
         initial = SetupGene.get_random(GenoType.get_rnd(rnd), deck.card_count)
-        moves = MovesGene.get_random(GenoType.get_rnd(rnd), initial.get_pilenames, initial.draw)
-        win = WinGene.get_random(GenoType.get_rnd(rnd), initial.get_pilenames)
-        gdl = ""
-        gdl = SGDLGene.get_deterministic_name(gdl) + "\n" + gdl
+        moves = MovesGene.get_random(GenoType.get_rnd(rnd), initial)
+        win = WinGene.get_random(GenoType.get_rnd(rnd), initial)
         return SGDLGene(deck, initial, moves, win)
 
     def copy(self) -> SGDLGene:
