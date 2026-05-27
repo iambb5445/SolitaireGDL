@@ -5,6 +5,7 @@ import argparse
 import time
 import pandas as pd
 from simulate import players
+from parser import Parser
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     os.makedirs(outpath, exist_ok=True)
     dfs: list[pd.DataFrame] = []
     for i, gdl in enumerate(gdls):
-        name = gdl.splitlines()[0]
+        name = Parser.get_name(gdl)
         csv_filename: str = os.path.join(outpath, f"{i}_{name}.csv")
         # I'm using the if here to prevent errors if path exists but log set to None
         # this logic can't be in logger, since logger doesn't know if logs are gonna get activated at some point (and I don't want a logger runtime check)

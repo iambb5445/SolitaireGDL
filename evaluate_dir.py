@@ -17,7 +17,7 @@ for filename in filenames:
 verdict_counts: dict[Verdict, int] = {}
 print(f"Read {len(gdls)} files")
 for gdl in gdls:
-    name = gdl.splitlines()[0]
+    name = Parser.get_name(gdl)
     try:
         verdict = evaluate_gdl(gdl, False)
         verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1

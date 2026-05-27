@@ -11,7 +11,7 @@ import sys
 import time
 
 thread_count = 1
-max_time_per_sim = 20 # seconds
+max_time_per_sim = 20 # seconds # TODO this is also exhaust
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:

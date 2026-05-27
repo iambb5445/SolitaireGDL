@@ -3,6 +3,7 @@ import genetic
 from evaluate_gdl import evaluate_gdl, Verdict
 import sys
 import os
+from parser import Parser
 
 rnd = Random(42)
 
@@ -25,7 +26,7 @@ for ind, (gdl, seed) in enumerate(zip(gdls, seeds)):
     verdict = evaluate_gdl(gdl, False)
     verdicts.append(verdict)
     verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
-    name = gdl.splitlines()[0]
+    name = Parser.get_name(gdl)
     print(f" $$$ {name} evaluated as {verdicts[-1]}, seed = {seed}")
     os.makedirs(os.path.join(out_dir, "gen0"), exist_ok=True)
     with open(os.path.join(out_dir, "gen0", f"{ind}_{name}_{verdict}.sgdl"), "w") as f:
@@ -39,8 +40,8 @@ for ind, (gene, gdl, verdict) in enumerate(zip(population, gdls, verdicts)):
     if verdict == Verdict.OK:
         cores.append(gene.get_reduced_to_core(Random(get_seed(rnd)), False, verdict))
         core_gdls.append(cores[-1].get_gdl())
-        name = core_gdls[-1].splitlines()[0]
-        old_name = gdl.splitlines()[0]
+        name = Parser.get_name(core_gdls[-1])
+        old_name = Parser.get_name(gdl)
         os.makedirs(os.path.join(out_dir, "gen0_reduced"), exist_ok=True)
         with open(os.path.join(out_dir, "gen0_reduced", f"{ind}_{name}_prev_{old_name}_{verdict}.sgdl"), "w") as f:
             f.write(core_gdls[-1])

@@ -183,6 +183,12 @@ class Game(Viewable, Hashable):
         self.win_conditions: cond.Condition[cond.GeneralConditionComponents]|None = None
         self.logger: Logger = Logger(should_log)
 
+    def has_rotate_draw_pile(self) -> bool:
+        return isinstance(self.draw_pile, RotateDrawPile)
+    
+    def has_deal_draw_pile(self) -> bool:
+        return isinstance(self.draw_pile, DealPile)
+
     def _get_draw_pile_diff(self, other: Game,) -> Diffs:
         if self.draw_pile is None or other.draw_pile is None:
             return Diffs().add(1 if self.draw_pile is not None or other.draw_pile is not None else 0, 1)
