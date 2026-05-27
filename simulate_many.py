@@ -11,7 +11,7 @@ import sys
 import time
 
 thread_count = 1
-max_time_per_sim = 20 # seconds # TODO this is also exhaust
+max_time_per_sim: int|None = 20 # seconds # TODO this is also exhaust
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
@@ -56,7 +56,7 @@ def sample(sample_rnd: random.Random, invalid_actions_rate: float, bot_action_ra
 
 def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|None, max_moves: int|None, backtracking: bool,
                  sampling_seed: int|None, sample_rate: float = 0, invalid_actions_rate: float = 0, bot_action_rate: float = 0,
-                 return_trace: bool = False) -> tuple[Game, int, list[Sample], list[str], Game]:
+                 return_trace: bool = False) -> tuple[Game, int, list[Sample], list[str], Game, bool]:
     sample_rnd = random.Random(sampling_seed)
     game = Parser.parse(game_desc, game_seed, False, True)
     game_samples: list[Sample] = []
@@ -73,8 +73,8 @@ def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|No
                 if return_trace:
                     action_trace.pop()
                 action: str|None = player.decide_action(game.copy())
-        if action is None or move_count == max_moves or (time.time() - start_time) > max_time_per_sim:
-            return game, move_count, game_samples, (action_trace if return_trace else []), starting_game
+        if action is None or move_count == max_moves or (max_time_per_sim is not None and (time.time() - start_time) > max_time_per_sim):
+            return game, move_count, game_samples, (action_trace if return_trace else []), starting_game, True
         if sample_rnd.random() < sample_rate:
             game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action, game_id))
         if return_trace:
@@ -83,7 +83,7 @@ def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|No
             backtrack_trace.append(game.copy())
         Parser.perform_action_in_game(action, game)
         move_count += 1
-    return game, move_count, game_samples, (action_trace if return_trace else []), starting_game
+    return game, move_count, game_samples, (action_trace if return_trace else []), starting_game, False
 
 def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|None]:
     if seeds is None:
@@ -102,7 +102,7 @@ def get_seed(rnd: random.Random|None):
 def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_desc: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],
                         sampling_rate: float, invalid_actions_rate: float, bot_action_rate: float, return_trace: bool
-                    ) -> tuple[list[Game], list[int], list[Sample], list[list[str]], list[Game]]:
+                    ) -> tuple[list[Game], list[int], list[Sample], list[list[str]], list[Game], list[bool]]:
     game_seeds = get_seeds(game_seeds, count)
     sampling_seeds = get_seeds(sampling_seeds, count)
     if thread_count == 1:
@@ -117,12 +117,13 @@ def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, gam
             sampling_seed, sampling_rate, invalid_actions_rate, bot_action_rate, return_trace
         ) for game_id, (game_seed, sampling_seed) in enumerate(tqdm(zip(game_seeds, sampling_seeds))))
     # assert isinstance(results, list) and results is all(isinstance(item, (Game, int)) for item in results), "Parallel jobs have not resulted in an output of type list"
-    games = [game for game, _, _, _, _ in results] # type: ignore
-    move_counts = [move_count for _, move_count, _, _, _ in results] # type: ignore
-    samples = [sample for _, _, game_samples, _, _ in results for sample in game_samples] # type: ignore
-    full_trace = [moves for _, _, _, moves, _ in results] # type: ignore
-    starting_games = [games for _, _, _, _, games in results] # type: ignore
-    return games, move_counts, samples, full_trace, starting_games
+    games = [game for game, _, _, _, _, _ in results] # type: ignore
+    move_counts = [move_count for _, move_count, _, _, _, _ in results] # type: ignore
+    samples = [sample for _, _, game_samples, _, _, _ in results for sample in game_samples] # type: ignore
+    full_trace = [moves for _, _, _, moves, _, _ in results] # type: ignore
+    starting_games = [games for _, _, _, _, games, _ in results] # type: ignore
+    stopped_search = [stopped for _, _, _, _, _, stopped in results] # type: ignore
+    return games, move_counts, samples, full_trace, starting_games, stopped_search
 
 def report_results(games: list[Game], move_counts: list[int]):
     # print("games:\n" + '\n'.join([f'{i}\n' + game.get_state_view() for i, game in enumerate(games)])) # type: ignore
@@ -164,7 +165,7 @@ if __name__ == '__main__':
     # print("RandomPlayerNoRepeat, action heuristic")
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
-    games, move_counts, samples, _, _ = simulate_for_player(
+    games, move_counts, samples, _, _, _ = simulate_for_player(
         args.game_count, args.max_moves, True, gdl, lambda: players[args.bot](None),
         args.game_seed, args.sampling_seed, args.sampling_rate,
         args.invalid_action_rate, args.bot_action_rate, False

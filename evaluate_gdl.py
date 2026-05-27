@@ -38,15 +38,14 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     experiment_seed = get_seed(None)
     logger.info(f"Experiment seed: {experiment_seed}")
     game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset
-    game_ends, move_counts, samples, traces, game_starts = simulate_for_player(
+    game_ends, move_counts, samples, traces, game_starts, stopped = simulate_for_player(
         game_count, max_move_count, True, gdl, player_creator,
         game_seeds, 0, 0, 0, 1, True
     )
     game_name = game_ends[0].name
     wins: list[bool] = [game.is_win() for game in game_ends]
     win_percentage = sum(wins)/len(wins)
-    exhausted = [move_count == max_move_count for move_count in move_counts]
-    exhausted_percentage = sum(exhausted)/len(exhausted)
+    exhausted_percentage = sum(stopped)/len(stopped)
     card_usage = [get_card_usage(start, end, logger) for start, end in zip(game_starts, game_ends)]
     pile_usage = [get_pile_usage(game, trace, logger) for game, trace in zip(game_starts, traces)]
     df = pd.DataFrame({
@@ -55,7 +54,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
         "Win": wins,
         # "Win Percentage": [win_percentage] * len(games),
         "Move Count": move_counts,
-        "Exhausted": exhausted,
+        "Exhausted": stopped,
         # "Exhausted Percentage": [exhausted] * len(games),
         "Card Usage": card_usage,
         "Pile Usage": pile_usage
@@ -115,7 +114,7 @@ def get_pile_usage(game: Game, trace: list[str], logger: Logger) -> float:
 
 def evaluate_gdl(gdl: str, should_log: bool, max_move_count: int = 1000, game_count: int = 10) -> Verdict:
     logger = Logger(should_log)
-    games, move_counts, samples, traces, starting_games = simulate_for_player(
+    games, move_counts, samples, traces, starting_games, stopped = simulate_for_player(
         game_count, max_move_count, True, gdl, lambda: players["dfs-heuristic"](None),
         0, 0, 0, 0, 1, False
     )
