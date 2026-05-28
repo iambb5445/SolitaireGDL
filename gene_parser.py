@@ -38,7 +38,9 @@ class GeneParser:
     @staticmethod
     def get_deck_gene(deck_desc: list[str]) -> DeckGene:
         count, suits, ranks = Parser.get_deck_args(deck_desc)
-        return DeckGene(count, [str(suit) for suit in suits], [str(rank) for rank in ranks] if ranks is not None else None)
+        ranks = [str(rank) for rank in ranks] if ranks is not None else None
+        suits = [Parser.suit_to_full_name(suit) for suit in suits]
+        return DeckGene(count, suits, ranks)
     
     @staticmethod
     def get_moves_gene(moves_desc: list[str], auto: bool, setup: SetupGene) -> MovesGene:
@@ -82,18 +84,20 @@ class GeneParser:
             "<count>": lambda s: (ConditionGene.Count(s), isinstance(Parser.parse_number(s), int)),
             "<suits>": lambda s: (ConditionGene.Suits(s), isinstance(Parser.parse_items(s, Parser.parse_suit), list)),
             "<ranks>": lambda s: (ConditionGene.Ranks(s), isinstance(Parser.parse_items(s, Parser.parse_rank), list)),
-            "<pileset>": lambda s: (ConditionGene.Pileset(s, setup), isinstance(Parser.parse_items(s, Parser.get_pilename_parser(setup.get_pilenames(False, True))), str)),
+            "<pileset>": lambda s: (ConditionGene.Pileset(s, setup), len(Parser.parse_items(s, Parser.get_pilename_parser(setup.get_pilenames(False, True)))) > 0),
             "<rankcond>": lambda s: (ConditionGene.RankCond(s), s in cond.MultiRankCondition.MODE),
             "<suitcond>": lambda s: (ConditionGene.SuitCond(s), s in cond.MultiSuitCondition.MODE),
         }
         arg_positions: list[tuple[int, str]] = []
         for arg_keyword in mapping.keys():
             ind = base.find(arg_keyword)
-            arg_positions.append((ind, arg_keyword))
+            if ind >= 0:
+                arg_positions.append((ind, arg_keyword))
         arg_positions.sort()
         part_index = 0
         condition_args: list[tuple[ConditionGene.Arg, int, int]] = []
         for ind, arg_keyword in arg_positions:
+            print(ind, arg_keyword, parts, base, setup.get_pilenames(False, True))
             arg, valid = mapping[arg_keyword](parts[part_index])
             if not valid:
                 raise Exception(f"Invalid arg {parts[part_index]} is attempting to replace {arg_keyword} in condition {base}")
@@ -106,7 +110,7 @@ class GeneParser:
     def parse_move_condition(s: str, setup: SetupGene) -> ConditionGene:
         parts = Parser.split_line(s)
         if parts[0] == 'DEST' and parts[1] == 'Empty':
-            base = "DEST EMPTY"
+            base = "DEST Empty"
         elif parts[0] == 'DEST' and parts[1] == 'Size':
             base = "DEST Size <op> <count>"
         elif parts[0] == 'DEST' and parts[1] == 'Suit':
@@ -150,7 +154,7 @@ class GeneParser:
             mode: cond.PileCondition.MODE = cond.PileCondition.MODE(parts[1])
             arg_parts = [parts[2]] + parts[4:]
             if parts[3] == 'Empty':
-                return GeneParser.make_base_condition(f"PILE {mode} <pileset> EMPTY", arg_parts, setup, cond_type)
+                return GeneParser.make_base_condition(f"PILE {mode} <pileset> Empty", arg_parts, setup, cond_type)
             elif parts[3] == 'Size':
                 return GeneParser.make_base_condition(f"PILE {mode} <pileset> Size <op> <count>", arg_parts, setup, cond_type)
             else:
@@ -197,3 +201,31 @@ class GeneParser:
             if section_title not in ['$cards', '$initial','$moves', '$auto', '$win']:
                 raise Exception(f"Invalid section title: {section_title}")
         return SGDLGene(deck_gene, setup_gene, moves_gene, win_gene)
+
+    @staticmethod
+    def from_file(filename: str) -> SGDLGene:
+        with open(filename, 'r') as f:
+            game = GeneParser.parse(f.read())
+        return game
+
+if __name__ == '__main__':
+    import sys
+    import argparse
+    from random import Random
+    from simulate_many import get_seed
+    parser = argparse.ArgumentParser()
+    parser.add_argument('in_filename', type=str, help="Name of the input file to be mutated.")
+    # parser.add_argument('out_filename', type=str, help="Name of the file to save the mutated SGDL.")
+    parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for the mutation.")
+    args = parser.parse_args(sys.argv[1:])
+    in_filename = args.in_filename
+    # out_filename = args.out_filename
+    seed: int = args.seed
+    if seed is None:
+        seed = get_seed(None)
+    gene = GeneParser.from_file(in_filename)
+    print("Input SGDL:")
+    print(gene.get_gdl())
+    print("Output SGDL")
+    gene.mutate(Random(seed))
+    print(gene.get_gdl())

@@ -29,6 +29,13 @@ class Parser:
             return val
         except Exception as e:
             raise Exception(f"Cannot parse value as a number: {s}")
+        
+    @staticmethod
+    def suit_to_full_name(suit: Suit) -> str:
+        for full_name, short_name in suit_full_name_mapping.items():
+            if short_name == suit:
+                return str(full_name)
+        raise Exception(f"Unrecognized suit {suit}")
     
     @staticmethod
     def parse_suit(s: str) -> Suit:
