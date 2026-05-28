@@ -5,7 +5,7 @@ from simulate import players
 from game import Game
 from tqdm import tqdm
 from typing import Callable, Sequence
-import time
+from utility import get_seed
 import random
 import sys
 import time
@@ -93,11 +93,6 @@ def get_seeds(seeds: int|None|Sequence[int|None], count: int) -> Sequence[int|No
         seeds = [get_seed(rnd) for _ in range(count)]
     assert len(seeds) == count
     return seeds
-
-def get_seed(rnd: random.Random|None):
-    if rnd is None:
-        rnd = random.Random()
-    return rnd.randint(0, 10000000)
 
 def simulate_for_player(count: int, max_moves: int|None, backtracking: bool, game_desc: str, player_creator: Callable[[], Player],
                         game_seeds: int|None|Sequence[int|None], sampling_seeds: int|None|Sequence[int|None],

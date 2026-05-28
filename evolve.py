@@ -4,14 +4,12 @@ from evaluate_gdl import evaluate_gdl, Verdict
 import sys
 import os
 from parser import Parser
+from utility import get_seed
 
 rnd = Random(42)
 
 out_dir = sys.argv[-1]
 os.makedirs(out_dir, exist_ok=False)
-
-def get_seed(rnd: Random):
-    return rnd.randint(0, 10000000)
 
 verdict = Verdict.OK
 count = 100

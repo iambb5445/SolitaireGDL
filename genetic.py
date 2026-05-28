@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence, Callable, TypeVar
 from evaluate_gdl import evaluate_gdl, Verdict
 import condition as cond
+from utility import get_seed
 
 def coin_flip(rnd: Random) -> bool:
     return rnd.randint(0, 1) == 0
@@ -92,7 +93,7 @@ class GenoType(ABC):
     
     @staticmethod
     def get_rnd(rnd: Random) -> Random:
-        return Random(rnd.randint(0, 1000000000))
+        return Random(get_seed(rnd, 1000000000))
     
     @staticmethod
     def get_random_name(rnd: Random):
@@ -1133,7 +1134,7 @@ if __name__ == "__main__":
     import inspect
     print(f"Params:\n***\n{inspect.getsource(Params)}\n***")
     for _ in range(total_count):
-        gdl_seed = exper_rnd.randint(0, 1000000000)
+        gdl_seed = get_seed(exper_rnd, 1000000000)
         print(f"---\nGDL_SEED={gdl_seed}\n---\n")
         gdl = SGDLGene.get_random(Random(gdl_seed)).get_gdl()
         print(gdl)

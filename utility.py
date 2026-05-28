@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import TypeVar, Callable
+import random
 
 class TextUtil:
     class TEXT_COLOR(StrEnum):
@@ -91,3 +92,8 @@ def get_safe_filename(filename: str, timed:bool=False, extension:str|None=None):
         extension = "".join(c for c in extension if c.isalnum() or c in keepcharacters).rstrip()
         filename += f".{extension}"
     return filename
+
+def get_seed(rnd: random.Random|None, max=10000000):
+    if rnd is None:
+        rnd = random.Random()
+    return rnd.randint(0, max)
