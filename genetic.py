@@ -479,43 +479,6 @@ class SetupGene(GenoType):
         self.card_count = intended_card_count
         return self
     
-    def _mutate_a_pile_(self, rnd: Random) -> SetupGene:
-        pile_index = rnd.randint(0, len(self.piles) + (0 if self.draw is None else 2))
-        if pile_index < len(self.piles):
-            self.piles[pile_index].mutate(rnd)
-        elif pile_index == len(self.piles):
-            assert self.draw is not None
-            if isinstance(self.draw, RotateDrawDefGene):
-                self.draw = DealDrawDefGene.get_random(rnd, self.draw.card_count, self)
-            else:
-                self.draw = RotateDrawDefGene.get_random(rnd, self.draw.card_count)
-        else:
-            assert self.draw is not None
-            self.draw.mutate(rnd)
-        self._adjust_card_count_(self.card_count, rnd)
-        return self
-
-    def _add_a_pile_(self, rnd: Random)-> SetupGene:
-        pilenames = self.get_pilenames(False, False)
-        if self.draw is None and coin_flip(rnd):
-            if coin_flip(rnd):
-                self.draw = DealDrawDefGene.get_random(rnd, self.card_count//2, self)
-            else:
-                self.draw = RotateDrawDefGene.get_random(rnd, self.card_count//2)
-        else:
-            special_pilenames = [name for name in Params.SPECIAL_PILENAMES if name not in pilenames]
-            self.piles.append(PileDefGene.get_random(rnd, self.card_count//2, False, special_pilenames)) # //2 is a rough estimate
-        self._adjust_card_count_(self.card_count, rnd)
-        return self
-
-    def _remove_a_pile_(self, rnd: Random) -> SetupGene:
-        if self.draw is not None and (coin_flip(rnd) or len(self.piles) == 0):
-            self.draw = None
-        else:
-            self.piles.pop(rnd.randint(0, len(self.piles) - 1))
-        self._adjust_card_count_(self.card_count, rnd)
-        return self
-    
     @staticmethod
     def _get_crossover_options() -> list[Callable[[SetupGene, SetupGene, Random], SetupGene]]:
         # there should be no need for adjustments, becuase other should have the same card count
@@ -527,16 +490,11 @@ class SetupGene(GenoType):
     
     @staticmethod
     def _get_mutation_options() -> list[Callable[[SetupGene, Random], SetupGene]]:
-        base_mutations: list[Callable[[SetupGene, Random], SetupGene]] = [
-            lambda me, rnd: me._mutate_a_pile_(rnd),
-            lambda me, rnd: me._add_a_pile_(rnd),
-            lambda me, rnd: me._remove_a_pile_(rnd),
-        ]
         crossover_mutations: list[Callable[[SetupGene, Random], SetupGene]] = [
             lambda me, rnd, c=c_option: c(me, SetupGene.get_random(rnd, me.card_count), rnd)
             for c_option in SetupGene._get_crossover_options()
         ]
-        return base_mutations + crossover_mutations
+        return crossover_mutations
     
     def get_pilename_mapping(self, rnd: Random, new_setup: SetupGene, include_rotate_draw: bool, include_draw: bool):
         mapping: dict[str, str] = {}
@@ -899,7 +857,6 @@ class ConditionGene(GenoType, Reducible):
     def _get_mutation_options() -> list[Callable[[ConditionGene, Random], ConditionGene]]:
         # this is not used unless mutation is directly called on the condition and not on the parent compornts
         return [
-            lambda me, rnd: me._mutate_single_(rnd),
             lambda me, rnd: me._add_one_condition_(rnd, None, 0, None),
             lambda me, rnd: me._remove_one_condition_(rnd)
         ]
