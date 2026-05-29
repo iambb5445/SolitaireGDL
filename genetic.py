@@ -920,7 +920,7 @@ class EndToEndAction(GenoType, Reducible):
         self.cond.set_setup(setup)
     
     @staticmethod
-    def get_random_action_endpoints(rnd: Random, end_options: list[tuple[str, str]]):
+    def get_random_endpoints(rnd: Random, end_options: list[tuple[str, str]]):
         start, end = rnd.choice(end_options)
         starts = [start]
         ends = [end]
@@ -935,7 +935,7 @@ class EndToEndAction(GenoType, Reducible):
         return starts, ends
     
     @staticmethod
-    def get_action_endpoint_options(setup: SetupGene, exclude: list[tuple[str, str]]):
+    def get_endpoint_options(setup: SetupGene, exclude: list[tuple[str, str]]):
         pilenames = setup.get_pilenames(False, False)
         move_from_pilenames = setup.get_pilenames(True, False)
         move_options = [(pilename_or_D, pilename) for pilename in pilenames for pilename_or_D in move_from_pilenames if (pilename_or_D, pilename) not in exclude]
@@ -974,7 +974,7 @@ class EndToEndAction(GenoType, Reducible):
         ]
     
     @classmethod
-    def get_random_list(cls: type[E], rnd: Random, count: int, setup: SetupGene) -> list[E]:
+    def get_list_of_randoms(cls: type[E], rnd: Random, count: int, setup: SetupGene) -> list[E]:
         moves: list[E] = []
         excluded_end_points: list[tuple[str, str]] = []
         for _ in range(count):
@@ -1001,9 +1001,9 @@ class MoveGene(EndToEndAction):
     @staticmethod
     def get_random(rnd: Random, setup: SetupGene|None = None, exclude: list[tuple[str, str]] = []) -> MoveGene:
         assert setup is not None
-        move_options, _ = MoveGene.get_action_endpoint_options(setup, exclude)
+        move_options, _ = MoveGene.get_endpoint_options(setup, exclude)
         if len(move_options) == 0: raise InvalidMoveCreationDueToEndPointExclusion()
-        starts, ends = MoveGene.get_random_action_endpoints(rnd, move_options)
+        starts, ends = MoveGene.get_random_endpoints(rnd, move_options)
         return MoveGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE, setup), setup)
     
     def copy(self) -> MoveGene:
@@ -1031,9 +1031,9 @@ class MoveStackGene(EndToEndAction):
     @staticmethod
     def get_random(rnd: Random, setup: SetupGene|None = None, exclude: list[tuple[str, str]] = []) -> MoveStackGene:
         assert setup is not None
-        _, move_stack_options = MoveStackGene.get_action_endpoint_options(setup, exclude)
+        _, move_stack_options = MoveStackGene.get_endpoint_options(setup, exclude)
         if len(move_stack_options) == 0: raise InvalidMoveCreationDueToEndPointExclusion()
-        starts, ends = MoveStackGene.get_random_action_endpoints(rnd, move_stack_options)
+        starts, ends = MoveStackGene.get_random_endpoints(rnd, move_stack_options)
         return MoveStackGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE_STACK, setup), setup)
     
     def copy(self) -> MoveStackGene:
@@ -1118,8 +1118,8 @@ class MovesGene(GenoType, Reducible):
             move_stack_count = rnd.randint(0, Params.MAX_MOVE_STACK_COUNT)
             if move_count + move_stack_count != 0 or Params.MAX_MOVE_COUNT + Params.MAX_MOVE_STACK_COUNT == 0:
                 break
-        moves = MoveGene.get_random_list(rnd, move_count, setup)
-        move_stacks = MoveStackGene.get_random_list(rnd, move_stack_count, setup)
+        moves = MoveGene.get_list_of_randoms(rnd, move_count, setup)
+        move_stacks = MoveStackGene.get_list_of_randoms(rnd, move_stack_count, setup)
         draw_move = None
         if isinstance(setup.draw, DealDrawDefGene) and coin_flip(rnd):
             draw_move = DrawMoveGene.get_random(rnd, setup)
