@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('outpath', type=str, help="Path to save the csv results of evaluation.")
     parser.add_argument('--add-timestamp', action="store_true", help="If true, will make a directory in outpath based on timestamp.")
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the evaluation logs.")
-    parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluate a batch of gdls that may be invalid.")
+    parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {list(players.keys())}, default: dfs-heuristic")
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir
