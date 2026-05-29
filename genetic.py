@@ -5,13 +5,13 @@ from enum import Enum
 from base import Stack
 from base import SuitFullNames as SFN
 from abc import ABC, abstractmethod
-from typing import Sequence, Callable, TypeVar
+from typing import Sequence, Callable, TypeVar, cast
 from evaluate_gdl import evaluate_gdl, Verdict
 import condition as cond
-from utility import get_seed
+from utility import get_seed, get_uniques
 
-def coin_flip(rnd: Random) -> bool:
-    return rnd.randint(0, 1) == 0
+def coin_flip(rnd: Random, faces: int = 2) -> bool:
+    return rnd.randint(0, faces - 1) == 0
 
 def uniform(values: list[float]|list[int]) -> list[float]:
     total = sum(values)
@@ -26,8 +26,10 @@ class Params:
     MAX_TRIES = 10
     MAX_CARD_IN_COND = 10
     MAX_COND_DEPTH = 2 #0-based
+    CROSSOVER_MAX_COND_DEPTH = 2
     MAX_GLOBAL_COND_DEPTH = 0 #0-based
     MAX_COND_BRANCH = 2
+    CROSSOVER_MAX_COND_BRANCH = 3
     SPECIAL_PILENAMES = ["COLUMN"]
     MAX_FACE_TYPE_PER_PILE = 2
     SIMPLE_CONDITION = True # should we prevent and of ands, or of ors
@@ -38,6 +40,7 @@ class Params:
     RANKS_ARG_TYPE = RanksArgType.KingAceOnly
     WIN_COND_ALL_EMPTY_ONLY = True # win condition can only be ALL <PILE_TYPE> Empty
     GLOBAL_PILE_SIZE_GT0_ONLY = True # any pile size condition can only be > 0
+    DUPLICATE_MOVE_ENDS_ALLOWED = False
     
 
 class MaxTriesReachedException(Exception):
@@ -47,6 +50,9 @@ class MutationUnavailableException(Exception):
     pass
 
 class CrossoverUnavailableException(Exception):
+    pass
+
+class InvalidMoveCreationDueToEndPointExclusion(Exception):
     pass
 
 G = TypeVar('G', bound='GenoType')
@@ -72,23 +78,32 @@ class GenoType(ABC):
         raise NotImplementedError
     
     def mutate(self: G, rnd: Random) -> G:
-        mutation_options = self.__class__.get_mutation_options()
+        mutation_options = self.__class__._get_mutation_options()
         if len(mutation_options) == 0:
             raise MutationUnavailableException(str(self.__class__) + self.get_gdl())
         return rnd.choice(mutation_options)(self, rnd)
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[G, Random], G]]:
+    @abstractmethod
+    # assumes input is already a copy or rvalue
+    # the output may be same as the input (no validation)
+    def _get_mutation_options() -> list[Callable[[G, Random], G]]:
         raise NotImplementedError
     
-    def crossover(self: G, other: G, rnd: Random) -> G:
-        crossover_options = self.__class__.get_crossover_options()
+    def crossover(self: G, other: G, rnd: Random, double_sided: bool) -> G:
+        crossover_options = self.__class__._get_crossover_options()
         if len(crossover_options) == 0:
             raise CrossoverUnavailableException(str(self.__class__) + self.get_gdl())
-        return rnd.choice(crossover_options)(self.copy(), other.copy(), rnd)
+        c_option = rnd.choice(crossover_options)
+        if double_sided and coin_flip(rnd):
+            return c_option(other.copy(), self.copy(), rnd) # some crossovers favor self over other
+        return c_option(self.copy(), other.copy(), rnd)
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[G, G, Random], G]]:
+    @abstractmethod
+    # assumes input is already a copy or rvalue
+    # the output may be same as one of the inputs (no validation)
+    def _get_crossover_options() -> list[Callable[[G, G, Random], G]]:
         raise NotImplementedError
     
     @staticmethod
@@ -162,7 +177,7 @@ class DeckGene(GenoType):
         return DeckGene(self.count, [suit for suit in self.suits], self.ranks if self.ranks is None else [rank for rank in self.ranks])
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[DeckGene, DeckGene, Random], DeckGene]]:
+    def _get_crossover_options() -> list[Callable[[DeckGene, DeckGene, Random], DeckGene]]:
         return [
             lambda me, other, rnd: DeckGene(other.count, me.suits, me.ranks),
             lambda me, other, rnd: DeckGene(me.count, other.suits, me.ranks),
@@ -170,10 +185,10 @@ class DeckGene(GenoType):
         ]
 
     @staticmethod
-    def get_mutation_options() -> list[Callable[[DeckGene, Random], DeckGene]]:
-        return [lambda me, rnd: DeckGene.get_random(rnd)] + [
-            lambda me, rnd: c_option(me.copy(), DeckGene.get_random(rnd), rnd)
-            for c_option in DeckGene.get_crossover_options()
+    def _get_mutation_options() -> list[Callable[[DeckGene, Random], DeckGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, DeckGene.get_random(rnd), rnd)
+            for c_option in DeckGene._get_crossover_options()
         ]
 
 class DealDrawDefGene(GenoType):
@@ -189,7 +204,7 @@ class DealDrawDefGene(GenoType):
     def get_random(rnd: Random, card_count: int = 0, setup: SetupGene|None = None) -> DealDrawDefGene:
         assert setup is not None
         draw_to_options = setup.get_pilenames(False, False)
-        draw_to = [name for name in rnd.sample(draw_to_options, k=rnd.randint(1, len(draw_to_options)))]
+        draw_to = [name for name in rnd.sample(draw_to_options, k=rnd.randint(1, len(draw_to_options)))] # I could instead mark each option as in or out
         return DealDrawDefGene(card_count, draw_to, setup)
 
     def copy(self) -> DealDrawDefGene:
@@ -199,17 +214,25 @@ class DealDrawDefGene(GenoType):
         self.setup = setup
 
     @staticmethod
-    def get_crossover_options() -> list[Callable[[DealDrawDefGene, DealDrawDefGene, Random], DealDrawDefGene]]:
+    def _get_crossover_options() -> list[Callable[[DealDrawDefGene, DealDrawDefGene, Random], DealDrawDefGene]]:
         return [
-            lambda me, other, rnd: DealDrawDefGene(me.card_count, other.draw_to, me.setup),
+            # lambda me, other, rnd: DealDrawDefGene((other.card_count if other.card_count <= me.setup.card_count else me.card_count), me.draw_to, me.setup),
+            lambda me, other, rnd: DealDrawDefGene(other.card_count, me.draw_to, me.setup), # card counts will be adjusted from setup
+            lambda me, other, rnd: DealDrawDefGene(me.card_count, (other.draw_to if set(other.draw_to).issubset(set(me.setup.get_pilenames(False, False))) else me.draw_to), me.setup),
         ]
 
     @staticmethod
-    def get_mutation_options() -> list[Callable[[DealDrawDefGene, Random], DealDrawDefGene]]:
-        return [lambda me, rnd: DealDrawDefGene.get_random(rnd, me.card_count, me.draw_to_options)] + [
-            lambda me, rnd: c_option(me.copy(), DealDrawDefGene.get_random(rnd, me.card_count, me.draw_to_options), rnd)
-            for c_option in DealDrawDefGene.get_crossover_options()
+    def _get_mutation_options() -> list[Callable[[DealDrawDefGene, Random], DealDrawDefGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, DealDrawDefGene.get_random(rnd, me.card_count, me.setup), rnd)
+            for c_option in DealDrawDefGene._get_crossover_options()
         ]
+    
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        mapping: dict[str, str] = self.setup.get_pilename_mapping(rnd, new_setup, False, False)
+        self.draw_to = get_uniques([mapping[p] for p in self.draw_to])
+        return self
+
 
 class RotateDrawDefGene(GenoType):
     def __init__(self, card_count: int, draw_count: int, display_count: int|str, redeal_count: int|str) -> None:
@@ -238,18 +261,19 @@ class RotateDrawDefGene(GenoType):
         return RotateDrawDefGene(self.card_count, self.draw_count, self.display_count, self.redeal_count)
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[RotateDrawDefGene, RotateDrawDefGene, Random], RotateDrawDefGene]]:
+    def _get_crossover_options() -> list[Callable[[RotateDrawDefGene, RotateDrawDefGene, Random], RotateDrawDefGene]]:
         return [
+            lambda me, other, rnd: RotateDrawDefGene(other.card_count, me.draw_count, me.display_count, me.redeal_count), # counts will be adjusted from setup
             lambda me, other, rnd: RotateDrawDefGene(me.card_count, other.draw_count, me.display_count, me.redeal_count),
             lambda me, other, rnd: RotateDrawDefGene(me.card_count, me.draw_count, other.display_count, me.redeal_count),
             lambda me, other, rnd: RotateDrawDefGene(me.card_count, me.draw_count, me.display_count, other.redeal_count),
         ]
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[RotateDrawDefGene, Random], RotateDrawDefGene]]:
-        return [lambda me, rnd: RotateDrawDefGene.get_random(rnd, me.card_count)] + [
-            lambda me, rnd: c_option(me.copy(), RotateDrawDefGene.get_random(rnd, me.card_count), rnd)
-            for c_option in RotateDrawDefGene.get_crossover_options()
+    def _get_mutation_options() -> list[Callable[[RotateDrawDefGene, Random], RotateDrawDefGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, RotateDrawDefGene.get_random(rnd, me.card_count), rnd)
+            for c_option in RotateDrawDefGene._get_crossover_options()
         ]
     
 class PileDefGene(GenoType):
@@ -267,10 +291,50 @@ class PileDefGene(GenoType):
         pilename = rnd.choice(special_pilenames + [None] * 2) # twice as likely to choose a new name
         if pilename is None:
             pilename = GenoType.get_random_name(rnd).upper()
+        counts = PileDefGene.get_random_counts(rnd, card_count, is_card_count_exact)
+        faces = PileDefGene.get_random_faces(counts, rnd)
+        return PileDefGene(pilename, counts, faces)
+    
+    def add_cards(self, rnd: Random, max_added: int) -> int:
+        less_than_max = [i for i, count in enumerate(self.counts) if count < Params.MAX_CARD_IN_PILE]
+        if len(less_than_max) > 0 and coin_flip(rnd):
+            ind = rnd.choice(less_than_max)
+            count_added = min(rnd.randint(1, Params.MAX_CARD_IN_PILE - self.counts[ind]), max_added)
+            self.counts[ind] += count_added
+        else:
+            count_added = min(PileDefGene.get_random_pile_size(rnd), max_added)
+            self.counts.append(count_added)
+            self.faces.append(rnd.choice(self.faces))
+        self.card_count += count_added
+        return count_added
+    
+    def remove_cards(self, rnd: Random, max_removed: int) -> int:
+        non_zero = [i for i, count in enumerate(self.counts) if count > 0]
+        if len(non_zero) == 0:
+            return 0
+        ind = rnd.choice(non_zero)
+        # should I check to make sure there is at least 1 pile? alternatively I can update setup and remove pilename from conditions etc.
+        if len(self.counts) > 1 and self.counts[ind] > max_removed and coin_flip(rnd, 3):
+            self.counts.pop(ind)
+            self.faces.pop(ind)
+        elif coin_flip(rnd) and self.counts[ind] > max_removed:
+            self.counts[ind] = 0
+        else:
+            self.counts[ind] -= min(rnd.randint(1, self.counts[ind]), max_removed)
+        count_removed = self.card_count - sum(self.counts)
+        self.card_count -= count_removed
+        return count_removed
+
+    @staticmethod
+    def get_random_pile_size(rnd: Random):
+        return rnd.randint(0, Params.MAX_CARD_IN_PILE)
+
+    @staticmethod
+    def get_random_counts(rnd: Random, card_count: int, is_card_count_exact: bool) -> list[int]:
         if is_card_count_exact:
             counts = [count for count in GenoType.get_random_numbers(rnd, card_count, rnd.randint(1, Params.MAX_PILE_REPEAT_COUNT), True) if count > 0]
         else:
-            counts = [rnd.randint(0, Params.MAX_CARD_IN_PILE)
+            counts = [PileDefGene.get_random_pile_size(rnd)
                   for i in range(rnd.randint(1, Params.MAX_PILE_REPEAT_COUNT))]
             for i in range(len(counts)):
                 if counts[i] > card_count:
@@ -279,8 +343,7 @@ class PileDefGene(GenoType):
                     counts = counts[:i+1]
                     break
                 card_count -= counts[i]
-        faces = PileDefGene.get_random_faces(counts, rnd)
-        return PileDefGene(pilename, counts, faces)
+        return counts
     
     @staticmethod
     def get_random_faces(counts: list[int], rnd: Random, face_types: list[Stack.Face]|None=None) -> list[Stack.Face]:
@@ -305,10 +368,11 @@ class PileDefGene(GenoType):
         self.card_count = sum(self.counts)
         return self
     
-    def _redo_card_count_(self, card_count: int, rnd: Random) -> PileDefGene:
+    
+    def _redo_card_count_(self, rnd: Random, card_count: int) -> PileDefGene:
         counts = []
         while sum(counts) < card_count:
-            counts.append(rnd.randint(0, Params.MAX_CARD_IN_PILE))
+            counts.append(PileDefGene.get_random_pile_size(rnd))
         if sum(counts) > card_count:
             counts[-1] -= sum(counts) - card_count # TODO distribute the difference
         # possibly, this won't be in Params range anymore for MAX_PILE_REPEAT_COUNT
@@ -327,24 +391,22 @@ class PileDefGene(GenoType):
         return PileDefGene(self.pilename, [count for count in self.counts], [face for face in self.faces])
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[PileDefGene, PileDefGene, Random], PileDefGene]]:
-        # in theory, this is only card on the same card_counts. If not, we want to keep the card count the same
+    def _get_crossover_options() -> list[Callable[[PileDefGene, PileDefGene, Random], PileDefGene]]:
+        # we may card counts, this change will cascade to other components only if crossover/mutation is called on a bigger component
         return [
-            lambda me, other, rnd: PileDefGene(me.pilename, other.counts, me.faces)._redo_card_count_(me.card_count, rnd), # TODO find a nicer way to adjust counts without overriding them
+            lambda me, other, rnd: PileDefGene(me.pilename, other.counts, me.faces)._adjust_faces_(rnd), # counts will be adjusted from outside
             lambda me, other, rnd: PileDefGene(me.pilename, me.counts, other.faces)._adjust_faces_(rnd),
         ]
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[PileDefGene, Random], PileDefGene]]:
+    def _get_mutation_options() -> list[Callable[[PileDefGene, Random], PileDefGene]]:
+        # return [
+        #     lambda me, rnd: me._redo_card_count_(rnd, me.card_count),
+        #     lambda me, rnd: me._redo_faces_(rnd),
+        # ]
         return [
-            lambda me, rnd: PileDefGene.get_random(rnd, me.card_count, True, []),
-            lambda me, rnd: me._redo_card_count_(me.card_count, rnd),
-            lambda me, rnd: me._redo_faces_(rnd),
-        ]
-        # similar results, but more complicated and also a bit biased
-        return [lambda me, rnd: PileDefGene.get_random(rnd, me.card_count, True, [])] + [
-            lambda me, rnd: c_option(me.copy(), PileDefGene.get_random(rnd, me.card_count, True, []), rnd)
-            for c_option in PileDefGene.get_crossover_options()
+            lambda me, rnd, c=c_option: c(me, PileDefGene.get_random(rnd, me.card_count, True, []), rnd)
+            for c_option in PileDefGene._get_crossover_options()
         ]
     
 class SetupGene(GenoType):
@@ -396,17 +458,24 @@ class SetupGene(GenoType):
         # will readjust setup for draw pile
         return SetupGene(self.draw if self.draw is None else self.draw.copy(), [pile.copy() for pile in self.piles])
     
-    def _adjust_card_count_(self, intended_card_count: int, rnd: Random) -> SetupGene:
-        current_card_counts = [pile.card_count for pile in self.piles] + [] if self.draw is None else [self.draw.card_count]
-        card_counts = GenoType.get_random_numbers(rnd, intended_card_count, len(current_card_counts), True)
-        for i in range(len(self.piles)):
-            # possibly, this won't be in Params range anymore for pile sizes
-            self.piles[i]._redo_card_count_(card_counts[i], rnd)
-        self.piles = [pile for pile in self.piles if pile.card_count != 0]
-        if self.draw is not None:
-            self.draw.card_count = card_counts[-1]
-            if card_counts[-1] == 0:
-                self.draw = None
+    def _adjust_card_count_(self, intended_card_count: int, rnd: Random) -> SetupGene: # TODO make it better
+        self.card_count = sum([pile.card_count for pile in self.piles]) + (0 if self.draw is None else self.draw.card_count)
+        # add/expand piles if needed
+        while intended_card_count > self.card_count:
+            if self.draw is not None and coin_flip(rnd, len(self.piles) + 1):
+                self.draw.card_count += intended_card_count - self.card_count
+                self.card_count = intended_card_count
+            else:
+                self.card_count += rnd.choice(self.piles).add_cards(rnd, intended_card_count - self.card_count)
+        # remove/trim piles if needed
+        while intended_card_count < self.card_count:
+            if self.draw is not None and self.draw.card_count > 0 and coin_flip(rnd, len(self.piles) + 1):
+                remove_count = min(self.card_count - intended_card_count, self.draw.card_count)
+                self.draw.card_count -= remove_count
+                self.card_count -= remove_count
+                # TODO possibly remove draw if empty?
+            else:
+                self.card_count -= rnd.choice(self.piles).remove_cards(rnd, self.card_count - intended_card_count)
         self.card_count = intended_card_count
         return self
     
@@ -423,6 +492,7 @@ class SetupGene(GenoType):
         else:
             assert self.draw is not None
             self.draw.mutate(rnd)
+        self._adjust_card_count_(self.card_count, rnd)
         return self
 
     def _add_a_pile_(self, rnd: Random)-> SetupGene:
@@ -447,25 +517,41 @@ class SetupGene(GenoType):
         return self
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[SetupGene, SetupGene, Random], SetupGene]]:
+    def _get_crossover_options() -> list[Callable[[SetupGene, SetupGene, Random], SetupGene]]:
         # there should be no need for adjustments, becuase other should have the same card count
         return [
             # will readjust setup for draw pile
-            lambda me, other, rnd: SetupGene(other.draw, me.piles)._adjust_card_count_(me.card_count, rnd),
+            lambda me, other, rnd: SetupGene(other.draw._transform_pilenames_(rnd, me) if isinstance(other.draw, DealDrawDefGene) else other.draw, me.piles)._adjust_card_count_(me.card_count, rnd),
             lambda me, other, rnd: SetupGene(me.draw, other.piles)._adjust_card_count_(me.card_count, rnd),
         ]
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[SetupGene, Random], SetupGene]]:
-        return [
-            lambda me, rnd: SetupGene.get_random(rnd, me.card_count),
-            lambda me, rnd: me.copy()._mutate_a_pile_(rnd),
-            lambda me, rnd: me.copy()._add_a_pile_(rnd),
-            lambda me, rnd: me.copy()._remove_a_pile_(rnd),
-        ] + [
-            lambda me, rnd: c_option(me.copy(), SetupGene.get_random(rnd, me.card_count), rnd)
-            for c_option in SetupGene.get_crossover_options()
+    def _get_mutation_options() -> list[Callable[[SetupGene, Random], SetupGene]]:
+        base_mutations: list[Callable[[SetupGene, Random], SetupGene]] = [
+            lambda me, rnd: me._mutate_a_pile_(rnd),
+            lambda me, rnd: me._add_a_pile_(rnd),
+            lambda me, rnd: me._remove_a_pile_(rnd),
         ]
+        crossover_mutations: list[Callable[[SetupGene, Random], SetupGene]] = [
+            lambda me, rnd, c=c_option: c(me, SetupGene.get_random(rnd, me.card_count), rnd)
+            for c_option in SetupGene._get_crossover_options()
+        ]
+        return base_mutations + crossover_mutations
+    
+    def get_pilename_mapping(self, rnd: Random, new_setup: SetupGene, include_rotate_draw: bool, include_draw: bool):
+        mapping: dict[str, str] = {}
+        my_pilenames: list[str] = self.get_pilenames(include_rotate_draw, include_draw)
+        new_pilenames: list[str] = new_setup.get_pilenames(include_rotate_draw, include_draw)
+        new_uncommon = [p for p in new_pilenames if p not in my_pilenames]
+        my_uncommon = [p for p in my_pilenames if p not in new_pilenames]
+        if len(new_uncommon) < len(my_uncommon):
+            new_uncommon += rnd.choices(new_pilenames, k=len(my_uncommon) - len(new_uncommon))
+        rnd.shuffle(new_uncommon)
+        for i, pilename in enumerate(my_uncommon):
+            mapping[pilename] = new_uncommon[i]
+        for pilename in new_pilenames:
+            mapping[pilename] = pilename
+        return mapping
 
 class ConditionGene(GenoType, Reducible):
     # could be implemented with inheritance, but I want to keep this simple
@@ -488,7 +574,7 @@ class ConditionGene(GenoType, Reducible):
             return self.__class__(self.value)
         
         @staticmethod
-        def get_crossover_options() -> list[Callable[[ConditionGene.T, ConditionGene.T, Random], ConditionGene.T]]:
+        def _get_crossover_options() -> list[Callable[[ConditionGene.T, ConditionGene.T, Random], ConditionGene.T]]:
             return [
                 lambda me, other, rnd: me,
                 lambda me, other, rnd: other,
@@ -500,7 +586,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.Op(str(rnd.choice(list(cond.MathOp))))
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.Op, Random], ConditionGene.Op]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.Op, Random], ConditionGene.Op]]:
             return [lambda me, rnd: ConditionGene.Op.get_random(rnd)]
     
     class Count(Arg):
@@ -509,7 +595,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.Count(str(rnd.randint(0, max)))
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.Count, Random], ConditionGene.Count]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.Count, Random], ConditionGene.Count]]:
             return [lambda me, rnd: ConditionGene.Count.get_random(rnd)]
     
     class Suits(Arg):
@@ -520,7 +606,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.Suits("{" + ", ".join(suits) + "}")
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.Suits, Random], ConditionGene.Suits]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.Suits, Random], ConditionGene.Suits]]:
             return [lambda me, rnd: ConditionGene.Suits.get_random(rnd)]
     
     class Ranks(Arg):
@@ -538,7 +624,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.Ranks("{" + ", ".join(ranks) + "}")
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.Ranks, Random], ConditionGene.Ranks]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.Ranks, Random], ConditionGene.Ranks]]:
             return [lambda me, rnd: ConditionGene.Ranks.get_random(rnd)]
     
     class Pileset(Arg):
@@ -553,7 +639,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.Pileset(rnd.choice(options), setup)
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.Pileset, Random], ConditionGene.Pileset]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.Pileset, Random], ConditionGene.Pileset]]:
             return [lambda me, rnd: ConditionGene.Pileset.get_random(rnd, me.setup)]
         
         def copy(self: ConditionGene.Pileset) -> ConditionGene.Pileset:
@@ -568,7 +654,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.RankCond(rnd.choice([str(val) for val in cond.MultiRankCondition.MODE]))
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.RankCond, Random], ConditionGene.RankCond]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.RankCond, Random], ConditionGene.RankCond]]:
             return [lambda me, rnd: ConditionGene.RankCond.get_random(rnd)]
     
     class SuitCond(Arg):
@@ -577,7 +663,7 @@ class ConditionGene(GenoType, Reducible):
             return ConditionGene.SuitCond(rnd.choice([str(val) for val in cond.MultiSuitCondition.MODE]))
         
         @staticmethod
-        def get_mutation_options() -> list[Callable[[ConditionGene.SuitCond, Random], ConditionGene.SuitCond]]:
+        def _get_mutation_options() -> list[Callable[[ConditionGene.SuitCond, Random], ConditionGene.SuitCond]]:
             return [lambda me, rnd: ConditionGene.SuitCond.get_random(rnd)]
 
     def __init__(self, root: str, root_args: list[tuple[Arg, int, int]], subconds: Sequence[ConditionGene],
@@ -586,7 +672,7 @@ class ConditionGene(GenoType, Reducible):
         self.subconds = subconds
         self.root_args = root_args
         self.type = type
-        self.setup = setup
+        self.set_setup(setup)
         self.size = 1 if self.is_base() else sum([subcond.size for subcond in self.subconds])
 
     def is_base(self) -> bool:
@@ -713,6 +799,7 @@ class ConditionGene(GenoType, Reducible):
         self.root_args = other.root_args
         self.type = other.type
         self.setup = other.setup
+        self.size = other.size
         return self
     
     def _mutate_single_(self, rnd: Random) -> ConditionGene:
@@ -725,26 +812,30 @@ class ConditionGene(GenoType, Reducible):
         self.root_args[arg_index] = (arg.mutate(rnd), s, e)
         return self
     
-    def _add_one_condition_(self, rnd: Random, exclude: str|None, depth: int = 0) -> ConditionGene:
+    def _add_one_condition_(self, rnd: Random, exclude: str|None, depth: int = 0, cond: ConditionGene|None = None) -> ConditionGene:
         if self.is_base():
-            if depth < Params.MAX_COND_DEPTH:
+            if depth < Params.CROSSOVER_MAX_COND_DEPTH:
                 copy = self.copy()
                 root = "AND" if (coin_flip(rnd) or exclude == "OR") else "OR"
                 exclude = root if Params.SIMPLE_CONDITION else None
+                if cond is None:
+                    cond = ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1)
                 self._become_(ConditionGene(root, [], [
                     copy,
-                    ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1),
+                    cond,
                 ], self.type, self.setup))
             # else: nothing we can do but to retry and end up in another branch
         else: # AND or OR
-            if depth == (Params.MAX_COND_DEPTH - 1) or (coin_flip(rnd) == 0 and len(self.subconds) < Params.MAX_COND_BRANCH):
-                if len(self.subconds) < Params.MAX_COND_BRANCH:
+            if depth == (Params.CROSSOVER_MAX_COND_DEPTH - 1) or (coin_flip(rnd) == 0 and len(self.subconds) < Params.MAX_COND_BRANCH):
+                if len(self.subconds) < Params.CROSSOVER_MAX_COND_BRANCH:
                     exclude = self.root if Params.SIMPLE_CONDITION else None
-                    self.subconds = [subcond for subcond in self.subconds] + [ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1)]
+                    if cond is None:
+                        cond = ConditionGene.get_random(rnd, self.type, self.setup, exclude, depth+1)
+                    self.subconds = [subcond for subcond in self.subconds] + [cond]
                 # else: both max depth and max branch is reached, adding conditions is not possible
             else:
                 exclude = self.root if Params.SIMPLE_CONDITION else None
-                rnd.choice(self.subconds)._add_one_condition_(rnd, exclude, depth + 1)
+                rnd.choice(self.subconds)._add_one_condition_(rnd, exclude, depth + 1, cond)
         return self
     
     def _remove_one_condition_(self, rnd: Random) -> ConditionGene:
@@ -759,89 +850,213 @@ class ConditionGene(GenoType, Reducible):
             else:
                 subcond._remove_one_condition_(rnd)
         return self
+    
+    def _get_random_subtree(self, rnd: Random) -> ConditionGene:
+        if self.is_base():
+            return self
+        else:
+            if coin_flip(rnd, self.size):
+                return self
+            weights = [subcond.size/self.size for subcond in self.subconds]
+            subcond = rnd.choices(self.subconds, weights)[0]
+            return subcond._get_random_subtree(rnd)
+        
+    def get_depth(self):
+        if self.is_base():
+            return 1
+        return max([subcond.get_depth() for subcond in self.subconds]) + 1
+    
+    def _stitch_subtree_randomly_(self, rnd: Random, subtree: ConditionGene) -> ConditionGene:
+        if coin_flip(rnd):
+            subtree_depth = subtree.get_depth() # we can possibly check if the depth is too much not to use this coin flip
+            self._add_one_condition_(rnd, None, subtree_depth, subtree)
+        else:
+            self._get_random_subtree(rnd)._become_(subtree)
+        return self
+    
+    def transform_pilenames_from_mapping(self, mapping: dict[str, str]):
+        if self.is_base():
+            for arg, _, _ in self.root_args:
+                if isinstance(arg, ConditionGene.Pileset):
+                    arg.value = mapping[arg.value]
+        else:
+            for subcond in self.subconds:
+                subcond.transform_pilenames_from_mapping(mapping)
+    
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        mapping: dict[str, str] = self.setup.get_pilename_mapping(rnd, new_setup, False, True)
+        self.transform_pilenames_from_mapping(mapping)
+        return self
 
     @staticmethod
-    def get_crossover_options() -> list[Callable[[ConditionGene, ConditionGene, Random], ConditionGene]]:
-        # TODO
+    def _get_crossover_options() -> list[Callable[[ConditionGene, ConditionGene, Random], ConditionGene]]:
         return [
-            lambda me, other, rnd: ConditionGene(me.root, me.root_args, me.subconds, me.type, me.setup)
+            lambda me, other, rnd: me._stitch_subtree_randomly_(rnd, other._get_random_subtree(rnd)._transform_pilenames_(rnd, me.setup)),
+            lambda me, other, rnd: other._stitch_subtree_randomly_(rnd, me._get_random_subtree(rnd))._transform_pilenames_(rnd, me.setup),
         ]
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[ConditionGene, Random], ConditionGene]]:
+    def _get_mutation_options() -> list[Callable[[ConditionGene, Random], ConditionGene]]:
+        # this is not used unless mutation is directly called on the condition and not on the parent compornts
         return [
             lambda me, rnd: me._mutate_single_(rnd),
-            lambda me, rnd: me._add_one_condition_(rnd, None, 0),
+            lambda me, rnd: me._add_one_condition_(rnd, None, 0, None),
             lambda me, rnd: me._remove_one_condition_(rnd)
         ]
 
-class MoveGene(GenoType, Reducible):
-    def __init__(self, starts: list[str], ends: list[str], cond: ConditionGene) -> None:
+E = TypeVar('E', bound='EndToEndAction')
+class EndToEndAction(GenoType, Reducible):
+    def __init__(self, starts: list[str], ends: list[str], cond: ConditionGene, setup: SetupGene) -> None:
         self.starts = starts
         self.ends = ends
         self.cond = cond
+        self.set_setup(setup)
+    
+    def get_ends(self):
+        return [(s, e) for s in self.starts for e in self.ends]
+    
+    def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
+        self.cond.set_setup(setup)
+    
+    @staticmethod
+    def get_random_action_endpoints(rnd: Random, end_options: list[tuple[str, str]]):
+        start, end = rnd.choice(end_options)
+        starts = [start]
+        ends = [end]
+        other_end_options = [(s, e) for (s, e) in end_options if not (s == start and e == end)]
+        expand_action = rnd.randint(0, 4) # 2 chance of no expand
+        if expand_action == 0 or expand_action == 4:
+            extra_starts = [s for (s, e) in other_end_options if e == end]
+            starts += rnd.sample(extra_starts, rnd.randint(0, len(extra_starts))) # 0 is an option
+        elif expand_action == 1 or expand_action == 4:
+            extra_ends = [e for (s, e) in other_end_options if s == start]
+            ends += rnd.sample(extra_ends, rnd.randint(0, len(extra_ends))) # 0 is an option
+        return starts, ends
+    
+    @staticmethod
+    def get_action_endpoint_options(setup: SetupGene, exclude: list[tuple[str, str]]):
+        pilenames = setup.get_pilenames(False, False)
+        move_from_pilenames = setup.get_pilenames(True, False)
+        move_options = [(pilename_or_D, pilename) for pilename in pilenames for pilename_or_D in move_from_pilenames if (pilename_or_D, pilename) not in exclude]
+        move_stack_options = [(pilename, pilename2) for pilename2 in pilenames for pilename in pilenames if (pilename, pilename2) not in exclude]
+        return move_options, move_stack_options
+    
+    @staticmethod
+    @abstractmethod
+    def get_random(rnd: Random, setup: SetupGene|None = None, exclude: list[tuple[str, str]] = []) -> EndToEndAction:
+        raise NotImplementedError
+    
+    @staticmethod
+    def _transform_endpoints_(ends: list[str], rnd: Random, old_setup: SetupGene, new_setup: SetupGene, include_ratote_draw: bool, include_draw: bool):
+        mapping = old_setup.get_pilename_mapping(rnd, new_setup, include_ratote_draw, include_draw)
+        new_pilenames = set(mapping.values())
+        return get_uniques([(end if end in new_pilenames else mapping[end]) for end in ends])
+    
+    @classmethod
+    def _get_crossover_options_for_class(cls: type[E]) -> list[Callable[[E, E, Random], E]]:
+        is_move_gene = issubclass(cls, MoveGene)
+        ends_crossover: list[Callable[[E, E, Random], E]] = [
+            lambda me, other, rnd: cls(EndToEndAction._transform_endpoints_(other.starts, rnd, other.setup, me.setup, is_move_gene, False), me.ends, me.cond, me.setup), # this will possibly result in duplicate moves
+            lambda me, other, rnd: cls(me.starts, EndToEndAction._transform_endpoints_(other.ends, rnd, other.setup, me.setup, False, False), me.cond, me.setup), # this will possibly result in duplicate moves
+        ]
+        conds_crossover: list[Callable[[E, E, Random], E]] = [
+            lambda me, other, rnd, c=c_option: cls(me.starts, me.ends, c(me.cond, other.cond, rnd), me.setup)
+            for c_option in ConditionGene._get_crossover_options()
+        ]
+        return (ends_crossover if Params.DUPLICATE_MOVE_ENDS_ALLOWED else []) + conds_crossover
 
+    @classmethod
+    def _get_mutation_options_for_class(cls: type[E]) -> list[Callable[[E, Random], E]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, cls.get_random(rnd, me.setup, []), rnd)
+            for c_option in cls._get_crossover_options()
+        ]
+    
+    @classmethod
+    def get_random_list(cls: type[E], rnd: Random, count: int, setup: SetupGene) -> list[E]:
+        moves: list[E] = []
+        excluded_end_points: list[tuple[str, str]] = []
+        for _ in range(count):
+            try:
+                new_move = cast(E, cls.get_random(rnd, setup, excluded_end_points))
+                moves.append(new_move)
+                excluded_end_points += moves[-1].get_ends()
+            except InvalidMoveCreationDueToEndPointExclusion as e:
+                break
+        return moves
+    
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        is_move_gene = isinstance(self, MoveGene)
+        self.cond._transform_pilenames_(rnd, new_setup)
+        self.starts = EndToEndAction._transform_endpoints_(self.starts, rnd, self.setup, new_setup, is_move_gene, False)
+        self.ends = EndToEndAction._transform_endpoints_(self.ends, rnd, self.setup, new_setup, False, False)
+        return self
+
+class MoveGene(EndToEndAction):
     def get_gdl(self) -> str:
         return f"MOVE {GenoType.list_to_gdl(self.starts)} {GenoType.list_to_gdl(self.ends)}\n" + \
             self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], setup: SetupGene|None = None) -> MoveGene:
+    def get_random(rnd: Random, setup: SetupGene|None = None, exclude: list[tuple[str, str]] = []) -> MoveGene:
         assert setup is not None
-        return MoveGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE, setup))
+        move_options, _ = MoveGene.get_action_endpoint_options(setup, exclude)
+        if len(move_options) == 0: raise InvalidMoveCreationDueToEndPointExclusion()
+        starts, ends = MoveGene.get_random_action_endpoints(rnd, move_options)
+        return MoveGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE, setup), setup)
     
     def copy(self) -> MoveGene:
-        return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
-    
-    def set_setup(self, setup: SetupGene) -> None:
-        self.cond.set_setup(setup)
+        return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy(), self.setup)
     
     def get_reduced(self: MoveGene, rnd: Random|None, iter: int) -> MoveGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
-        return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond)
+        return MoveGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond, self.setup)
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[MoveGene, MoveGene, Random], MoveGene]]:
-        return [
-
-        ]
+    def _get_crossover_options() -> list[Callable[[MoveGene, MoveGene, Random], MoveGene]]:
+        return MoveGene._get_crossover_options_for_class()
 
     @staticmethod
-    def get_mutation_options() -> list[Callable[[MoveGene, Random], MoveGene]]:
-        return []
-    
-class MoveStackGene(GenoType, Reducible):
-    def __init__(self, starts: list[str], ends: list[str], cond: ConditionGene) -> None:
-        self.starts = starts
-        self.ends = ends
-        self.cond = cond
+    def _get_mutation_options() -> list[Callable[[MoveGene, Random], MoveGene]]:
+        return MoveGene._get_mutation_options_for_class()
 
+class MoveStackGene(EndToEndAction):
     def get_gdl(self) -> str:
         return f"MOVE_STACK {GenoType.list_to_gdl(self.starts)} {GenoType.list_to_gdl(self.ends)}\n" + \
             self.cond.get_gdl() + "\n"
     
     @staticmethod
-    def get_random(rnd: Random, starts: list[str] = [], ends: list[str] = [], setup: SetupGene|None = None) -> MoveStackGene:
+    def get_random(rnd: Random, setup: SetupGene|None = None, exclude: list[tuple[str, str]] = []) -> MoveStackGene:
         assert setup is not None
-        return MoveStackGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE_STACK, setup))
+        _, move_stack_options = MoveStackGene.get_action_endpoint_options(setup, exclude)
+        if len(move_stack_options) == 0: raise InvalidMoveCreationDueToEndPointExclusion()
+        starts, ends = MoveStackGene.get_random_action_endpoints(rnd, move_stack_options)
+        return MoveStackGene(starts, ends, ConditionGene.get_random(rnd, ConditionGene.CondType.MOVE_STACK, setup), setup)
     
     def copy(self) -> MoveStackGene:
-        return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy())
-    
-    def set_setup(self, setup: SetupGene) -> None:
-        self.cond.set_setup(setup)
+        return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], self.cond.copy(), self.setup)
     
     def get_reduced(self: MoveStackGene, rnd: Random|None, iter: int) -> MoveStackGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
-        return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond)
+        return MoveStackGene([pile for pile in self.starts], [pile for pile in self.ends], reduced_cond, self.setup)
+    
+    @staticmethod
+    def _get_crossover_options() -> list[Callable[[MoveStackGene, MoveStackGene, Random], MoveStackGene]]:
+        return MoveStackGene._get_crossover_options_for_class()
+
+    @staticmethod
+    def _get_mutation_options() -> list[Callable[[MoveStackGene, Random], MoveStackGene]]:
+        return MoveStackGene._get_mutation_options_for_class()
 
 class DrawMoveGene(GenoType, Reducible):
-    def __init__(self, cond: ConditionGene) -> None:
+    def __init__(self, cond: ConditionGene, setup: SetupGene) -> None:
         self.cond = cond
+        self.set_setup(setup)
 
     def get_gdl(self) -> str:
         return "DRAW\n" + self.cond.get_gdl() + "\n"
@@ -849,25 +1064,44 @@ class DrawMoveGene(GenoType, Reducible):
     @staticmethod
     def get_random(rnd: Random, setup: SetupGene|None = None) -> DrawMoveGene:
         assert setup is not None
-        return DrawMoveGene(ConditionGene.get_random(rnd, ConditionGene.CondType.GLOBAL, setup))
+        return DrawMoveGene(ConditionGene.get_random(rnd, ConditionGene.CondType.GLOBAL, setup), setup)
     
     def copy(self) -> DrawMoveGene:
-        return DrawMoveGene(self.cond.copy())
+        return DrawMoveGene(self.cond.copy(), self.setup)
 
     def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
         self.cond.set_setup(setup)
     
     def get_reduced(self: DrawMoveGene, rnd: Random|None, iter: int) -> DrawMoveGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
-        return DrawMoveGene(reduced_cond)
+        return DrawMoveGene(reduced_cond, self.setup)
+    
+    @staticmethod
+    def _get_crossover_options() -> list[Callable[[DrawMoveGene, DrawMoveGene, Random], DrawMoveGene]]:
+        return [
+            lambda me, other, rnd, c=c_option: DrawMoveGene(c(me.cond, other.cond, rnd), me.setup)
+            for c_option in ConditionGene._get_crossover_options()
+        ]
+
+    @staticmethod
+    def _get_mutation_options() -> list[Callable[[DrawMoveGene, Random], DrawMoveGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, DrawMoveGene.get_random(rnd, me.setup), rnd)
+            for c_option in DrawMoveGene._get_crossover_options()
+        ]
+    
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        self.cond._transform_pilenames_(rnd, new_setup)
     
 class MovesGene(GenoType, Reducible):
-    def __init__(self, moves: list[MoveGene], move_stacks: list[MoveStackGene], draw_move: DrawMoveGene|None) -> None:
+    def __init__(self, moves: list[MoveGene], move_stacks: list[MoveStackGene], draw_move: DrawMoveGene|None, setup: SetupGene) -> None:
         self.moves = moves
         self.move_stacks = move_stacks
         self.draw_move = draw_move
+        self.set_setup(setup)
     
     def get_gdl(self) -> str:
         return "$moves\n" + \
@@ -876,59 +1110,30 @@ class MovesGene(GenoType, Reducible):
             ("" if self.draw_move is None else self.draw_move.get_gdl())
     
     @staticmethod
-    def get_action_ends(rnd: Random, end_options: list[tuple[str, str]]):
-        start, end = rnd.choice(end_options)
-        starts = [start]
-        ends = [end]
-        end_options.remove((start, end))
-        expand_action = rnd.randint(0, 4) # 2 chance of no expand
-        if expand_action == 0 or expand_action == 4:
-            extra_starts = [s for (s, e) in end_options if e == end]
-            starts += rnd.sample(extra_starts, rnd.randint(0, len(extra_starts))) # 0 is an option
-        elif expand_action == 1 or expand_action == 4:
-            extra_ends = [e for (s, e) in end_options if s == start]
-            ends += rnd.sample(extra_ends, rnd.randint(0, len(extra_ends))) # 0 is an option
-        for s in starts:
-            for e in ends:
-                if s != start or e != end:
-                    end_options.remove((s, e)) # we can also not remove duplicates
-        return starts, ends
-    
-    @staticmethod
     def get_random(rnd: Random, setup: SetupGene|None=None) -> MovesGene:
         assert setup is not None
         # EXCLUDE: more than 2 move or move_stack
-        pilenames = setup.get_pilenames(False, False)
-        move_from_pilenames = setup.get_pilenames(True, False)
-        move_options = [(pilename_or_D, pilename) for pilename in pilenames for pilename_or_D in move_from_pilenames]
-        move_stack_options = [(pilename, pilename2) for pilename2 in pilenames for pilename in pilenames]
         while True:
             move_count = rnd.randint(0, Params.MAX_MOVE_COUNT)
             move_stack_count = rnd.randint(0, Params.MAX_MOVE_STACK_COUNT)
             if move_count + move_stack_count != 0 or Params.MAX_MOVE_COUNT + Params.MAX_MOVE_STACK_COUNT == 0:
                 break
-        moves, move_stacks = [], []
-        for _ in range(move_count):
-            if len(move_options) > 0:
-                starts, ends = MovesGene.get_action_ends(rnd, move_options)
-                moves.append(MoveGene.get_random(rnd, starts, ends, setup))
-        for _ in range(move_stack_count):
-            if len(move_stack_options) > 0:
-                starts, ends = MovesGene.get_action_ends(rnd, move_stack_options)
-                move_stacks.append(MoveStackGene.get_random(rnd, starts, ends, setup))
+        moves = MoveGene.get_random_list(rnd, move_count, setup)
+        move_stacks = MoveStackGene.get_random_list(rnd, move_stack_count, setup)
         draw_move = None
         if isinstance(setup.draw, DealDrawDefGene) and coin_flip(rnd):
             draw_move = DrawMoveGene.get_random(rnd, setup)
-        return MovesGene(moves, move_stacks, draw_move)
+        return MovesGene(moves, move_stacks, draw_move, setup)
     
     def copy(self) -> MovesGene:
         return MovesGene(
             [move.copy() for move in self.moves],
             [move_stack.copy() for move_stack in self.move_stacks],
-            self.draw_move if self.draw_move is None else self.draw_move.copy()
+            self.draw_move if self.draw_move is None else self.draw_move.copy(), self.setup
         )
     
     def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
         for move in self.moves:
             move.set_setup(setup)
         for move_stack in self.move_stacks:
@@ -990,10 +1195,82 @@ class MovesGene(GenoType, Reducible):
                 ret.draw_move = ret.draw_move.get_reduced(rnd, iter)
                 return ret
         return None
+    
+    def _crossover_move(self, other: MovesGene, rnd: Random, c_option: Callable[[MoveGene, MoveGene, Random], MoveGene]) -> MovesGene:
+        ind = rnd.randint(0, len(self.moves) - 1) if len(self.moves) > 0 else 0
+        other_ind = rnd.randint(0, len(other.moves) - 1) if len(other.moves) > 0 else 0
+        if len(self.moves) == 0 and len(other.moves) == 0:
+            return self
+        if len(self.moves) == 0:
+            self.moves.append(other.moves[other_ind]) 
+            return self
+        if len(other.moves) == 0:
+            self.moves.pop(ind)
+            return self
+        ind = rnd.randint(0, len(self.moves) - 1)
+        other_ind = rnd.randint(0, len(other.moves) - 1)
+        self.moves[ind] = c_option(self.moves[ind], other.moves[other_ind], rnd)
+        return self
+
+    def _crossover_move_stack(self, other: MovesGene, rnd: Random, c_option: Callable[[MoveStackGene, MoveStackGene, Random], MoveStackGene]) -> MovesGene:
+        ind = rnd.randint(0, len(self.move_stacks) - 1) if len(self.move_stacks) > 0 else 0
+        other_ind = rnd.randint(0, len(other.move_stacks) - 1) if len(other.move_stacks) > 0 else 0
+        if len(self.move_stacks) == 0 and len(other.move_stacks) == 0:
+            return self
+        if len(self.move_stacks) == 0:
+            self.move_stacks.append(other.move_stacks[other_ind])
+            return self
+        if len(other.move_stacks) == 0:
+            self.move_stacks.pop(ind)
+            return self
+        self.move_stacks[ind] = c_option(self.move_stacks[ind], other.move_stacks[other_ind], rnd)
+        return self
+    
+    def _crossover_draw(self, other: MovesGene, rnd: Random, c_option: Callable[[DrawMoveGene, DrawMoveGene, Random], DrawMoveGene]) -> MovesGene:
+        if self.draw_move is not None and other.draw_move is not None:
+            self.draw_move = c_option(self.draw_move, other.draw_move, rnd)
+        elif self.draw_move is not None:
+            self.draw_move = None
+        elif other.draw_move is not None:
+            if isinstance(self.setup.draw, DealDrawDefGene):
+                self.draw_move = other.draw_move
+        return self
+    
+    @staticmethod
+    def _get_crossover_options() -> list[Callable[[MovesGene, MovesGene, Random], MovesGene]]:
+        move_crossovers: list[Callable[[MovesGene, MovesGene, Random], MovesGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_move(other, rnd, c)
+            for c_option in MoveGene._get_crossover_options()
+        ]
+        move_stack_crossovers: list[Callable[[MovesGene, MovesGene, Random], MovesGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_move_stack(other, rnd, c)
+            for c_option in MoveStackGene._get_crossover_options()
+        ]
+        draw_crossovers: list[Callable[[MovesGene, MovesGene, Random], MovesGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_draw(other, rnd, c)
+            for c_option in DrawMoveGene._get_crossover_options()
+        ]
+        return move_crossovers + move_stack_crossovers + draw_crossovers
+
+    @staticmethod
+    def _get_mutation_options() -> list[Callable[[MovesGene, Random], MovesGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, MovesGene.get_random(rnd, me.setup), rnd)
+            for c_option in MovesGene._get_crossover_options()
+        ]
+
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        for move in self.moves:
+            move._transform_pilenames_(rnd, new_setup)
+        for move_stack in self.move_stacks:
+            move_stack._transform_pilenames_(rnd, new_setup)
+        if self.draw_move is not None:
+            self.draw_move._transform_pilenames_(rnd, new_setup)
 
 class WinGene(GenoType, Reducible):
-    def __init__(self, cond: ConditionGene) -> None:
+    def __init__(self, cond: ConditionGene, setup: SetupGene) -> None:
         self.cond = cond
+        self.set_setup(setup)
     
     def get_gdl(self) -> str:
         return "$win\n" + self.cond.get_gdl() + "\n"
@@ -1001,35 +1278,37 @@ class WinGene(GenoType, Reducible):
     @staticmethod
     def get_random(rnd: Random, setup: SetupGene|None = None) -> WinGene:
         assert setup is not None
-        return WinGene(ConditionGene.get_random(rnd, ConditionGene.CondType.WIN, setup))
+        return WinGene(ConditionGene.get_random(rnd, ConditionGene.CondType.WIN, setup), setup)
     
     def copy(self) -> WinGene:
-        return WinGene(self.cond.copy())
+        return WinGene(self.cond.copy(), self.setup)
     
     def set_setup(self, setup: SetupGene) -> None:
+        self.setup = setup
         self.cond.set_setup(setup)
     
     def get_reduced(self: WinGene, rnd: Random|None, iter: int) -> WinGene | None:
         reduced_cond = self.cond.get_reduced(rnd, iter)
         if reduced_cond is None:
             return None
-        return WinGene(reduced_cond)
-    
-    def _crossover_(self, other: WinGene, rnd: Random) -> WinGene:
-        self.cond.crossover(other.cond, rnd)
-        return self
-    
-    def _mutate_(self, rnd: Random) -> WinGene:
-        self.cond.mutate(rnd)
-        return self
+        return WinGene(reduced_cond, self.setup)
     
     @staticmethod
-    def get_crossover_options() -> list[Callable[[WinGene, WinGene, Random], WinGene]]:
-        return [lambda me, other, rnd: me._crossover_(other, rnd)]
+    def _get_crossover_options() -> list[Callable[[WinGene, WinGene, Random], WinGene]]:
+        return [
+            lambda me, other, rnd, c=c_option: WinGene(c(me.cond, other.cond, rnd), me.setup)
+            for c_option in ConditionGene._get_crossover_options()
+        ]
     
     @staticmethod
-    def get_mutation_options() -> list[Callable[[WinGene, Random], WinGene]]:
-        return [lambda me, rnd: me.mutate(rnd)]
+    def _get_mutation_options() -> list[Callable[[WinGene, Random], WinGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, WinGene.get_random(rnd, me.setup), rnd)
+            for c_option in WinGene._get_crossover_options()
+        ]
+    
+    def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
+        self.cond._transform_pilenames_(rnd, new_setup)
 
 class SGDLGene(GenoType, Reducible):
     def __init__(self, deck: DeckGene, setup: SetupGene, moves: MovesGene, win: WinGene):
@@ -1117,6 +1396,65 @@ class SGDLGene(GenoType, Reducible):
             if verdict == target_verdict:
                 return reduction.get_reduced_to_core(rnd, should_log, target_verdict, move_count, game_count)
         return self
+    
+    def _crossover_deck(self, other: SGDLGene, rnd: Random, c_option: Callable[[DeckGene, DeckGene, Random], DeckGene]) -> SGDLGene:
+        self.deck = c_option(self.deck, other.deck, rnd)
+        if self.deck.card_count != self.setup.card_count:
+            new_setup = self.setup.copy() # to be able to change pilename mappings TODO there is a better way without saving the last setup
+            new_setup._adjust_card_count_(self.deck.card_count, rnd)
+            self.moves._transform_pilenames_(rnd, new_setup) # in case some piles end up getting removed
+            self.win._transform_pilenames_(rnd, new_setup) # in case some piles end up getting removed
+            self.setup = new_setup
+        return self
+    
+    def _crossover_setup(self, other: SGDLGene, rnd: Random, c_option: Callable[[SetupGene, SetupGene, Random], SetupGene]) -> SGDLGene:
+        self.setup = c_option(self.setup, other.setup, rnd)
+        self.moves._transform_pilenames_(rnd, self.setup) # in case some piles end up getting removed/added
+        self.win._transform_pilenames_(rnd, self.setup) # in case some piles end up getting removed/added
+        self.moves.set_setup(self.setup)
+        self.win.set_setup(self.setup)
+        return self
+    
+    def _crossover_moves(self, other: SGDLGene, rnd: Random, c_option: Callable[[MovesGene, MovesGene, Random], MovesGene]) -> SGDLGene:
+        self.moves = c_option(self.moves, other.moves, rnd)
+        return self
+    
+    def _crossover_win(self, other: SGDLGene, rnd: Random, c_option: Callable[[WinGene, WinGene, Random], WinGene]) -> SGDLGene:
+        self.win = c_option(self.win, other.win, rnd)
+        return self
+    
+    @staticmethod
+    def _get_crossover_options() -> list[Callable[[SGDLGene, SGDLGene, Random], SGDLGene]]:
+        deck_crossovers: list[Callable[[SGDLGene, SGDLGene, Random], SGDLGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_deck(other, rnd, c)
+            for c_option in DeckGene._get_crossover_options()
+        ]
+        setup_crossovers: list[Callable[[SGDLGene, SGDLGene, Random], SGDLGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_setup(other, rnd, c)
+            for c_option in SetupGene._get_crossover_options()
+        ]
+        moves_crossovers: list[Callable[[SGDLGene, SGDLGene, Random], SGDLGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_moves(other, rnd, c)
+            for c_option in MovesGene._get_crossover_options()
+        ]
+        win_crossovers: list[Callable[[SGDLGene, SGDLGene, Random], SGDLGene]] = [
+            lambda me, other, rnd, c=c_option: me._crossover_win(other, rnd, c)
+            for c_option in WinGene._get_crossover_options()
+        ]
+        return deck_crossovers + setup_crossovers + moves_crossovers + win_crossovers
+
+    @staticmethod
+    def _get_mutation_options() -> list[Callable[[SGDLGene, Random], SGDLGene]]:
+        return [
+            lambda me, rnd, c=c_option: c(me, SGDLGene.get_random(rnd), rnd)
+            for c_option in SGDLGene._get_crossover_options()
+        ]
+
+# Can be used inside mutation/crossover options for printing purposes without disrupting lambda
+def print_and_pass(inp: GenoType, additional_info: str=""):
+    print(additional_info)
+    print(":::::::", inp.get_gdl())
+    return inp
 
 if __name__ == "__main__":
     # win_percentages = []

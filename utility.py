@@ -97,3 +97,8 @@ def get_seed(rnd: random.Random|None, max=10000000):
     if rnd is None:
         rnd = random.Random()
     return rnd.randint(0, max)
+
+# get unique elements without changing the order (only works if T is hashable)
+def get_uniques(l: list[T]):
+    # return list(set(l)) # may change the order
+    return list(dict.fromkeys(l))

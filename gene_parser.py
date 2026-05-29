@@ -56,26 +56,26 @@ class GeneParser:
                 src_pilenames, dst_pilenames = Parser.get_move_args(move_def, pilenames, has_rotate_draw)
                 cond, moves_desc = GeneParser.extract_cond(moves_desc[1:], setup, ConditionGene.CondType.MOVE)
                 assert auto == False, "Auto moves not supported for genes yet" # TODO
-                moves.append(MoveGene(src_pilenames, dst_pilenames, cond))
+                moves.append(MoveGene(src_pilenames, dst_pilenames, cond, setup))
             elif move_def[0] == 'MOVE_STACK':
                 assert len(move_def) == 3, f"MOVE_STACK arguments missing or extra: {moves_desc[0]}"
                 src_pilenames, dst_pilenames = Parser.get_move_args(move_def, pilenames, False)
                 cond, moves_desc = GeneParser.extract_cond(moves_desc[1:], setup, ConditionGene.CondType.MOVE_STACK)
                 assert auto == False, "Auto moves not supported for genes yet" # TODO
-                move_stacks.append(MoveStackGene(src_pilenames, dst_pilenames, cond))
+                move_stacks.append(MoveStackGene(src_pilenames, dst_pilenames, cond, setup))
             elif move_def[0] == 'DRAW':
                 assert len(move_def) == 1, f"DRAW argument extra: {moves_desc[0]}"
                 cond, moves_desc = GeneParser.extract_cond(moves_desc[1:], setup, ConditionGene.CondType.GLOBAL)
-                draw_move = DrawMoveGene(cond)
+                draw_move = DrawMoveGene(cond, setup)
             else:
                 raise Exception(f"Cannot recognize move type of {move_def}")
-        return MovesGene(moves, move_stacks, draw_move)
+        return MovesGene(moves, move_stacks, draw_move, setup)
 
     @staticmethod
     def get_win_gene(win_desc: list[str], setup: SetupGene) -> WinGene:
         cond, win_desc = GeneParser.extract_cond(win_desc, setup, ConditionGene.CondType.WIN)
         assert len(win_desc) == 0, f"Extra lines remained after extracting win conditions: {win_desc}"
-        return WinGene(cond)
+        return WinGene(cond, setup)
     
     @staticmethod
     def make_base_condition(base: str, parts: list[str], setup: SetupGene, cond_type: ConditionGene.CondType):
@@ -226,6 +226,6 @@ if __name__ == '__main__':
     gene = GeneParser.from_file(in_filename)
     print("Input SGDL:")
     print(gene.get_gdl())
-    print("Output SGDL")
-    gene.mutate(Random(seed))
+    print(f"Output SGDL (seed={seed})")
+    gene = gene.mutate(Random(seed))
     print(gene.get_gdl())
