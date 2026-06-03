@@ -859,7 +859,7 @@ class ConditionGene(GenoType, Reducible):
     def _get_crossover_options() -> list[Callable[[ConditionGene, ConditionGene, Random], ConditionGene]]:
         return [
             lambda me, other, rnd: me._stitch_subtree_randomly_(rnd, other._get_random_subtree(rnd)._transform_pilenames_(rnd, me.setup)),
-            lambda me, other, rnd: other._stitch_subtree_randomly_(rnd, me._get_random_subtree(rnd))._transform_pilenames_(rnd, me.setup),
+            lambda me, other, rnd: other._transform_pilenames_(rnd, me.setup)._stitch_subtree_randomly_(rnd, me._get_random_subtree(rnd)),
         ]
     
     @staticmethod
