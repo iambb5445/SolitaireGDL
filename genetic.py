@@ -81,7 +81,16 @@ class GenoType(ABC):
         mutation_options = self.__class__._get_mutation_options()
         if len(mutation_options) == 0:
             raise MutationUnavailableException(str(self.__class__) + self.get_gdl())
-        return rnd.choice(mutation_options)(self, rnd)
+        return rnd.choice(mutation_options)(self.copy(), rnd)
+
+    def mutate_until_change(self: G, rnd: Random, max_tries: int=50) -> tuple[G, int]:
+        my_gdl = self.get_gdl()
+        for _ in range(max_tries):
+            seed = get_seed(rnd)
+            mutated = self.mutate(Random(seed))
+            if mutated.get_gdl() != my_gdl:
+                return mutated, seed
+        raise Exception(f"Mutation failed: mutation resulted in the same gdl for {max_tries} tries")
     
     @staticmethod
     @abstractmethod
@@ -1278,9 +1287,12 @@ class SGDLGene(GenoType, Reducible):
         # check
         Parser.parse(self.get_gdl(), None, False, False)
 
+    def get_gdl_without_name(self) -> str:
+        return self.deck.get_gdl() + self.setup.get_gdl() + self.moves.get_gdl() + self.win.get_gdl()
+    
     def get_gdl(self) -> str:
-        gdl = self.deck.get_gdl() + self.setup.get_gdl() + self.moves.get_gdl() + self.win.get_gdl()
-        name = self.get_deterministic_name(gdl)
+        gdl = self.get_gdl_without_name()
+        name = self._get_deterministic_name(gdl)
         return name + "\n" + gdl
     
     # TODO from GDL
@@ -1316,15 +1328,24 @@ class SGDLGene(GenoType, Reducible):
                 if win is not None:
                     return SGDLGene(self.deck.copy(), self.setup.copy(), self.moves.copy(), win)
         return None
+
+    def get_hash(self):
+        gdl_without_name = self.get_gdl_without_name()
+        return SGDLGene._get_deterministic_hash(gdl_without_name)
+
+    @staticmethod
+    def _get_deterministic_hash(gdl_without_name: str) -> int:
+        gdl = Parser.remove_comments(gdl_without_name)
+        hash = 0
+        for c in gdl:
+            hash *= 256
+            hash += ord(c)
+            hash %= 1000000007
+        return hash
     
     @staticmethod
-    def get_deterministic_name(gdl_without_name: str):
-        gdl = Parser.remove_comments(gdl_without_name)
-        name_seed = 0
-        for c in gdl:
-            name_seed *= 256
-            name_seed += ord(c)
-            name_seed %= 1000000007
+    def _get_deterministic_name(gdl_without_name: str):
+        name_seed = SGDLGene._get_deterministic_hash(gdl_without_name)
         return GenoType.get_random_name(Random(name_seed)).capitalize()
     
     def _get_all_reductions(self) -> list[SGDLGene]:

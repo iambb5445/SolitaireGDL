@@ -97,7 +97,6 @@ class GeneParser:
         part_index = 0
         condition_args: list[tuple[ConditionGene.Arg, int, int]] = []
         for ind, arg_keyword in arg_positions:
-            print(ind, arg_keyword, parts, base, setup.get_pilenames(False, True))
             arg, valid = mapping[arg_keyword](parts[part_index])
             if not valid:
                 raise Exception(f"Invalid arg {parts[part_index]} is attempting to replace {arg_keyword} in condition {base}")
