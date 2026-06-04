@@ -35,6 +35,7 @@ if __name__ == "__main__":
     if args.index_from_existing:
         base_index = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
     if len(filenames) < 2:
+        print("Not enough files to crossover")
         if args.ignore_errors:
             raise Exception("Not enough files to crossover")
         exit()
