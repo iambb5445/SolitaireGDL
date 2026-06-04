@@ -1,9 +1,10 @@
 import sys
 import os
-from evaluate_gdl import get_evaluation_results
 import argparse
-import time
 import pandas as pd
+# need to add this because parser is an existing python module :|
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from evaluate_gdl import get_evaluation_results
 from simulate import players
 from parser import Parser
 

@@ -1,10 +1,14 @@
 import sys
 import os
-from evaluate_gdl import get_verdicts_from_results, Verdict
 import argparse
 import pandas as pd
-from parser import Parser
 import shutil
+import time
+# need to add this because parser is an existing python module :|
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from evaluate_gdl import get_verdicts_from_results, Verdict
+from parser import Parser
+from job_scripts.history import History
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -15,14 +19,17 @@ if __name__ == "__main__":
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
     args = parser.parse_args(sys.argv[1:])
     filename = args.filename
-    outpath = args.outpath
-    ignore = args.ignore_none_existent
     dir = args.dir
+    outpath = args.outpath
+    ignore = args.ignore_non_existent
 
     eval_results = pd.read_csv(filename)
     verdicts = get_verdicts_from_results(eval_results)
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
     index = 0
+    timestamp = int(time.time())
+    history = History()
+    os.makedirs(outpath, exist_ok=True)
     if args.index_from_existing:
         index = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
     for filename in filenames:
@@ -34,8 +41,10 @@ if __name__ == "__main__":
             verdict = verdicts[hash]
             if verdict == Verdict.OK:
                 shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}.sgdl"))
+                history.add(timestamp, None, None, name, hash, History.GEN_METHOD.BEST_OF, None, None)
         except Exception as e:
             if not ignore:
                 raise e
             print(f"!!![ERROR]: {e}")
         index += 1
+    history.to_csv(os.path.join(outpath, f"history.csv"), True)

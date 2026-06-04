@@ -19,11 +19,12 @@ class History:
         CROSSOVER = "Crossover"
         LLM_MUTATION = "LLM Mutation"
         LLM_ONESHOT = "LLM One-Shot"
+        BEST_OF = "Best of Previous Generation"
 
     def __init__(self) -> None:
         self.df = pd.DataFrame(columns=list(History.KEYS))
 
-    def add(self, timestamp: int, expr_seed: int, sgdl_seed: int, game_name: str, game_hash: int,
+    def add(self, timestamp: int, expr_seed: int|None, sgdl_seed: int|None, game_name: str, game_hash: int,
             gen_method: GEN_METHOD, parent1_hash: int|None, parent2_hash: int|None):
         self.df.loc[len(self.df)] = {
             History.KEYS.TIMESTAMP: timestamp,
