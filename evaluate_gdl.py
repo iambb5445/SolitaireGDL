@@ -7,6 +7,7 @@ from game import Game
 import pandas as pd
 from typing import Callable
 from player import Player
+import time
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -16,6 +17,13 @@ class Verdict(StrEnum):
     EXTRA_CARD = "EXTRA_CARD"
     EXTRA_PILE = "EXTRA_PILE"
     OK = "OK"
+
+def get_verdicts_from_results(df: pd.DataFrame) -> dict[int, Verdict]:
+    verdicts: dict[int, Verdict] = {}
+    for hash_value, results in df.groupby("SGDL Hash"):
+        assert isinstance(hash_value, int)
+        verdicts[hash_value] = get_verdict_from_results(results)
+    return verdicts
 
 def get_verdict_from_results(df: pd.DataFrame):
     if df["Exhausted"].mean() > 0.9:
@@ -50,14 +58,16 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     pile_usage = [get_pile_usage(game, trace, logger) for game, trace in zip(game_starts, traces)]
     df = pd.DataFrame({
         "Game": [game_name] * game_count,
-        "Seed": game_seeds,
+        "Simulation Seed": game_seeds,
+        "SGDL Hash": [Parser.get_deterministic_hash(gdl)] * game_count,
         "Win": wins,
         # "Win Percentage": [win_percentage] * len(games),
         "Move Count": move_counts,
         "Exhausted": stopped,
         # "Exhausted Percentage": [exhausted] * len(games),
         "Card Usage": card_usage,
-        "Pile Usage": pile_usage
+        "Pile Usage": pile_usage,
+        "Timestamp": int(time.time())
     })
     if save_as is not None:
         df.to_csv(save_as)

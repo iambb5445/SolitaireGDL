@@ -127,6 +127,22 @@ class Parser:
         return '\n'.join(lines)
     
     @staticmethod
+    def get_deterministic_hash_from_body(gdl_without_name: str) -> int:
+        gdl = Parser.remove_comments(gdl_without_name)
+        hash = 0
+        for c in gdl:
+            hash *= 256
+            hash += ord(c)
+            hash %= 1000000007
+        return hash
+    
+    @staticmethod
+    def get_deterministic_hash(game_desc: str) -> int:
+        body = Parser.get_gdl_body(game_desc)
+        return Parser.get_deterministic_hash_from_body(body)
+
+    
+    @staticmethod
     def apply(section_desc: list[str], game: Game, seed: int|None):
         section_title = section_desc[0]
         section_desc = section_desc[1:]
@@ -363,6 +379,12 @@ class Parser:
     @staticmethod
     def get_name(game_desc: str) -> str:
         return Parser.split_parts(game_desc)[0]
+    
+    @staticmethod
+    def get_gdl_body(game_desc: str):
+        game_desc = Parser.remove_comments(game_desc)
+        lines = game_desc.splitlines()
+        return "\n".join(lines[1:])
     
     @staticmethod
     def split_parts(game_desc) -> tuple[str, list[list[str]]]:

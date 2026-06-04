@@ -6,7 +6,7 @@ from base import Stack
 from base import SuitFullNames as SFN
 from abc import ABC, abstractmethod
 from typing import Sequence, Callable, TypeVar, cast
-from evaluate_gdl import evaluate_gdl, Verdict
+from evaluate_gdl import Verdict, evaluate_gdl
 import condition as cond
 from utility import get_seed, get_uniques
 
@@ -1331,21 +1331,11 @@ class SGDLGene(GenoType, Reducible):
 
     def get_hash(self):
         gdl_without_name = self.get_gdl_without_name()
-        return SGDLGene._get_deterministic_hash(gdl_without_name)
-
-    @staticmethod
-    def _get_deterministic_hash(gdl_without_name: str) -> int:
-        gdl = Parser.remove_comments(gdl_without_name)
-        hash = 0
-        for c in gdl:
-            hash *= 256
-            hash += ord(c)
-            hash %= 1000000007
-        return hash
+        return Parser.get_deterministic_hash_from_body(gdl_without_name)
     
     @staticmethod
     def _get_deterministic_name(gdl_without_name: str):
-        name_seed = SGDLGene._get_deterministic_hash(gdl_without_name)
+        name_seed = Parser.get_deterministic_hash_from_body(gdl_without_name)
         return GenoType.get_random_name(Random(name_seed)).capitalize()
     
     def _get_all_reductions(self) -> list[SGDLGene]:

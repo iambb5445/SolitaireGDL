@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from base import BaseStrEnum
 
@@ -35,6 +36,13 @@ class History:
             History.KEYS.PARENT2: parent2_hash,
         }
 
-    def to_csv(self, filepath: str):
-        self.df.to_csv(filepath)
+    def to_csv(self, filepath: str, concat: bool):
+        if os.path.isfile(filepath):
+            if concat:
+                existing = pd.read_csv(filepath, index_col=False)
+                pd.concat([existing, self.df], ignore_index=True).to_csv(filepath)
+            else:
+                raise Exception("Filename already exists")
+        else:
+            self.df.to_csv(filepath)
     
