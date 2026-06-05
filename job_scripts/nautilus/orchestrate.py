@@ -204,7 +204,8 @@ def merge_eval_csvs(batch_api: client.BatchV1Api, gen: int, results_dir: str, va
     return wait_for_job(batch_api, job_name)
 
 def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, population_size: int, mutation_script: str,
-                 mutation_count: int, crossover_count: int, max_copied_count: int, batch_api: client.BatchV1Api):
+                 mutation_count: int, crossover_count: int, max_copied_count: int,
+                 max_mutations_per_game: int, max_crossover_per_game: int, batch_api: client.BatchV1Api):
     g_prev = f"{results_dir}/g{gen - 1}"
     g_best = f"{results_dir}/g{gen - 1}-best"
     g_curr = f"{results_dir}/g{gen}"
@@ -239,10 +240,10 @@ def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, populati
             f"{g_best} {max_copied_count} {g_curr} --seed {copy_best_seed} --index-from-existing",
 
             f"{run_command} job_scripts/{mutation_script}.py "
-            f"{g_best} {mutation_count} {g_curr} --seed {mutation_seed} --ignore-errors --ensure-change --index-from-existing",
+            f"{g_best} {mutation_count} {g_curr} --seed {mutation_seed} --ignore-errors --ensure-change --index-from-existing --max-per-game {max_mutations_per_game}",
 
             f"{run_command} job_scripts/generate_crossover.py "
-            f"{g_best} {crossover_count} {g_curr} --seed {crossover_seed} --ignore-errors --index-from-existing",
+            f"{g_best} {crossover_count} {g_curr} --seed {crossover_seed} --ignore-errors --index-from-existing  --max-per-game {max_crossover_per_game}",
 
             # fill remainder with random games
             f"EXISTING=$(ls {g_curr}/*.sgdl 2>/dev/null | wc -l); "
@@ -278,9 +279,11 @@ def main():
     parser.add_argument("--start-gen", type=int, default=0, help="Starting generation index. Use 0 unless this is continuing a previous run.")
     parser.add_argument("--end-gen", type=int, default=99, help="End generation, indicating generation at which this script should stop.")
     parser.add_argument("--population-size", type=int, default=100, help="Number of games per generation (including games that are already good, mutated and crossovered games, and the rest filled with random games)")
-    parser.add_argument("--mutation-count", type=int, default=25, help="How many games per generation are created using mutation (will not generate anything if there is not at least 1 good parent available)")
-    parser.add_argument("--crossover-count", type=int, default=25, help="How many games per generation are created using crossover (will not generate anything if there are not at least 2 good parents available)")
-    parser.add_argument("--max-copied-count", type=int, default=25, help="How many games per generation are good games copied from previous generation")
+    parser.add_argument("--mutation-count", type=int, default=20, help="How many games per generation are created using mutation (will not generate anything if there is not at least 1 good parent available)")
+    parser.add_argument("--crossover-count", type=int, default=20, help="How many games per generation are created using crossover (will not generate anything if there are not at least 2 good parents available)")
+    parser.add_argument("--max-copied-count", type=int, default=30, help="How many games per generation are good games copied from previous generation")
+    parser.add_argument("--max-mutations-per-game", type=int, default=1, help="Maximum number of mutations per game, to avoid mutating a few games many times and dilute the next generation.")
+    parser.add_argument("--max-crossover-per-game", type=int, default=1, help="Maximum number of crossover per game, to avoid mutating a few games many times and dilute the next generation.")
     parser.add_argument("--eval-workers", type=int, default=10, help="Number of workers used to parallelize evaluation process.")
     parser.add_argument("--mutation-script", default="generate_mutations", help="Name of mutation script (relative to job_scripts) without the .py extension")
     parser.add_argument("--variant", default="", help="Optional name suffix for job names (e.g. 'llm', 'llm-skil')")
@@ -298,6 +301,8 @@ def main():
     max_copied_count = args.max_copied_count
     worker_count = args.eval_workers
     mutation_script = args.mutation_script
+    max_mutations_per_game = args.max_mutations_per_game
+    max_crossover_per_game = args.max_crossover_per_game
     expr_seed: int = args.seed if args.seed is not None else get_seed(None)
     experiment_rnd = Random(expr_seed)
 
@@ -322,8 +327,9 @@ def main():
         eval_seed = get_seed(experiment_rnd)
         log.info(f"Generation Seed: {gen_seed} | Evaluation Seed: {eval_seed}")
 
-        ok = run_prep_job(gen, Random(gen_seed), results_dir, variant, population_size, mutation_script,
-                          mutation_count, crossover_count, max_copied_count, batch_api)
+        ok = run_prep_job(gen, Random(gen_seed), results_dir, variant, population_size,
+                          mutation_script, mutation_count, crossover_count, max_copied_count,
+                          max_mutations_per_game, max_crossover_per_game, batch_api)
         if not ok:
             log.error(f"Prep job for gen {gen} failed. Exiting.")
             sys.exit(1)

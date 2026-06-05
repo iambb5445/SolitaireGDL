@@ -17,11 +17,13 @@ if __name__ == "__main__":
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
     parser.add_argument('count', type=int, help="Number of gdls to generate.")
     parser.add_argument('outpath', type=str, help="Path to save the sgdl results of crossover.")
+    parser.add_argument('--max-per-game', type=int, default=None, help="Maximum number of times a game is allowed to be used as a parent.")
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir
+    max_per_game = args.max_per_game
     experiment_seed: int = args.seed if args.seed is not None else get_seed(None, seed_max)
     experiment_rnd = Random(experiment_seed)
     outpath = args.outpath
@@ -38,10 +40,17 @@ if __name__ == "__main__":
         if args.ignore_errors:
             raise Exception("Not enough files to crossover")
         exit()
+    game_usage: dict[str, int] = dict([(file, 0) for file in filenames])
     for i in range(args.count):
         try:
             ind = i + base_index
+            if len(filenames) < 2:
+                break
             parent_filenames = experiment_rnd.sample(filenames, k=2)
+            for parent_filename in parent_filenames:
+                game_usage[parent_filename] += 1
+                if max_per_game is not None and game_usage[parent_filename] >= max_per_game:
+                    filenames.remove(parent_filename)
             gene1 = GeneParser.from_file(os.path.join(dir, parent_filenames[0]))
             gene2 = GeneParser.from_file(os.path.join(dir, parent_filenames[1]))
             seed = get_seed(experiment_rnd, seed_max)

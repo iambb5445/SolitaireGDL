@@ -17,6 +17,7 @@ if __name__ == "__main__":
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
     parser.add_argument('count', type=int, help="Number of gdls to generate.")
     parser.add_argument('outpath', type=str, help="Path to save the sgdl results of mutations.")
+    parser.add_argument('--max-per-game', type=int, default=None, help="Maximum number of mutations allowed to be created from a single game.")
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--ensure-change', action="store_true", help="If true, ensures the mutated version is different than the original. This will result in a different GDL compared to having this option off with the same experiment seed.")
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
     count = args.count
     dir = args.dir
+    max_per_game = args.max_per_game
     experiment_seed: int = args.seed if args.seed is not None else get_seed(None, seed_max)
     experiment_rnd = Random(experiment_seed)
     outpath = args.outpath
@@ -40,10 +42,14 @@ if __name__ == "__main__":
         if args.ignore_errors:
             raise Exception("Not enough files to mutate")
         exit()
-    for i in range(count):
+    if max_per_game is None:
+        targets = experiment_rnd.choices(filenames, k=count)
+    else:
+        count = min(count, len(filenames * max_per_game))
+        targets = experiment_rnd.sample(filenames, k=count, counts=[max_per_game]*len(filenames))
+    for i, filename in enumerate(targets):
         try:
             ind = i + base_index
-            filename = experiment_rnd.choice(filenames)
             gene = GeneParser.from_file(os.path.join(dir, filename))
             seed = get_seed(experiment_rnd, seed_max)
             if args.ensure_change:
