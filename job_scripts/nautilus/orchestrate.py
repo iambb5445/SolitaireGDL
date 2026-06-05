@@ -26,9 +26,8 @@ python_image = "python:3.11-slim"
 # )
 log = logging.getLogger(__name__)
 
-def setup_logging(log_path: str | None = None):
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-    
+def setup_logging(log_path: str):
+    log_path = os.path.join("./nautilus-logs", log_path)
     handlers: list[logging.Handler] = [logging.StreamHandler(sys.stdout)]
     
     if log_path is not None:
@@ -43,18 +42,18 @@ def get_batch_client() -> client.BatchV1Api:
     config.load_kube_config()
     return client.BatchV1Api()
 
-def get_git() -> client.V1Container:
-    return client.V1Container(
-        name="git-clone",
-        image="alpine/git",
-        args=["clone", "--single-branch", repo_url, "/opt/repo"],
-        volume_mounts=[client.V1VolumeMount(mount_path="/opt/repo", name="repo")],
-    )
+def run_setup_git(batch_api: client.BatchV1Api):
+    job_name = "sgdl-evo-pull-git"
+    commands = [
+        f"if [ -d /mnt/repo ]; then cd /mnt/repo && git pull; "
+        f"else git clone --single-branch {repo_url} /mnt/repo; fi"
+    ]
+    job = make_job(job_name, "alpine/git", "/mnt", commands)
+    submit_job(batch_api, job)
+    return wait_for_job(batch_api, job_name)
 
 def make_job(job_name: str, image: str, results_dir: str, commands: list[str]) -> client.V1Job:
     full_command = " && ".join(commands)
-
-    init = get_git()
 
     main = client.V1Container(
         name="main",
@@ -66,21 +65,19 @@ def make_job(job_name: str, image: str, results_dir: str, commands: list[str]) -
             limits={"cpu": "2", "memory": "2Gi"},
         ),
         volume_mounts=[
-            client.V1VolumeMount(mount_path=results_dir, name="results"),
-            client.V1VolumeMount(mount_path="/opt/repo", name="repo"),
+            client.V1VolumeMount(mount_path='/mnt', name="results"),
         ],
     )
 
     pod_spec = client.V1PodSpec(
         restart_policy="Never",
-        init_containers=[init],
+        security_context=client.V1SecurityContext(run_as_user=0),
         containers=[main],
         volumes=[
             client.V1Volume(
                 name="results",
                 persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=pvc_name),
             ),
-            client.V1Volume(name="repo", empty_dir=client.V1EmptyDirVolumeSource()),
         ],
     )
 
@@ -96,15 +93,14 @@ def make_job(job_name: str, image: str, results_dir: str, commands: list[str]) -
     )
 
 def make_eval_job(job_name: str, seed: int, results_dir: str, gen_dir: str, num_workers: int):
-    init = get_git()
-
+    repo_path = f"/mnt/repo"
     # Each worker: pip install pandas (if not in image already), then run evaluate.py
     # JOB_COMPLETION_INDEX is injected automatically by k8s Indexed Jobs (it's magic)
     # JOB_COMPLETION_INDEX is per pod, so it won't depend on other jobs (e.g. mutation job) or previous generation
     # JOB_COMPLETION_INDEX is also the same after a retry, so the index won't be wrong if a job fails and retries
     cmd = (
         # "pip install 'pandas==2.2.3' -q && "
-        "cd /opt/repo && "
+        f"cd {repo_path} && "
         f"pypy3 job_scripts/evaluate.py {gen_dir} "
         f"--seed {seed} --ignore-errors --should-log "
         f"--worker-index $JOB_COMPLETION_INDEX --worker-count {num_workers}"
@@ -121,21 +117,19 @@ def make_eval_job(job_name: str, seed: int, results_dir: str, gen_dir: str, num_
             limits={"cpu": "4", "memory": "8Gi"},
         ),
         volume_mounts=[
-            client.V1VolumeMount(mount_path=results_dir, name="results"),
-            client.V1VolumeMount(mount_path="/opt/repo", name="repo"),
+            client.V1VolumeMount(mount_path="/mnt", name="results"),
         ],
     )
 
     pod_spec = client.V1PodSpec(
         restart_policy="Never",
-        init_containers=[init],
+        security_context=client.V1SecurityContext(run_as_user=0),
         containers=[main],
         volumes=[
             client.V1Volume(
                 name="results",
                 persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=pvc_name),
             ),
-            client.V1Volume(name="repo", empty_dir=client.V1EmptyDirVolumeSource()),
         ],
     )
 
@@ -189,6 +183,7 @@ def wait_for_job(batch_api: client.BatchV1Api, job_name: str, poll_interval: int
             return False
         time.sleep(poll_interval)
 
+# TODO I can run this at the start of prep job instead of running this in a separate job
 def merge_eval_csvs(batch_api: client.BatchV1Api, gen: int, results_dir: str, variant: str|None):
     gen_dir = f"{results_dir}/g{gen}"
     job_name = f"sgdl-evo-merge-g{gen}{('-' + variant) if variant else ''}"
@@ -214,7 +209,7 @@ def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, populati
     g_best = f"{results_dir}/g{gen - 1}-best"
     g_curr = f"{results_dir}/g{gen}"
     eval_csv = f"{g_prev}/evaluation.csv"
-    repo_path = "/opt/repo"
+    repo_path = f"/mnt/repo"
     job_name = f"sgdl-evo-prep-g{gen}{('-' + variant) if variant else ''}"
     # run_command = "pypy3"
     run_command = "python"
@@ -223,6 +218,8 @@ def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, populati
         random_seed = get_seed(rnd)
         log.info(f"Random seed: {random_seed}")
         commands = [
+            f"mkdir -p {g_curr}",
+            
             f"cd {repo_path} && {run_command} job_scripts/generate_random.py "
             f"{population_size} {g_curr} --seed {random_seed} --ignore-errors --index-from-existing"
         ]
@@ -233,6 +230,8 @@ def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, populati
         random_seed = get_seed(rnd)
         log.info(f"Copy seed: {copy_best_seed} | Mutation seed: {mutation_seed} | Crossover seed: {crossover_seed} | Random seed: {random_seed}")
         commands = [
+            f"mkdir -p {g_curr} {g_best}",
+
             f"cd {repo_path} && {run_command} job_scripts/choose_best.py "
             f"{eval_csv} {g_prev} {g_best} --ignore-non-existent --index-from-existing",
 
@@ -289,7 +288,8 @@ def main():
     args = parser.parse_args()
     variant = args.variant
     timestamp = int(time.time())
-    results_dir = args.results_dir if args.results_dir else f"./results{('-' + variant) if variant else ''}/{timestamp}"
+    results_dir = args.results_dir if args.results_dir else f"/results{('-' + variant) if variant else ''}/{timestamp}"
+    results_dir = f"/mnt/{results_dir}"
     start_gen = args.start_gen
     end_gen = args.end_gen
     population_size = args.population_size
@@ -304,6 +304,8 @@ def main():
     setup_logging(f"{results_dir}/orchestrator.log")
 
     batch_api = get_batch_client()
+
+    run_setup_git(batch_api)
 
     log.info("=" * 50)
     log.info(f"Starting evolution: gen {start_gen} to {end_gen} | Seed: {expr_seed} | Timestamp: {timestamp}")
