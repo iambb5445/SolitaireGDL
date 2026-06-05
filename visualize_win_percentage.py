@@ -5,10 +5,10 @@ import json
 import matplotlib.pyplot as plt
 import math
 
-max_move_count = 1000
-simulation_count_per_game = 20
-from_file = '1750842589_win_percentages.out'
-# from_file = None
+max_move_count = 2000
+simulation_count_per_game = 100
+# from_file = '1750842589_win_percentages.out'
+from_file = None
 save = True
 
 def get_win_points(wins: list[bool], move_counts: list[int]) -> list[tuple[float, float]]:
@@ -31,12 +31,12 @@ if __name__ == '__main__':
         game_filenames = [
             # 'games\\klondike_family\\klondike.sgdl',
             # 'games\\klondike_family\\blindalleys.sgdl',
-            # 'games\\klondike_family\\thirtysix.sgdl',
-            'games\\klondike_family\\legion.sgdl',
-            'games\\pairing_family\\golf.sgdl',
+            'games\\klondike_family\\whitehead.sgdl',
+            # 'games\\klondike_family\\legion.sgdl',
+            'games\\pairing_family\\thirteen.sgdl',
             'games\\freecell_family\\bakersgame.sgdl',
-            # 'games\\spider_family\\spider.sgdl',
-            'games\\klondike_family\\miniwestcliff.sgdl',
+            'games\\spider_family\\wasp.sgdl',
+            # 'games\\klondike_family\\miniwestcliff.sgdl',
         ]
         for game_filename in game_filenames:
             games, move_counts, samples = simulate_for_player(simulation_count_per_game, max_move_count, True, game_filename, lambda: DFSPlayer(

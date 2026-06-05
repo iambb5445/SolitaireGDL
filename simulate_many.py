@@ -8,8 +8,10 @@ from typing import Callable, Sequence
 import time
 import random
 import sys
+import os
 
-thread_count=50
+# Set thread_count to use all available CPUs, or set manually
+thread_count = os.cpu_count() or 50
 
 class Sample:
     def __init__(self, game: Game, action: str, game_id: int) -> None:
@@ -117,9 +119,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('filename')
     parser.add_argument('--max-count', default=None)
+    parser.add_argument('--threads', type=int, default=thread_count, help='Number of threads for simulation')
     args = parser.parse_args(sys.argv[1:])
     game_filename: str = args.filename
     max_sample_count: int|None = args.max_count
+    thread_count = args.threads
+
     # game_filename = 'games/klondike.sgdl'
     # simulate_for_player(50, 1000, game, lambda: RandomPlayer(None))
     # simulate_for_player(50, 10000, game, lambda: RandomNoRepeatPlayer(None, spider_heuristic))
@@ -133,12 +138,16 @@ if __name__ == '__main__':
     # print("RandomPlayerNoRepeat, action heuristic")
     # simulate_for_player(10, 10000, game, lambda: RandomNoRepeatPlayer(None, ActionCountHeuristic()))
     # simulate_for_player(10, 700, game, lambda: RandomNoRepeatPlayer(None, MergedHeuristic([ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic(), WinHeuristic(), WinHeuristic()])))
-    games, move_counts, samples = simulate_for_player(10, 1000, True, game_filename, lambda: DFSPlayer(
-        MergedHeuristic(
-            [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
-            [1, 1, 3]
+    games, move_counts, samples = simulate_for_player(
+        100, 2000, True, game_filename, lambda: DFSPlayer(
+            MergedHeuristic(
+                [ActionCountHeuristic(), NoDrawHeuristic(), WinHeuristic()],
+                [1, 1, 3]
             )
-        ), None, None, 0, 0.5, 0.2)
+        ), None, None, 0.1, 0.5, 0.2
+    )
+    for game in games:
+        print(game.get_state_view())
     report_results(games, move_counts)
     print(f"timed at {time.time() - start_time}")
     if len(samples) == 0:
@@ -163,7 +172,7 @@ if __name__ == '__main__':
         "sample_count": len(samples)
     }
     import json, time
-    filename = f"results/{dataset['name']}_{dataset['bot']}_{int(time.time())}.json"
+    filename = f"trainingResults/{dataset['name']}_{dataset['bot']}_{int(time.time())}_{len(samples)}samples.json"
     with open(filename, "w") as file:
         json.dump(dataset, file, indent=4)
     print(f"saved as {filename}")
