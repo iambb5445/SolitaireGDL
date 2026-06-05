@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from parser import Parser
 from gene_parser import GeneParser
 from random import Random
-from genetic import SGDLGene
 from utility import get_seed
 from history import History
 
@@ -16,7 +15,7 @@ seed_max = 1000000000
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
-    parser.add_argument('outpath', type=str, help="Path to save the sgdl results of evaluation.")
+    parser.add_argument('outpath', type=str, help="Path to save the sgdl results of mutation.")
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--count-per-gdl', type=int, default=1, help="How many mutated versions should be created of each gdl.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")

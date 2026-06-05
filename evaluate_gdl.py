@@ -38,12 +38,11 @@ def get_verdict_from_results(df: pd.DataFrame):
         return Verdict.EXTRA_PILE
     return Verdict.OK
 
-def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, player_creator: Callable[[], Player] = lambda: players["dfs-heuristic"](None), should_log: bool = False, save_as: str|None = None, log_at: str|None = None):
+def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, player_creator: Callable[[], Player] = lambda: players["dfs-heuristic"](None), should_log: bool = False, save_as: str|None = None, log_at: str|None = None, experiment_seed: int|None = None):
     logger = Logger(should_log, log_at)
     logger.info("gdl")
     logger.info(gdl)
     logger.info(str(player_creator()))
-    experiment_seed = get_seed(None)
     logger.info(f"Experiment seed: {experiment_seed}")
     game_seeds = get_seeds(experiment_seed, game_count) # passing seeds in so I can also put them in the dataset
     game_ends, move_counts, samples, traces, game_starts, stopped = simulate_for_player(
@@ -59,6 +58,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     df = pd.DataFrame({
         "Game": [game_name] * game_count,
         "Simulation Seed": game_seeds,
+        "Experiment Seed": [experiment_seed] * game_count,
         "SGDL Hash": [Parser.get_deterministic_hash(gdl)] * game_count,
         "Win": wins,
         # "Win Percentage": [win_percentage] * len(games),
