@@ -1,0 +1,32 @@
+Ofad
+$cards
+DECK 2 SPADES
+
+$initial
+UFEAH 7 FACE_HALF
+UFEAH 2 FACE_HALF
+UFEAH 3 FACE_HALF
+
+COLUMN 10 FACE_ALL
+COLUMN 1 FACE_ALL
+COLUMN 3 FACE_ALL
+
+$moves
+MOVE UFEAH {COLUMN, UFEAH}
+OR
+    SRC Suit {DIAMONDS}
+    AND
+        SRC Rank 1
+        DEST Suit {HEARTS, DIAMONDS, SPADES, CLUBS}
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Size > 4
+    AND
+        SRCSTACK Size <= 3
+        SRC Rank 1
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL UFEAH Empty

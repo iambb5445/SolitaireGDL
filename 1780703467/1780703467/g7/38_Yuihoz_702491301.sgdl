@@ -1,0 +1,22 @@
+Yuihoz
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 38 DEAL IMU
+IMU 5 FACE_HALF
+IMU 2 FACE_HALF
+IMU 6 FACE_HALF
+IMU 1 FACE_HALF
+
+$moves
+MOVE_STACK IMU IMU
+OR
+    AND
+        SRCSTACK Suit match_color
+        DESTSRC Rank add_13
+    AND
+        DEST Suit {HEARTS, CLUBS, SPADES}
+        DEST Empty
+$win
+PILE ALL IMU Empty

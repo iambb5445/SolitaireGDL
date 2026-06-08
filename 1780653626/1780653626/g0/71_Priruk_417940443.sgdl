@@ -1,0 +1,26 @@
+Priruk
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 35 ROTATE 3 U U
+COLUMN 9 FACE_HALF
+
+ACIOQ 3 FACE_ALL
+ACIOQ 5 FACE_LAST
+
+$moves
+MOVE {COLUMN, ACIOQ, DRAW} COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Rank add_13
+    AND
+        DESTSRC Suit match_color
+        SRC Rank K
+$win
+AND
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL ACIOQ Empty
+        PILE ALL DRAW Empty

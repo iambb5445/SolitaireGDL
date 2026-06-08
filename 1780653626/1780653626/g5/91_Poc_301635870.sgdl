@@ -1,0 +1,27 @@
+Poc
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 50 DEAL COLUMN
+COLUMN 2 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Suit {SPADES, DIAMONDS, HEARTS}
+        DESTSRC Rank add_14
+    DEST Suit {SPADES}
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRC Suit {SPADES, CLUBS}
+        SRCSTACK Rank descending
+    AND
+        DEST Suit {SPADES, HEARTS, CLUBS}
+        DEST Rank K
+DRAW
+PILE ANY COLUMN Size > 0
+$win
+PILE ALL DRAW Empty

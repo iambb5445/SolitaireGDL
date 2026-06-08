@@ -1,0 +1,23 @@
+Ruke
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 101 DEAL COLUMN
+COLUMN 3 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    SRC Suit {HEARTS, SPADES, DIAMONDS}
+    AND
+        DEST Size <= 7
+        DEST Empty
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty

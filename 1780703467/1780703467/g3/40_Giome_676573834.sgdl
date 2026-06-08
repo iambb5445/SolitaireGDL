@@ -1,0 +1,29 @@
+Giome
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+IGI 9 FACE_ALL
+IGI 6 FACE_ALL
+IGI 1 FACE_ALL
+IGI 4 FACE_ALL
+IGI 1 FACE_ALL
+IGI 0 FACE_ALL
+IGI 5 FACE_HALF
+IGI 0 FACE_HALF
+
+$moves
+MOVE IGI IGI
+OR
+    AND
+        DEST Size == 10
+        SRC Rank 1
+    DESTSRC Rank descending
+MOVE_STACK IGI IGI
+AND
+    OR
+        DESTSRC Suit match_color
+        SRCSTACK Suit alternate_color
+    SRCSTACK Rank add_13
+$win
+PILE ALL IGI Empty

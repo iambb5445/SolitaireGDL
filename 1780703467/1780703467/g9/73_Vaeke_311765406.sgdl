@@ -1,0 +1,25 @@
+Vaeke
+$cards
+DECK 1 SPADES
+
+$initial
+NOJO 0 FACE_LAST
+
+COLUMN 6 FACE_LAST
+COLUMN 2 FACE_LAST
+
+XUXE 5 FACE_LAST
+
+$moves
+MOVE_STACK NOJO NOJO
+SRCSTACK Suit match_color
+MOVE_STACK {NOJO, COLUMN, XUXE} XUXE
+DESTSRC Suit match_color
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL XUXE Empty
+    AND
+        PILE ALL XUXE Empty
+        PILE ALL COLUMN Empty

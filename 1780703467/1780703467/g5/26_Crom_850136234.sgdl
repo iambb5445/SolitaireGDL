@@ -1,0 +1,25 @@
+Crom
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+IWI 7 FACE_LAST
+IWI 10 FACE_LAST
+IWI 4 FACE_LAST
+IWI 5 FACE_HALF
+
+$moves
+MOVE IWI IWI
+DESTSRC Rank equal
+MOVE_STACK IWI IWI
+OR
+    AND
+        DEST Size < 0
+        DEST Empty
+    DESTSRC Rank descending
+$win
+OR
+    PILE ALL IWI Empty
+    AND
+        PILE ALL IWI Empty
+        PILE ALL IWI Empty

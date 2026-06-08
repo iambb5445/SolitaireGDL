@@ -1,0 +1,24 @@
+Ular
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 4 FACE_ALL
+COLUMN 7 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 0 FACE_ALL
+COLUMN 0 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        SRC Rank K
+    AND
+        DEST Suit {CLUBS, DIAMONDS, HEARTS, SPADES}
+        DEST Empty
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

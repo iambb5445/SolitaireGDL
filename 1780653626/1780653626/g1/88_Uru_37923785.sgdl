@@ -1,0 +1,40 @@
+Uru
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+MEYID 6 FACE_ALL
+MEYID 7 FACE_ALL
+MEYID 2 FACE_ALL
+MEYID 5 FACE_ALL
+MEYID 8 FACE_ALL
+MEYID 7 FACE_ALL
+MEYID 1 FACE_ALL
+
+TAEJI 5 FACE_HALF
+TAEJI 10 FACE_HALF
+TAEJI 1 FACE_ALL
+
+$moves
+MOVE {TAEJI, MEYID} MEYID
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DEST Suit {DIAMONDS}
+        DEST Rank 1
+MOVE {MEYID, TAEJI} TAEJI
+DEST Size <= 10
+MOVE_STACK TAEJI MEYID
+OR
+    AND
+        SRC Rank K
+        SRCSTACK Rank equal
+    AND
+        DEST Empty
+        SRCSTACK Size > 1
+$win
+OR
+    PILE ALL TAEJI Empty
+    AND
+        PILE ALL TAEJI Empty
+        PILE ALL MEYID Empty

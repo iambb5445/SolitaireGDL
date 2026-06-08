@@ -1,0 +1,18 @@
+Abal
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 34 ROTATE 1 U 1
+EYI 9 FACE_ALL
+EYI 9 FACE_HALF
+
+$moves
+MOVE_STACK EYI EYI
+OR
+    SRC Rank 1
+    AND
+        DEST Suit {SPADES, HEARTS, CLUBS}
+        SRCSTACK Rank equal
+$win
+PILE ALL EYI Empty

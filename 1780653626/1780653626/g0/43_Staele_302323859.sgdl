@@ -1,0 +1,29 @@
+Staele
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+CEB 5 FACE_ALL
+CEB 5 FACE_ALL
+CEB 5 FACE_ALL
+CEB 3 FACE_ALL
+CEB 10 FACE_ALL
+CEB 10 FACE_ALL
+CEB 2 FACE_ALL
+CEB 6 FACE_ALL
+CEB 3 FACE_ALL
+CEB 3 FACE_ALL
+
+$moves
+MOVE CEB CEB
+OR
+    SRC Rank 1
+    AND
+        SRC Rank 1
+        DEST Rank K
+MOVE_STACK CEB CEB
+OR
+    SRCSTACK Size < 2
+    SRCSTACK Suit match_color
+$win
+PILE ALL CEB Empty

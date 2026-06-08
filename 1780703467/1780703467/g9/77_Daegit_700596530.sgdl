@@ -1,0 +1,19 @@
+Daegit
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 92 ROTATE 3 U U
+COLUMN 6 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 0 FACE_ALL
+
+$moves
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Suit match
+    OR
+        SRCSTACK Suit match
+        DEST Size > 1
+$win
+PILE ALL DRAW Empty

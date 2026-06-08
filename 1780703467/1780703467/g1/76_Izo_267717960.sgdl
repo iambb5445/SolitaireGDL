@@ -1,0 +1,25 @@
+Izo
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 50 DEAL TROUC
+TROUC 2 FACE_ALL
+
+$moves
+MOVE TROUC TROUC
+SRC Rank 1
+MOVE_STACK TROUC TROUC
+OR
+    SRCSTACK Rank ascending
+    AND
+        SRCSTACK Suit match
+        SRCSTACK Rank add_13
+DRAW
+PILE ANY DRAW Size > 0
+$win
+OR
+    PILE ALL TROUC Empty
+    AND
+        PILE ALL TROUC Empty
+        PILE ALL TROUC Empty

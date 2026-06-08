@@ -1,0 +1,21 @@
+Qejuq
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 25 DEAL ENO
+ENO 1 FACE_ALL
+
+$moves
+MOVE ENO ENO
+AND
+    OR
+        DESTSRC Suit match
+        SRC Rank 1
+    OR
+        DEST Rank K
+        DEST Suit {DIAMONDS}
+MOVE_STACK ENO ENO
+SRCSTACK Size <= 1
+$win
+PILE ALL DRAW Empty

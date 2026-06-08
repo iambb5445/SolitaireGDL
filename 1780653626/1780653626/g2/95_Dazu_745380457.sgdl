@@ -1,0 +1,29 @@
+Dazu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+UXE 2 FACE_LAST
+UXE 9 FACE_LAST
+UXE 4 FACE_LAST
+UXE 3 FACE_LAST
+UXE 7 FACE_LAST
+UXE 1 FACE_LAST
+
+$moves
+MOVE UXE UXE
+OR
+    DESTSRC Rank ascending
+    AND
+        DEST Suit {SPADES}
+        SRC Rank K
+MOVE_STACK UXE UXE
+DESTSRC Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL UXE Empty
+        PILE ALL UXE Empty
+    AND
+        PILE ALL UXE Empty
+        PILE ALL UXE Empty

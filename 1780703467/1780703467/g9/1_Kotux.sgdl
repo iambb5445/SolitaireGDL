@@ -1,0 +1,27 @@
+Kotux
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 99 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DEST Rank 1
+    AND
+        DEST Suit {SPADES, DIAMONDS, CLUBS}
+        DEST Suit {SPADES, DIAMONDS, HEARTS}
+    DEST Empty
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Rank equal
+    DEST Size < 2
+$win
+AND
+    PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

@@ -1,0 +1,30 @@
+Eliw
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 31 ROTATE 3 U U
+COLUMN 7 FACE_HALF
+COLUMN 1 FACE_HALF
+COLUMN 6 FACE_HALF
+COLUMN 7 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DEST Empty
+    DESTSRC Suit alternate_color
+MOVE DRAW COLUMN
+OR
+    DEST Empty
+    DEST Suit {DIAMONDS}
+MOVE_STACK COLUMN COLUMN
+SRC Rank 1
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

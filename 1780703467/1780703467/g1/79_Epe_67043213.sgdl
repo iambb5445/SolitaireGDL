@@ -1,0 +1,22 @@
+Epe
+$cards
+DECK 1 SPADES
+
+$initial
+GAEW 5 FACE_ALTERNATE_LAST
+GAEW 8 FACE_LAST
+GAEW 0 FACE_LAST
+
+$moves
+MOVE GAEW GAEW
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Suit match
+        DEST Suit {HEARTS, CLUBS, SPADES, DIAMONDS}
+MOVE_STACK GAEW GAEW
+SRCSTACK Suit match
+$win
+AND
+    PILE ALL GAEW Empty
+    PILE ALL GAEW Empty

@@ -1,0 +1,13 @@
+Moulax
+$cards
+DECK 1 SPADES
+
+$initial
+JEAKU 7 FACE_ALL
+JEAKU 6 FACE_ALL
+
+$moves
+MOVE_STACK JEAKU JEAKU
+SRCSTACK Suit match
+$win
+PILE ALL JEAKU Empty

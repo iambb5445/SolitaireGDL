@@ -1,0 +1,24 @@
+Suipo
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 88 ROTATE 3 U 3
+COLUMN 9 FACE_LAST
+COLUMN 7 FACE_ALTERNATE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        SRC Suit {HEARTS, CLUBS}
+    AND
+        DEST Empty
+        DEST Suit {HEARTS, SPADES, CLUBS}
+MOVE_STACK COLUMN COLUMN
+DESTSRC Rank descending
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

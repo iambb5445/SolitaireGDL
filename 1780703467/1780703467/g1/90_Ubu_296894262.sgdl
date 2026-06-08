@@ -1,0 +1,21 @@
+Ubu
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 81 ROTATE 3 U U
+URI 10 FACE_HALF
+URI 5 FACE_HALF
+URI 6 FACE_HALF
+URI 2 FACE_HALF
+URI 0 FACE_HALF
+
+$moves
+MOVE_STACK URI URI
+OR
+    AND
+        SRCSTACK Suit match
+        SRCSTACK Rank equal
+    SRC Rank 1
+$win
+PILE ALL URI Empty

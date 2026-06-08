@@ -1,0 +1,24 @@
+Paecay
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 102 ROTATE 1 1 U
+COLUMN 2 FACE_LAST
+COLUMN 0 FACE_LAST
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRC Rank 1
+        DEST Empty
+    SRCSTACK Suit match
+$win
+AND
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty

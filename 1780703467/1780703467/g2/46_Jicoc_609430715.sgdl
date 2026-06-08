@@ -1,0 +1,24 @@
+Jicoc
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+STOPU 6 FACE_ALL
+STOPU 7 FACE_ALL
+STOPU 3 FACE_ALL
+STOPU 2 FACE_ALL
+STOPU 8 FACE_ALL
+
+$moves
+MOVE_STACK STOPU STOPU
+OR
+    AND
+        SRC Suit {HEARTS, SPADES, CLUBS, DIAMONDS}
+        DEST Size > 5
+    AND
+        DEST Empty
+        DEST Rank K
+$win
+AND
+    PILE ALL STOPU Empty
+    PILE ALL STOPU Empty

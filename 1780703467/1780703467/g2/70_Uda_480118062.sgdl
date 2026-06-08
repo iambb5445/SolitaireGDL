@@ -1,0 +1,20 @@
+Uda
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 9 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 1 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

@@ -1,0 +1,28 @@
+Raepal
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+UFA 5 FACE_HALF
+UFA 3 FACE_HALF
+UFA 5 FACE_HALF
+UFA 10 FACE_HALF
+UFA 9 FACE_HALF
+UFA 3 FACE_HALF
+UFA 6 FACE_HALF
+UFA 1 FACE_HALF
+UFA 10 FACE_HALF
+
+$moves
+MOVE_STACK UFA UFA
+OR
+    SRC Suit {CLUBS}
+    DEST Empty
+$win
+OR
+    AND
+        PILE ALL UFA Empty
+        PILE ALL UFA Empty
+    AND
+        PILE ALL UFA Empty
+        PILE ALL UFA Empty

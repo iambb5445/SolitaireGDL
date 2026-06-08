@@ -1,0 +1,28 @@
+Duiw
+$cards
+DECK 1 SPADES
+
+$initial
+ENI 1 FACE_ALL
+ENI 2 FACE_ALL
+ENI 7 FACE_ALL
+ENI 2 FACE_ALL
+ENI 1 FACE_ALL
+
+$moves
+MOVE ENI ENI
+AND
+    AND
+        DESTSRC Rank ascending
+        DEST Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    DESTSRC Suit match
+MOVE_STACK ENI ENI
+AND
+    SRC Suit {CLUBS, DIAMONDS, HEARTS}
+    SRC Suit {SPADES, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL ENI Empty
+        PILE ALL ENI Empty
+    PILE ALL ENI Empty

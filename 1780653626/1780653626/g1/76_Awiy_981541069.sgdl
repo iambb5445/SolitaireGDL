@@ -1,0 +1,28 @@
+Awiy
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 41 ROTATE 3 U 2
+LIBA 2 FACE_ALL
+LIBA 5 FACE_ALL
+LIBA 2 FACE_ALL
+LIBA 2 FACE_ALL
+
+$moves
+MOVE DRAW LIBA
+AND
+    AND
+        DEST Size == 10
+        SRC Rank 1
+    OR
+        SRC Rank 1
+        SRC Suit {SPADES, CLUBS, DIAMONDS, HEARTS}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

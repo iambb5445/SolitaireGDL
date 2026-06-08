@@ -1,0 +1,30 @@
+Uzu
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 4 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 10 FACE_HALF
+COLUMN 7 FACE_HALF
+COLUMN 2 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        DEST Rank 1
+    SRC Rank 1
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRCSTACK Size > 9
+        DESTSRC Rank add_13
+    DEST Suit {CLUBS, DIAMONDS, SPADES, HEARTS}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

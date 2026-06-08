@@ -1,0 +1,26 @@
+Holaq
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRUN 8 FACE_LAST
+DRUN 8 FACE_ALL
+
+UVIC 5 FACE_HALF
+UVIC 5 FACE_ALL
+
+$moves
+MOVE DRUN DRUN
+OR
+    DEST Size >= 7
+    DESTSRC Suit match
+MOVE DRUN UVIC
+DEST Suit {HEARTS}
+MOVE_STACK {DRUN, UVIC} DRUN
+OR
+    AND
+        SRC Suit {DIAMONDS}
+        DESTSRC Rank ascending
+    DEST Rank 1
+$win
+PILE ALL UVIC Empty

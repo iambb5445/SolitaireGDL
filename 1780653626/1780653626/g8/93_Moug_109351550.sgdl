@@ -1,0 +1,42 @@
+Moug
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+FOUJ 0 FACE_HALF
+FOUJ 6 FACE_LAST
+FOUJ 6 FACE_LAST
+FOUJ 8 FACE_LAST
+FOUJ 3 FACE_LAST
+FOUJ 8 FACE_LAST
+
+UHUH 0 FACE_LAST
+UHUH 1 FACE_LAST
+UHUH 7 FACE_LAST
+UHUH 2 FACE_ALL
+UHUH 10 FACE_ALL
+UHUH 1 FACE_ALL
+
+$moves
+MOVE FOUJ {FOUJ, UHUH}
+AND
+    OR
+        DEST Size == 6
+        DESTSRC Suit alternate_color
+    DEST Suit {SPADES, CLUBS}
+MOVE UHUH UHUH
+AND
+    OR
+        DEST Empty
+        DEST Size > 8
+    OR
+        DEST Rank 1
+        DEST Size > 2
+MOVE_STACK UHUH UHUH
+DEST Empty
+$win
+OR
+    AND
+        PILE ALL FOUJ Empty
+        PILE ALL UHUH Empty
+    PILE ALL UHUH Empty

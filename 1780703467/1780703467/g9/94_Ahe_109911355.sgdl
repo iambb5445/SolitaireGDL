@@ -1,0 +1,37 @@
+Ahe
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 41 ROTATE 1 2 U
+OCU 2 FACE_ALL
+
+COLUMN 2 FACE_ALL
+COLUMN 7 FACE_LAST
+COLUMN 0 FACE_LAST
+
+$moves
+MOVE {DRAW, OCU, COLUMN} OCU
+AND
+    DEST Empty
+    OR
+        DESTSRC Suit alternate_color
+        SRC Suit {CLUBS, SPADES, DIAMONDS}
+MOVE COLUMN COLUMN
+AND
+    DEST Size == 3
+    SRC Suit {CLUBS}
+MOVE_STACK COLUMN OCU
+AND
+    DEST Empty
+    OR
+        DEST Rank K
+        DEST Empty
+MOVE_STACK OCU OCU
+OR
+    AND
+        SRCSTACK Suit match
+        SRCSTACK Suit alternate_color
+    DEST Size >= 1
+$win
+PILE ALL DRAW Empty

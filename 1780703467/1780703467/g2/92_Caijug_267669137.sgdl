@@ -1,0 +1,20 @@
+Caijug
+$cards
+DECK 1 SPADES
+
+$initial
+IDO 0 FACE_ALTERNATE_LAST
+IDO 10 FACE_ALTERNATE_LAST
+IDO 3 FACE_ALL
+
+$moves
+MOVE IDO IDO
+SRC Suit {DIAMONDS, CLUBS, HEARTS, SPADES}
+$win
+OR
+    AND
+        PILE ALL IDO Empty
+        PILE ALL IDO Empty
+    AND
+        PILE ALL IDO Empty
+        PILE ALL IDO Empty

@@ -1,0 +1,23 @@
+Fridu
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 75 ROTATE 1 1 U
+QOYI 9 FACE_LAST
+QOYI 3 FACE_LAST
+QOYI 3 FACE_LAST
+QOYI 6 FACE_ALL
+QOYI 8 FACE_ALL
+
+$moves
+MOVE QOYI QOYI
+DESTSRC Rank add_14
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL QOYI Empty
+        PILE ALL DRAW Empty

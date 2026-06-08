@@ -1,0 +1,19 @@
+Giovo
+$cards
+DECK 2 SPADES
+
+$initial
+OSUIT 7 FACE_LAST
+OSUIT 4 FACE_LAST
+OSUIT 7 FACE_LAST
+OSUIT 8 FACE_LAST
+
+$moves
+MOVE_STACK OSUIT OSUIT
+DESTSRC Rank add_14
+$win
+OR
+    AND
+        PILE ALL OSUIT Empty
+        PILE ALL OSUIT Empty
+    PILE ALL OSUIT Empty

@@ -1,0 +1,19 @@
+Zupo
+$cards
+DECK 1 SPADES
+
+$initial
+CEJ 9 FACE_LAST
+CEJ 4 FACE_ALL
+
+$moves
+MOVE CEJ CEJ
+DEST Suit {CLUBS, HEARTS, DIAMONDS, SPADES}
+MOVE_STACK CEJ CEJ
+OR
+    DEST Size >= 7
+    AND
+        DEST Empty
+        SRC Suit {SPADES, CLUBS, HEARTS, DIAMONDS}
+$win
+PILE ALL CEJ Empty

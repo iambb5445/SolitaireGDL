@@ -1,0 +1,20 @@
+Joul
+$cards
+DECK 1 SPADES
+
+$initial
+YAIBU 5 FACE_HALF
+YAIBU 4 FACE_HALF
+YAIBU 4 FACE_HALF
+
+$moves
+MOVE YAIBU YAIBU
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DEST Rank 1
+        DEST Empty
+MOVE_STACK YAIBU YAIBU
+DEST Empty
+$win
+PILE ALL YAIBU Empty

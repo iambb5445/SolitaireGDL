@@ -1,0 +1,21 @@
+Ved
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+TRED 10 FACE_LAST
+TRED 7 FACE_LAST
+TRED 9 FACE_LAST
+TRED 0 FACE_LAST
+
+$moves
+MOVE TRED TRED
+OR
+    AND
+        SRC Suit {CLUBS, HEARTS}
+        DEST Empty
+    AND
+        DEST Size <= 1
+        DEST Size >= 8
+$win
+PILE ALL TRED Empty

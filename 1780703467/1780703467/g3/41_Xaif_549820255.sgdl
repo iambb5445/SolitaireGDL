@@ -1,0 +1,31 @@
+Xaif
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 47 DEAL COLUMN
+COLUMN 3 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 3 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 7 FACE_ALL
+COLUMN 10 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        SRC Rank 1
+        DESTSRC Suit match_color
+    OR
+        SRC Rank K
+        DEST Size > 2
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

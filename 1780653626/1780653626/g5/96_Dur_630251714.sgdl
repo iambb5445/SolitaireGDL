@@ -1,0 +1,23 @@
+Dur
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 82 ROTATE 1 U 3
+COLUMN 8 FACE_ALL
+COLUMN 9 FACE_ALL
+COLUMN 5 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Rank equal
+        DESTSRC Suit alternate_color
+    DEST Rank 1
+$win
+AND
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

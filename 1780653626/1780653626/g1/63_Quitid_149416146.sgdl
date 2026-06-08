@@ -1,0 +1,42 @@
+Quitid
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+YOZ 5 FACE_HALF
+YOZ 6 FACE_HALF
+YOZ 5 FACE_HALF
+YOZ 6 FACE_HALF
+YOZ 8 FACE_HALF
+YOZ 0 FACE_HALF
+YOZ 6 FACE_HALF
+YOZ 3 FACE_HALF
+
+AYA 8 FACE_LAST
+AYA 5 FACE_LAST
+
+$moves
+MOVE AYA YOZ
+DESTSRC Suit match_color
+MOVE AYA AYA
+DEST Rank 1
+MOVE_STACK {AYA, YOZ} YOZ
+OR
+    AND
+        DEST Suit {SPADES, CLUBS, HEARTS}
+        DEST Size > 7
+    DEST Empty
+MOVE_STACK {YOZ, AYA} AYA
+AND
+    AND
+        SRCSTACK Size == 7
+        SRC Suit {SPADES}
+    OR
+        SRC Suit {CLUBS, DIAMONDS, SPADES, HEARTS}
+        SRCSTACK Suit match
+$win
+OR
+    PILE ALL YOZ Empty
+    AND
+        PILE ALL AYA Empty
+        PILE ALL AYA Empty

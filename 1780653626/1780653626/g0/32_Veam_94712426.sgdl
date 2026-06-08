@@ -1,0 +1,21 @@
+Veam
+$cards
+DECK 1 SPADES
+
+$initial
+CUTI 10 FACE_LAST
+CUTI 3 FACE_LAST
+
+$moves
+MOVE CUTI CUTI
+OR
+    SRC Suit {DIAMONDS, HEARTS, CLUBS, SPADES}
+    DEST Size <= 3
+MOVE_STACK CUTI CUTI
+AND
+    DESTSRC Rank ascending
+    OR
+        SRCSTACK Rank add_13
+        DEST Rank 1
+$win
+PILE ALL CUTI Empty

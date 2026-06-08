@@ -1,0 +1,41 @@
+Ocuiq
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 1 FACE_ALL
+COLUMN 9 FACE_ALL
+COLUMN 8 FACE_ALL
+COLUMN 7 FACE_LAST
+
+JAIHEF 1 FACE_ALL
+
+$moves
+MOVE COLUMN JAIHEF
+AND
+    AND
+        DEST Size >= 1
+        DESTSRC Rank equal
+    OR
+        DESTSRC Suit match
+        DESTSRC Suit alternate_color
+MOVE_STACK JAIHEF {JAIHEF, COLUMN}
+OR
+    SRC Suit {DIAMONDS, SPADES, HEARTS, CLUBS}
+    AND
+        SRCSTACK Rank add_13
+        DEST Suit {DIAMONDS, HEARTS, SPADES, CLUBS}
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        DESTSRC Rank descending
+        DESTSRC Rank add_14
+    SRC Rank K
+$win
+OR
+    AND
+        PILE ALL JAIHEF Empty
+        PILE ALL JAIHEF Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

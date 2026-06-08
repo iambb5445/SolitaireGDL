@@ -1,0 +1,35 @@
+Taxek
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 77 DEAL DEM
+DEM 9 FACE_LAST
+
+DIOWAM 2 FACE_ALL
+DIOWAM 8 FACE_HALF
+DIOWAM 8 FACE_HALF
+
+$moves
+MOVE DIOWAM DEM
+OR
+    DEST Size >= 9
+    AND
+        SRC Rank K
+        DEST Rank K
+MOVE DEM DEM
+DEST Rank 1
+MOVE_STACK DEM {DEM, DIOWAM}
+OR
+    AND
+        DESTSRC Suit match_color
+        SRCSTACK Suit match_color
+    AND
+        DEST Empty
+        SRC Suit {HEARTS, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL DEM Empty
+        PILE ALL DEM Empty
+    PILE ALL DIOWAM Empty

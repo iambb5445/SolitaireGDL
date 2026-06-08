@@ -1,0 +1,41 @@
+Beanu
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 4 ROTATE 3 U 2
+WAESU 0 FACE_ALL
+WAESU 2 FACE_ALL
+WAESU 10 FACE_ALL
+WAESU 2 FACE_ALL
+WAESU 5 FACE_ALL
+WAESU 6 FACE_ALL
+WAESU 6 FACE_ALL
+WAESU 7 FACE_ALL
+WAESU 10 FACE_ALL
+
+$moves
+MOVE DRAW WAESU
+AND
+    OR
+        DEST Rank K
+        DEST Empty
+    AND
+        DEST Suit {HEARTS, CLUBS, SPADES}
+        DEST Suit {SPADES}
+MOVE WAESU WAESU
+OR
+    AND
+        SRC Rank 1
+        DEST Rank 1
+    DEST Size < 10
+MOVE_STACK WAESU WAESU
+AND
+    OR
+        SRC Rank 1
+        DEST Suit {DIAMONDS}
+    OR
+        SRCSTACK Size >= 6
+        SRCSTACK Size >= 10
+$win
+PILE ALL DRAW Empty

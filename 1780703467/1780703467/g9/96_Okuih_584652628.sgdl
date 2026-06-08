@@ -1,0 +1,21 @@
+Okuih
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 22 DEAL UQAV
+UQAV 10 FACE_LAST
+UQAV 10 FACE_HALF
+UQAV 10 FACE_HALF
+
+$moves
+MOVE UQAV UQAV
+DEST Size < 6
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL UQAV Empty

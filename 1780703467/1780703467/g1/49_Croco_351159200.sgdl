@@ -1,0 +1,35 @@
+Croco
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+WEALE 8 FACE_HALF
+WEALE 5 FACE_ALTERNATE_LAST
+WEALE 0 FACE_ALTERNATE_LAST
+WEALE 3 FACE_ALTERNATE_LAST
+WEALE 10 FACE_ALTERNATE_LAST
+WEALE 0 FACE_ALTERNATE_LAST
+
+$moves
+MOVE WEALE WEALE
+AND
+    AND
+        SRC Rank 1
+        DEST Empty
+    DEST Size > 4
+MOVE_STACK WEALE WEALE
+OR
+    AND
+        DESTSRC Suit match
+        DEST Empty
+    AND
+        DESTSRC Rank add_13
+        DEST Empty
+$win
+OR
+    AND
+        PILE ALL WEALE Empty
+        PILE ALL WEALE Empty
+    AND
+        PILE ALL WEALE Empty
+        PILE ALL WEALE Empty

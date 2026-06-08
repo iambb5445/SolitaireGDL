@@ -1,0 +1,47 @@
+Oxa
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+GREAPI 5 FACE_ALTERNATE_LAST
+
+COLUMN 6 FACE_LAST
+COLUMN 2 FACE_LAST
+
+EVEAP 5 FACE_LAST
+EVEAP 6 FACE_ALTERNATE_LAST
+EVEAP 2 FACE_ALTERNATE_LAST
+
+$moves
+MOVE EVEAP COLUMN
+AND
+    OR
+        SRC Suit {DIAMONDS, CLUBS, SPADES, HEARTS}
+        DEST Size >= 10
+    OR
+        DEST Empty
+        DESTSRC Suit alternate_color
+MOVE {EVEAP, GREAPI, COLUMN} EVEAP
+OR
+    AND
+        SRC Suit {HEARTS}
+        DEST Empty
+    DEST Size > 5
+MOVE_STACK EVEAP GREAPI
+OR
+    SRC Rank 1
+    AND
+        DEST Suit {HEARTS, DIAMONDS, CLUBS, SPADES}
+        DEST Rank K
+MOVE_STACK EVEAP COLUMN
+OR
+    SRC Rank 1
+    AND
+        DEST Size > 7
+        DEST Rank K
+$win
+AND
+    AND
+        PILE ALL GREAPI Empty
+        PILE ALL COLUMN Empty
+    PILE ALL EVEAP Empty

@@ -1,0 +1,34 @@
+Ajen
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+UNE 9 FACE_HALF
+UNE 8 FACE_HALF
+UNE 6 FACE_HALF
+UNE 0 FACE_HALF
+UNE 3 FACE_HALF
+
+$moves
+MOVE UNE UNE
+OR
+    DESTSRC Rank descending
+    AND
+        DEST Rank 1
+        DEST Empty
+MOVE_STACK UNE UNE
+AND
+    OR
+        SRC Suit {DIAMONDS, HEARTS}
+        SRCSTACK Suit match_color
+    OR
+        DEST Empty
+        SRCSTACK Size >= 3
+$win
+OR
+    AND
+        PILE ALL UNE Empty
+        PILE ALL UNE Empty
+    AND
+        PILE ALL UNE Empty
+        PILE ALL UNE Empty

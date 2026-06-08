@@ -1,0 +1,23 @@
+Ler
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 4 FACE_LAST
+COLUMN 3 FACE_HALF
+
+BRAIFA 1 FACE_HALF
+BRAIFA 4 FACE_HALF
+BRAIFA 1 FACE_LAST
+
+$moves
+MOVE_STACK BRAIFA COLUMN
+OR
+    AND
+        SRCSTACK Size < 8
+        DEST Empty
+    AND
+        DEST Size >= 3
+        DESTSRC Suit match
+$win
+PILE ALL COLUMN Empty

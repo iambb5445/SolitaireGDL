@@ -1,0 +1,31 @@
+Adear
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+STEAY 8 FACE_ALL
+STEAY 3 FACE_ALL
+STEAY 4 FACE_ALL
+STEAY 3 FACE_ALL
+STEAY 8 FACE_ALL
+STEAY 0 FACE_ALL
+
+$moves
+MOVE STEAY STEAY
+AND
+    OR
+        DEST Suit {HEARTS, DIAMONDS, CLUBS}
+        DEST Size == 5
+    OR
+        DEST Empty
+        SRC Suit {DIAMONDS, SPADES, HEARTS}
+MOVE_STACK STEAY STEAY
+OR
+    AND
+        DESTSRC Rank equal
+        SRCSTACK Suit alternate_color
+    AND
+        DEST Empty
+        SRCSTACK Rank descending
+$win
+PILE ALL STEAY Empty

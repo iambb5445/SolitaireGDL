@@ -1,0 +1,26 @@
+Reahi
+$cards
+DECK 1 SPADES
+
+$initial
+CRACU 4 FACE_LAST
+CRACU 7 FACE_LAST
+CRACU 2 FACE_LAST
+
+$moves
+MOVE CRACU CRACU
+SRC Suit {SPADES}
+MOVE_STACK CRACU CRACU
+AND
+    DEST Rank K
+    OR
+        DESTSRC Rank equal
+        DEST Rank K
+$win
+OR
+    AND
+        PILE ALL CRACU Empty
+        PILE ALL CRACU Empty
+    AND
+        PILE ALL CRACU Empty
+        PILE ALL CRACU Empty

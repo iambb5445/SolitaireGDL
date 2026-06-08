@@ -1,0 +1,26 @@
+Yulip
+$cards
+DECK 2 SPADES
+
+$initial
+RUVU 8 FACE_LAST
+RUVU 10 FACE_LAST
+RUVU 4 FACE_LAST
+
+UBAEZ 4 FACE_HALF
+
+$moves
+MOVE_STACK RUVU UBAEZ
+AND
+    OR
+        SRCSTACK Suit match
+        DEST Empty
+    SRCSTACK Suit alternate_color
+MOVE_STACK UBAEZ UBAEZ
+AND
+    DESTSRC Rank ascending
+    OR
+        DEST Empty
+        DEST Empty
+$win
+PILE ALL RUVU Empty

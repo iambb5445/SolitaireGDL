@@ -1,0 +1,25 @@
+Oxiot
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+RIPE 3 FACE_ALL
+RIPE 9 FACE_ALL
+
+QOUQ 8 FACE_ALTERNATE_LAST
+QOUQ 3 FACE_ALTERNATE_LAST
+QOUQ 3 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK {RIPE, QOUQ} RIPE
+OR
+    DESTSRC Rank add_14
+    SRCSTACK Suit match_color
+$win
+OR
+    AND
+        PILE ALL RIPE Empty
+        PILE ALL QOUQ Empty
+    AND
+        PILE ALL RIPE Empty
+        PILE ALL QOUQ Empty

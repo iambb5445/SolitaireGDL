@@ -1,0 +1,33 @@
+Ira
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 7 ROTATE 3 U 2
+PRIOJ 7 FACE_LAST
+PRIOJ 2 FACE_ALL
+PRIOJ 10 FACE_ALL
+
+$moves
+MOVE PRIOJ PRIOJ
+OR
+    AND
+        DEST Empty
+        DEST Empty
+    DESTSRC Rank add_13
+MOVE DRAW PRIOJ
+OR
+    AND
+        DEST Rank 1
+        DESTSRC Suit alternate_color
+    DEST Empty
+MOVE_STACK PRIOJ PRIOJ
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Suit match_color
+    AND
+        SRCSTACK Size > 10
+        SRCSTACK Suit alternate_color
+$win
+PILE ALL PRIOJ Empty

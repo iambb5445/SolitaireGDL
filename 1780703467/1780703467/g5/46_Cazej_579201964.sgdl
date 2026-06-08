@@ -1,0 +1,25 @@
+Cazej
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 88 ROTATE 3 U 3
+ICU 1 FACE_LAST
+ICU 6 FACE_LAST
+ICU 9 FACE_LAST
+
+$moves
+MOVE_STACK ICU ICU
+OR
+    AND
+        SRCSTACK Rank add_13
+        DEST Empty
+    AND
+        SRC Rank K
+        DESTSRC Suit match
+$win
+AND
+    PILE ALL ICU Empty
+    OR
+        PILE ALL ICU Empty
+        PILE ALL ICU Empty

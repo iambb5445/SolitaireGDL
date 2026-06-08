@@ -1,0 +1,28 @@
+Ruir
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 3 FACE_LAST
+COLUMN 9 FACE_HALF
+
+ZIFI 7 FACE_HALF
+ZIFI 7 FACE_HALF
+ZIFI 0 FACE_HALF
+ZIFI 0 FACE_HALF
+
+$moves
+MOVE COLUMN ZIFI
+OR
+    SRC Suit {CLUBS}
+    AND
+        DESTSRC Suit match_color
+        SRC Suit {CLUBS, SPADES, HEARTS}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL ZIFI Empty
+    AND
+        PILE ALL ZIFI Empty
+        PILE ALL ZIFI Empty

@@ -1,0 +1,45 @@
+Kouc
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 61 DEAL {EJAEY, MAECAB}
+MAECAB 6 FACE_ALL
+MAECAB 5 FACE_ALL
+MAECAB 4 FACE_HALF
+
+EJAEY 6 FACE_HALF
+EJAEY 3 FACE_HALF
+EJAEY 2 FACE_HALF
+EJAEY 10 FACE_ALL
+EJAEY 7 FACE_ALL
+
+$moves
+MOVE EJAEY MAECAB
+OR
+    AND
+        SRC Suit {SPADES, HEARTS}
+        DESTSRC Suit match_color
+    AND
+        SRC Suit {SPADES}
+        DESTSRC Rank ascending
+MOVE MAECAB MAECAB
+AND
+    AND
+        DESTSRC Suit match
+        DEST Rank 1
+    OR
+        DEST Suit {SPADES, HEARTS}
+        DEST Size > 4
+MOVE_STACK MAECAB MAECAB
+OR
+    AND
+        DESTSRC Rank add_13
+        SRCSTACK Suit alternate_color
+    DESTSRC Rank equal
+MOVE_STACK {EJAEY, MAECAB} EJAEY
+SRC Rank K
+DRAW
+PILE ALL MAECAB Size > 0
+$win
+PILE ALL MAECAB Empty

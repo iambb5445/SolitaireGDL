@@ -1,0 +1,17 @@
+Quidal
+$cards
+DECK 1 SPADES
+
+$initial
+VIB 7 FACE_ALTERNATE_LAST
+VIB 6 FACE_HALF
+
+$moves
+MOVE_STACK VIB VIB
+SRC Rank K
+$win
+OR
+    PILE ALL VIB Empty
+    AND
+        PILE ALL VIB Empty
+        PILE ALL VIB Empty

@@ -1,0 +1,33 @@
+Ose
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 72 ROTATE 1 2 U
+KUIT 5 FACE_HALF
+
+OYO 6 FACE_HALF
+OYO 6 FACE_ALL
+OYO 6 FACE_ALL
+
+COLUMN 9 FACE_ALL
+
+$moves
+MOVE OYO KUIT
+DESTSRC Rank add_14
+MOVE COLUMN COLUMN
+DEST Suit {SPADES, DIAMONDS}
+MOVE_STACK KUIT KUIT
+OR
+    AND
+        SRCSTACK Rank ascending
+        DEST Empty
+    SRC Suit {DIAMONDS, HEARTS}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL KUIT Empty

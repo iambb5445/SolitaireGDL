@@ -1,0 +1,25 @@
+Oyeb
+$cards
+DECK 1 SPADES
+
+$initial
+DROGEN 8 FACE_ALL
+DROGEN 5 FACE_ALTERNATE_LAST
+
+$moves
+MOVE DROGEN DROGEN
+OR
+    AND
+        SRC Suit {HEARTS, CLUBS}
+        DEST Size >= 10
+    AND
+        DEST Rank K
+        DESTSRC Suit alternate_color
+MOVE_STACK DROGEN DROGEN
+SRCSTACK Rank ascending
+$win
+OR
+    PILE ALL DROGEN Empty
+    AND
+        PILE ALL DROGEN Empty
+        PILE ALL DROGEN Empty

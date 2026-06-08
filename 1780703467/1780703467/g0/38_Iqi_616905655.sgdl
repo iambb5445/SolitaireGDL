@@ -1,0 +1,26 @@
+Iqi
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 11 DEAL USI
+USI 10 FACE_ALL
+USI 5 FACE_ALL
+USI 2 FACE_ALL
+USI 7 FACE_ALL
+USI 4 FACE_ALL
+USI 3 FACE_ALL
+USI 7 FACE_ALL
+USI 3 FACE_ALL
+
+$moves
+MOVE USI USI
+DESTSRC Rank descending
+$win
+OR
+    AND
+        PILE ALL USI Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

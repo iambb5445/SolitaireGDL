@@ -1,0 +1,24 @@
+Oyo
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 2 ROTATE 1 U 1
+XAEJAF 9 FACE_LAST
+XAEJAF 9 FACE_LAST
+
+CEAQEG 6 FACE_HALF
+
+$moves
+MOVE_STACK XAEJAF CEAQEG
+AND
+    OR
+        DEST Rank 1
+        DESTSRC Rank descending
+    SRCSTACK Suit match_color
+$win
+OR
+    PILE ALL CEAQEG Empty
+    AND
+        PILE ALL CEAQEG Empty
+        PILE ALL DRAW Empty

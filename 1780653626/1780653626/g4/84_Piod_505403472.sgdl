@@ -1,0 +1,14 @@
+Piod
+$cards
+DECK 1 SPADES
+
+$initial
+GEHO 10 FACE_ALL
+GEHO 3 FACE_ALL
+GEHO 0 FACE_ALL
+
+$moves
+MOVE GEHO GEHO
+SRC Suit {CLUBS}
+$win
+PILE ALL GEHO Empty

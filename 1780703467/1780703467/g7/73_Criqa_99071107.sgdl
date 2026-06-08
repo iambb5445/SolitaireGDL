@@ -1,0 +1,24 @@
+Criqa
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 92 ROTATE 1 2 U
+IKOUR 3 FACE_ALL
+IKOUR 9 FACE_ALL
+
+$moves
+MOVE IKOUR IKOUR
+DEST Rank 1
+MOVE DRAW IKOUR
+DEST Size > 3
+MOVE_STACK IKOUR IKOUR
+AND
+    OR
+        DESTSRC Suit alternate_color
+        SRCSTACK Rank descending
+    AND
+        SRCSTACK Suit match_color
+        SRC Suit {CLUBS}
+$win
+PILE ALL IKOUR Empty

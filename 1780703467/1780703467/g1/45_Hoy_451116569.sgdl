@@ -1,0 +1,37 @@
+Hoy
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+NAIRI 4 FACE_ALTERNATE_LAST
+
+CUX 4 FACE_LAST
+CUX 6 FACE_ALL
+CUX 1 FACE_ALL
+CUX 6 FACE_ALL
+CUX 3 FACE_ALL
+CUX 2 FACE_ALL
+
+$moves
+MOVE CUX CUX
+OR
+    DEST Size < 10
+    AND
+        DEST Empty
+        DEST Rank 1
+MOVE_STACK CUX NAIRI
+DEST Empty
+MOVE_STACK CUX CUX
+OR
+    AND
+        DEST Rank K
+        DEST Size > 10
+    SRC Suit {SPADES, CLUBS, HEARTS}
+$win
+OR
+    AND
+        PILE ALL CUX Empty
+        PILE ALL NAIRI Empty
+    AND
+        PILE ALL CUX Empty
+        PILE ALL CUX Empty

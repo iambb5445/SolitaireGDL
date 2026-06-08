@@ -1,0 +1,23 @@
+Muite
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 30 DEAL EHUID
+EHUID 0 FACE_ALL
+EHUID 4 FACE_ALL
+EHUID 5 FACE_ALL
+EHUID 10 FACE_ALL
+EHUID 3 FACE_ALL
+
+$moves
+MOVE EHUID EHUID
+DEST Size <= 5
+MOVE_STACK EHUID EHUID
+OR
+    DESTSRC Suit alternate_color
+    AND
+        SRC Rank K
+        SRCSTACK Rank descending
+$win
+PILE ALL EHUID Empty

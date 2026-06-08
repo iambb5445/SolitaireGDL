@@ -1,0 +1,38 @@
+Biodas
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 13 ROTATE 3 U 2
+PRUIW 4 FACE_LAST
+PRUIW 9 FACE_LAST
+PRUIW 10 FACE_LAST
+PRUIW 9 FACE_LAST
+PRUIW 3 FACE_LAST
+PRUIW 4 FACE_LAST
+
+$moves
+MOVE DRAW PRUIW
+AND
+    OR
+        SRC Suit {DIAMONDS, SPADES, CLUBS, HEARTS}
+        DEST Rank 1
+    DEST Suit {HEARTS, CLUBS, DIAMONDS, SPADES}
+MOVE PRUIW PRUIW
+OR
+    SRC Rank 1
+    AND
+        DEST Rank 1
+        DEST Rank K
+MOVE_STACK PRUIW PRUIW
+OR
+    AND
+        DESTSRC Suit match_color
+        SRC Rank 1
+    DEST Size > 1
+$win
+OR
+    AND
+        PILE ALL PRUIW Empty
+        PILE ALL PRUIW Empty
+    PILE ALL DRAW Empty

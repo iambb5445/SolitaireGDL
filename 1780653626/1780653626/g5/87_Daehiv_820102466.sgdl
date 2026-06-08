@@ -1,0 +1,28 @@
+Daehiv
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 18 ROTATE 1 1 U
+SAIT 4 FACE_ALTERNATE_LAST
+SAIT 4 FACE_HALF
+
+$moves
+MOVE SAIT SAIT
+OR
+    SRC Suit {HEARTS}
+    DEST Empty
+MOVE DRAW SAIT
+OR
+    SRC Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+    SRC Rank K
+MOVE_STACK SAIT SAIT
+SRC Suit {CLUBS, SPADES}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL SAIT Empty
+        PILE ALL DRAW Empty

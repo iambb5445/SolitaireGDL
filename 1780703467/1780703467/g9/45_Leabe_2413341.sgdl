@@ -1,0 +1,22 @@
+Leabe
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 47 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+DEST Empty
+MOVE_STACK COLUMN COLUMN
+AND
+    DEST Size < 2
+    DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    PILE ALL COLUMN Empty

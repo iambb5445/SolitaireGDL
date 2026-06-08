@@ -1,0 +1,23 @@
+Inair
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 94 ROTATE 3 U U
+COLUMN 10 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+DEST Suit {SPADES, HEARTS}
+MOVE DRAW COLUMN
+OR
+    AND
+        DEST Size < 5
+        SRC Rank 1
+    AND
+        DEST Rank 1
+        SRC Rank K
+MOVE_STACK COLUMN COLUMN
+DEST Rank 1
+$win
+PILE ALL DRAW Empty

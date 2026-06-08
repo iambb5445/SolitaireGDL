@@ -1,0 +1,34 @@
+Creajov
+$cards
+DECK 2 SPADES
+
+$initial
+STAREM 1 FACE_HALF
+STAREM 9 FACE_HALF
+STAREM 6 FACE_HALF
+STAREM 2 FACE_HALF
+STAREM 1 FACE_HALF
+STAREM 3 FACE_HALF
+STAREM 4 FACE_HALF
+
+$moves
+MOVE STAREM STAREM
+OR
+    DEST Empty
+    AND
+        DEST Size < 0
+        DESTSRC Suit match_color
+MOVE_STACK STAREM STAREM
+OR
+    AND
+        DEST Size <= 2
+        DEST Suit {DIAMONDS, SPADES}
+    SRC Rank K
+$win
+OR
+    AND
+        PILE ALL STAREM Empty
+        PILE ALL STAREM Empty
+    AND
+        PILE ALL STAREM Empty
+        PILE ALL STAREM Empty

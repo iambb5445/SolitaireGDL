@@ -1,0 +1,32 @@
+Olik
+$cards
+DECK 1 SPADES
+
+$initial
+EWIOS 0 FACE_LAST
+EWIOS 5 FACE_LAST
+
+UQE 5 FACE_LAST
+UQE 3 FACE_ALL
+UQE 0 FACE_ALL
+UQE 0 FACE_ALL
+
+$moves
+MOVE {UQE, EWIOS} EWIOS
+DESTSRC Rank ascending
+MOVE UQE UQE
+AND
+    OR
+        DESTSRC Rank add_14
+        DESTSRC Suit match
+    OR
+        DEST Rank K
+        DEST Suit {HEARTS, SPADES, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL EWIOS Empty
+        PILE ALL UQE Empty
+    AND
+        PILE ALL UQE Empty
+        PILE ALL UQE Empty

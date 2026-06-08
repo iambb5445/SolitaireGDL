@@ -1,0 +1,28 @@
+Jizem
+$cards
+DECK 2 SPADES
+
+$initial
+OJI 9 FACE_ALTERNATE_LAST
+OJI 4 FACE_ALTERNATE_LAST
+
+VAEMOT 8 FACE_LAST
+VAEMOT 5 FACE_LAST
+
+$moves
+MOVE OJI VAEMOT
+OR
+    AND
+        DESTSRC Rank add_13
+        DESTSRC Rank add_14
+    DEST Size < 2
+MOVE VAEMOT VAEMOT
+DEST Suit {SPADES, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL VAEMOT Empty
+        PILE ALL OJI Empty
+    AND
+        PILE ALL VAEMOT Empty
+        PILE ALL OJI Empty

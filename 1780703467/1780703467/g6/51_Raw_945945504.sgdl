@@ -1,0 +1,37 @@
+Raw
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 5 FACE_ALL
+
+ELEQ 4 FACE_LAST
+
+STOYU 6 FACE_HALF
+STOYU 6 FACE_HALF
+STOYU 5 FACE_HALF
+STOYU 0 FACE_HALF
+
+$moves
+MOVE {STOYU, COLUMN, ELEQ} ELEQ
+OR
+    DESTSRC Rank ascending
+    AND
+        DEST Size >= 10
+        DEST Rank 1
+MOVE_STACK COLUMN ELEQ
+SRCSTACK Suit match
+MOVE_STACK {STOYU, COLUMN} STOYU
+OR
+    AND
+        SRCSTACK Size >= 1
+        SRCSTACK Suit match
+    AND
+        DESTSRC Suit alternate_color
+        SRCSTACK Rank add_13
+$win
+OR
+    AND
+        PILE ALL STOYU Empty
+        PILE ALL ELEQ Empty
+    PILE ALL ELEQ Empty

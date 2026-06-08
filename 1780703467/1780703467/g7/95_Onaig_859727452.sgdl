@@ -1,0 +1,28 @@
+Onaig
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 0 FACE_HALF
+COLUMN 9 FACE_HALF
+COLUMN 2 FACE_HALF
+
+UPEAK 2 FACE_LAST
+
+$moves
+MOVE COLUMN UPEAK
+OR
+    DESTSRC Rank descending
+    DESTSRC Suit match_color
+MOVE_STACK COLUMN UPEAK
+SRCSTACK Size == 5
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        SRCSTACK Rank equal
+        DEST Rank 1
+    DESTSRC Rank descending
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL UPEAK Empty

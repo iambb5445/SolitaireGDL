@@ -1,0 +1,27 @@
+Ije
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 7 ROTATE 1 2 U
+GRAIT 7 FACE_LAST
+GRAIT 9 FACE_HALF
+GRAIT 0 FACE_HALF
+
+COLUMN 3 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DESTSRC Suit match_color
+    AND
+        DESTSRC Rank add_14
+        SRC Rank 1
+MOVE_STACK GRAIT {COLUMN, GRAIT}
+AND
+    SRC Rank 1
+    DESTSRC Rank add_13
+$win
+OR
+    PILE ALL GRAIT Empty
+    PILE ALL COLUMN Empty

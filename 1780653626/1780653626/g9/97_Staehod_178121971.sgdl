@@ -1,0 +1,21 @@
+Staehod
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 10 FACE_LAST
+COLUMN 8 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 6 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+SRC Rank K
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

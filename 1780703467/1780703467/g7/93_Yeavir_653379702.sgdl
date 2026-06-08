@@ -1,0 +1,22 @@
+Yeavir
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 8 FACE_ALL
+COLUMN 4 FACE_ALL
+COLUMN 1 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    DEST Empty
+    DESTSRC Suit match_color
+MOVE_STACK COLUMN COLUMN
+OR
+    DESTSRC Rank equal
+    AND
+        SRCSTACK Rank add_14
+        DEST Empty
+$win
+PILE ALL COLUMN Empty

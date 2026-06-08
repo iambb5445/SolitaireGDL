@@ -1,0 +1,19 @@
+Louza
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+YAEJA 7 FACE_ALL
+YAEJA 9 FACE_ALL
+YAEJA 5 FACE_ALL
+YAEJA 5 FACE_ALL
+
+$moves
+MOVE_STACK YAEJA YAEJA
+DEST Rank K
+$win
+OR
+    PILE ALL YAEJA Empty
+    AND
+        PILE ALL YAEJA Empty
+        PILE ALL YAEJA Empty

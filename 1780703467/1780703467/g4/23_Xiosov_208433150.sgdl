@@ -1,0 +1,22 @@
+Xiosov
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 10 DEAL OSUH
+OSUH 9 FACE_ALL
+OSUH 7 FACE_LAST
+
+$moves
+MOVE OSUH OSUH
+OR
+    AND
+        DESTSRC Rank ascending
+        SRC Suit {DIAMONDS, CLUBS, SPADES, HEARTS}
+    AND
+        DEST Empty
+        DEST Size == 2
+DRAW
+PILE ANY DRAW Empty
+$win
+PILE ALL OSUH Empty

@@ -1,0 +1,28 @@
+Apa
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 41 ROTATE 3 U U
+COLUMN 7 FACE_ALL
+COLUMN 3 FACE_ALL
+COLUMN 1 FACE_ALL
+COLUMN 0 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DEST Rank 1
+    AND
+        DESTSRC Suit match_color
+        SRC Rank 1
+MOVE_STACK COLUMN COLUMN
+AND
+    DESTSRC Suit alternate_color
+    OR
+        SRCSTACK Rank add_13
+        SRC Rank 1
+$win
+PILE ALL COLUMN Empty

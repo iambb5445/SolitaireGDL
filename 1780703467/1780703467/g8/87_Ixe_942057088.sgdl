@@ -1,0 +1,17 @@
+Ixe
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 43 ROTATE 3 U 1
+WAEYE 9 FACE_ALL
+
+$moves
+MOVE_STACK WAEYE WAEYE
+DESTSRC Rank add_13
+$win
+OR
+    PILE ALL WAEYE Empty
+    AND
+        PILE ALL WAEYE Empty
+        PILE ALL WAEYE Empty

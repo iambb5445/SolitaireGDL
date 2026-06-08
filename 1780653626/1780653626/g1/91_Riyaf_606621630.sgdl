@@ -1,0 +1,20 @@
+Riyaf
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 10 FACE_HALF
+
+WOUX 3 FACE_HALF
+
+$moves
+MOVE_STACK WOUX WOUX
+SRCSTACK Rank ascending
+MOVE_STACK {WOUX, COLUMN} COLUMN
+SRC Suit {HEARTS, CLUBS}
+$win
+OR
+    PILE ALL WOUX Empty
+    AND
+        PILE ALL WOUX Empty
+        PILE ALL WOUX Empty

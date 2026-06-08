@@ -1,0 +1,45 @@
+Rouqef
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 56 ROTATE 3 U 2
+COLUMN 2 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 7 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 0 FACE_HALF
+COLUMN 9 FACE_HALF
+COLUMN 0 FACE_HALF
+COLUMN 9 FACE_HALF
+COLUMN 5 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Suit {HEARTS, CLUBS, DIAMONDS}
+        AND
+            DEST Rank 1
+            DESTSRC Suit alternate_color
+    DESTSRC Suit alternate_color
+MOVE {COLUMN, DRAW} COLUMN
+OR
+    SRC Rank 1
+    DESTSRC Suit match
+MOVE_STACK COLUMN COLUMN
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty

@@ -1,0 +1,21 @@
+Iwaes
+$cards
+DECK 2 SPADES
+
+$initial
+JADA 3 FACE_LAST
+JADA 10 FACE_LAST
+JADA 8 FACE_LAST
+JADA 5 FACE_LAST
+
+$moves
+MOVE JADA JADA
+OR
+    AND
+        SRC Rank K
+        DEST Size > 2
+    AND
+        SRC Suit {HEARTS}
+        DEST Rank 1
+$win
+PILE ALL JADA Empty

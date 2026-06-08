@@ -1,0 +1,34 @@
+Eha
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+OFE 10 FACE_LAST
+OFE 0 FACE_LAST
+OFE 8 FACE_LAST
+OFE 10 FACE_LAST
+OFE 3 FACE_LAST
+OFE 7 FACE_LAST
+OFE 8 FACE_LAST
+OFE 5 FACE_LAST
+OFE 1 FACE_LAST
+
+$moves
+MOVE OFE OFE
+SRC Rank K
+MOVE_STACK OFE OFE
+AND
+    OR
+        DESTSRC Rank equal
+        SRCSTACK Rank add_14
+    OR
+        DEST Rank 1
+        DEST Size >= 0
+$win
+OR
+    AND
+        PILE ALL OFE Empty
+        PILE ALL OFE Empty
+    AND
+        PILE ALL OFE Empty
+        PILE ALL OFE Empty

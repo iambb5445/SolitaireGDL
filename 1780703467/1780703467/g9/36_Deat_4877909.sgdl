@@ -1,0 +1,24 @@
+Deat
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 76 DEAL COLUMN
+COLUMN 10 FACE_LAST
+COLUMN 9 FACE_LAST
+COLUMN 1 FACE_LAST
+COLUMN 8 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        SRC Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+    DEST Empty
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

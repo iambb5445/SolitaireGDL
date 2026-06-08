@@ -1,0 +1,19 @@
+Aso
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+IGEG 9 FACE_HALF
+IGEG 8 FACE_HALF
+IGEG 7 FACE_HALF
+IGEG 2 FACE_HALF
+
+$moves
+MOVE_STACK IGEG IGEG
+DEST Rank K
+$win
+AND
+    PILE ALL IGEG Empty
+    AND
+        PILE ALL IGEG Empty
+        PILE ALL IGEG Empty

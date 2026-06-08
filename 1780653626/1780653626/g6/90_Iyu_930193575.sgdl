@@ -1,0 +1,22 @@
+Iyu
+$cards
+DECK 1 SPADES
+
+$initial
+JUIZ 4 FACE_ALTERNATE_LAST
+JUIZ 7 FACE_ALL
+JUIZ 2 FACE_ALL
+
+$moves
+MOVE JUIZ JUIZ
+OR
+    DEST Rank 1
+    AND
+        SRC Rank 1
+        DESTSRC Suit match
+$win
+AND
+    PILE ALL JUIZ Empty
+    OR
+        PILE ALL JUIZ Empty
+        PILE ALL JUIZ Empty

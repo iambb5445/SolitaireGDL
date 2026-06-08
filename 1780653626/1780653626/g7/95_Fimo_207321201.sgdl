@@ -1,0 +1,22 @@
+Fimo
+$cards
+DECK 1 SPADES
+
+$initial
+ITEP 0 FACE_ALL
+ITEP 9 FACE_ALL
+ITEP 4 FACE_LAST
+
+$moves
+MOVE_STACK ITEP ITEP
+OR
+    DEST Rank K
+    AND
+        DEST Size > 6
+        SRC Suit {DIAMONDS, HEARTS}
+$win
+OR
+    AND
+        PILE ALL ITEP Empty
+        PILE ALL ITEP Empty
+    PILE ALL ITEP Empty

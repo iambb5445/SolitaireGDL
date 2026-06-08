@@ -1,0 +1,29 @@
+Udu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+RAEBEJ 1 FACE_ALL
+RAEBEJ 6 FACE_LAST
+RAEBEJ 10 FACE_LAST
+RAEBEJ 6 FACE_LAST
+
+NOB 3 FACE_LAST
+
+$moves
+MOVE NOB RAEBEJ
+DEST Rank 1
+MOVE_STACK NOB RAEBEJ
+OR
+    SRC Rank 1
+    AND
+        SRCSTACK Rank add_13
+        DEST Suit {SPADES, DIAMONDS}
+MOVE_STACK RAEBEJ NOB
+AND
+    DESTSRC Suit match
+    OR
+        SRC Suit {SPADES, HEARTS}
+        SRCSTACK Rank descending
+$win
+PILE ALL RAEBEJ Empty

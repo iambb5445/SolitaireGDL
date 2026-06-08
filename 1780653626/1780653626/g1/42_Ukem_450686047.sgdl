@@ -1,0 +1,26 @@
+Ukem
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 96 DEAL COLUMN
+COLUMN 6 FACE_HALF
+COLUMN 0 FACE_HALF
+COLUMN 2 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    DEST Size == 9
+    OR
+        SRC Rank K
+        SRC Suit {DIAMONDS, SPADES}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

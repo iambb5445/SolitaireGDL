@@ -1,0 +1,26 @@
+Soq
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+RAIFAW 8 FACE_ALTERNATE_LAST
+RAIFAW 0 FACE_ALL
+
+COLUMN 1 FACE_LAST
+COLUMN 5 FACE_LAST
+COLUMN 7 FACE_LAST
+COLUMN 5 FACE_LAST
+
+$moves
+MOVE {RAIFAW, COLUMN} RAIFAW
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DEST Size < 9
+    SRC Suit {DIAMONDS, CLUBS}
+$win
+OR
+    PILE ALL RAIFAW Empty
+    AND
+        PILE ALL RAIFAW Empty
+        PILE ALL COLUMN Empty

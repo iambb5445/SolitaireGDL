@@ -1,0 +1,25 @@
+Ipuy
+$cards
+DECK 1 SPADES
+
+$initial
+PEKU 10 FACE_ALL
+PEKU 0 FACE_LAST
+PEKU 1 FACE_LAST
+PEKU 2 FACE_LAST
+
+$moves
+MOVE_STACK PEKU PEKU
+AND
+    DEST Suit {CLUBS, HEARTS, DIAMONDS, SPADES}
+    OR
+        SRCSTACK Size >= 10
+        DESTSRC Rank equal
+$win
+OR
+    AND
+        PILE ALL PEKU Empty
+        PILE ALL PEKU Empty
+    AND
+        PILE ALL PEKU Empty
+        PILE ALL PEKU Empty

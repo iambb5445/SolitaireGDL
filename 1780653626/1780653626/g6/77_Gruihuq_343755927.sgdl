@@ -1,0 +1,29 @@
+Gruihuq
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 37 DEAL NUWO
+NUWO 6 FACE_HALF
+NUWO 8 FACE_ALTERNATE_LAST
+NUWO 1 FACE_ALTERNATE_LAST
+
+$moves
+MOVE NUWO NUWO
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Rank ascending
+    AND
+        DEST Empty
+        DEST Empty
+MOVE_STACK NUWO NUWO
+SRCSTACK Rank descending
+DRAW
+PILE ALL NUWO Empty
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

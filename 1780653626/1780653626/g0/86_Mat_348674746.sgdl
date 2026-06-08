@@ -1,0 +1,28 @@
+Mat
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 75 ROTATE 1 U 3
+COLUMN 1 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 8 FACE_ALL
+
+OKAX 8 FACE_LAST
+OKAX 7 FACE_LAST
+
+$moves
+MOVE OKAX OKAX
+AND
+    OR
+        DESTSRC Rank add_14
+        DEST Suit {SPADES}
+    AND
+        DEST Rank K
+        DESTSRC Suit match
+$win
+OR
+    PILE ALL OKAX Empty
+    AND
+        PILE ALL OKAX Empty
+        PILE ALL COLUMN Empty

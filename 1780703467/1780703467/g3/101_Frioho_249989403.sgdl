@@ -1,0 +1,23 @@
+Frioho
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 9 FACE_HALF
+COLUMN 1 FACE_HALF
+COLUMN 2 FACE_ALL
+COLUMN 1 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+SRC Suit {CLUBS, SPADES, DIAMONDS}
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Rank add_14
+        SRCSTACK Suit match_color
+    AND
+        SRCSTACK Suit match
+        DESTSRC Suit match
+$win
+PILE ALL COLUMN Empty

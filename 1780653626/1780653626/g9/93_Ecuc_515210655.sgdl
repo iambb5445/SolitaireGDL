@@ -1,0 +1,22 @@
+Ecuc
+$cards
+DECK 1 SPADES
+
+$initial
+UPO 7 FACE_LAST
+UPO 2 FACE_LAST
+UPO 2 FACE_LAST
+UPO 2 FACE_LAST
+UPO 0 FACE_LAST
+
+$moves
+MOVE UPO UPO
+DESTSRC Suit alternate_color
+MOVE_STACK UPO UPO
+AND
+    AND
+        SRCSTACK Size >= 5
+        DEST Size < 6
+    SRCSTACK Suit match_color
+$win
+PILE ALL UPO Empty

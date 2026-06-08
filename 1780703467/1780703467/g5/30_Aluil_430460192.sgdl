@@ -1,0 +1,21 @@
+Aluil
+$cards
+DECK 1 SPADES
+
+$initial
+ELU 10 FACE_LAST
+ELU 3 FACE_ALTERNATE_LAST
+
+$moves
+MOVE ELU ELU
+OR
+    DEST Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    AND
+        DESTSRC Suit match_color
+        DEST Rank K
+$win
+AND
+    PILE ALL ELU Empty
+    AND
+        PILE ALL ELU Empty
+        PILE ALL ELU Empty

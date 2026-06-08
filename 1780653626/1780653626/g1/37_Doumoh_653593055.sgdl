@@ -1,0 +1,23 @@
+Doumoh
+$cards
+DECK 1 SPADES
+
+$initial
+NAEGI 5 FACE_ALTERNATE_LAST
+NAEGI 8 FACE_HALF
+
+$moves
+MOVE NAEGI NAEGI
+AND
+    OR
+        DEST Size < 10
+        DESTSRC Rank equal
+    DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL NAEGI Empty
+        PILE ALL NAEGI Empty
+    AND
+        PILE ALL NAEGI Empty
+        PILE ALL NAEGI Empty

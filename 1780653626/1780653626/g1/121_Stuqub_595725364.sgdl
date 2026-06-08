@@ -1,0 +1,33 @@
+Stuqub
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+EGO 5 FACE_LAST
+EGO 8 FACE_HALF
+
+COLUMN 8 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 1 FACE_HALF
+
+HEV 1 FACE_ALL
+
+$moves
+MOVE EGO EGO
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Rank 1
+    AND
+        DEST Size >= 8
+        DEST Rank K
+MOVE COLUMN {HEV, EGO}
+OR
+    AND
+        SRC Suit {CLUBS, DIAMONDS, SPADES}
+        DEST Empty
+    SRC Rank K
+MOVE_STACK HEV COLUMN
+DEST Suit {DIAMONDS, SPADES, CLUBS}
+$win
+PILE ALL HEV Empty

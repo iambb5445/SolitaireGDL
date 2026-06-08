@@ -1,0 +1,27 @@
+Zeasuy
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+IWOM 6 FACE_LAST
+IWOM 1 FACE_LAST
+IWOM 10 FACE_LAST
+IWOM 4 FACE_HALF
+IWOM 4 FACE_HALF
+IWOM 1 FACE_HALF
+
+$moves
+MOVE_STACK IWOM IWOM
+OR
+    AND
+        SRCSTACK Size <= 5
+        SRCSTACK Size == 0
+    AND
+        DEST Size > 9
+        SRC Rank K
+$win
+AND
+    PILE ALL IWOM Empty
+    OR
+        PILE ALL IWOM Empty
+        PILE ALL IWOM Empty

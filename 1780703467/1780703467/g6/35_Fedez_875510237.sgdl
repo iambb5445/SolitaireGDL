@@ -1,0 +1,29 @@
+Fedez
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+PAIVU 10 FACE_ALL
+PAIVU 7 FACE_ALL
+PAIVU 1 FACE_ALL
+PAIVU 3 FACE_ALL
+PAIVU 10 FACE_ALL
+PAIVU 6 FACE_ALL
+PAIVU 9 FACE_ALL
+PAIVU 6 FACE_ALL
+
+$moves
+MOVE_STACK PAIVU PAIVU
+OR
+    DESTSRC Suit match
+    AND
+        DESTSRC Suit match
+        DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL PAIVU Empty
+        PILE ALL PAIVU Empty
+    AND
+        PILE ALL PAIVU Empty
+        PILE ALL PAIVU Empty

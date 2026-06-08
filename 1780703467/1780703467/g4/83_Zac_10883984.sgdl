@@ -1,0 +1,25 @@
+Zac
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 27 ROTATE 3 U 3
+QAEM 6 FACE_LAST
+QAEM 9 FACE_ALL
+QAEM 10 FACE_ALL
+
+$moves
+MOVE DRAW QAEM
+SRC Suit {SPADES, HEARTS}
+MOVE_STACK QAEM QAEM
+OR
+    DESTSRC Suit match
+    DESTSRC Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

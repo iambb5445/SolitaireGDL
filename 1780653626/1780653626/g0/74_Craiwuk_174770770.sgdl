@@ -1,0 +1,25 @@
+Craiwuk
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 0 FACE_ALTERNATE_LAST
+COLUMN 4 FACE_ALTERNATE_LAST
+COLUMN 1 FACE_ALTERNATE_LAST
+COLUMN 8 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK COLUMN COLUMN
+AND
+    AND
+        SRC Suit {SPADES, CLUBS, DIAMONDS}
+        SRC Rank 1
+    AND
+        SRCSTACK Rank equal
+        DESTSRC Suit match_color
+$win
+AND
+    PILE ALL COLUMN Empty
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

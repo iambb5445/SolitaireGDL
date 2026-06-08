@@ -1,0 +1,21 @@
+Erox
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 31 ROTATE 1 1 U
+COLUMN 5 FACE_LAST
+
+OXU 9 FACE_LAST
+OXU 2 FACE_LAST
+OXU 5 FACE_LAST
+
+$moves
+MOVE OXU OXU
+DEST Rank K
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL OXU Empty
+        PILE ALL DRAW Empty

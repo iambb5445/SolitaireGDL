@@ -1,0 +1,22 @@
+Brealub
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 37 DEAL VUH
+VUH 7 FACE_LAST
+VUH 8 FACE_LAST
+
+$moves
+MOVE_STACK VUH VUH
+OR
+    AND
+        DESTSRC Suit alternate_color
+        SRCSTACK Rank equal
+    SRCSTACK Suit match
+$win
+AND
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL VUH Empty

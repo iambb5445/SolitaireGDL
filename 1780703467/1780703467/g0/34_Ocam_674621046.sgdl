@@ -1,0 +1,25 @@
+Ocam
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+CIZAM 7 FACE_LAST
+CIZAM 6 FACE_LAST
+CIZAM 4 FACE_LAST
+CIZAM 2 FACE_LAST
+CIZAM 3 FACE_LAST
+CIZAM 4 FACE_LAST
+
+$moves
+MOVE CIZAM CIZAM
+OR
+    AND
+        DEST Size > 3
+        SRC Rank K
+    AND
+        DEST Rank K
+        DESTSRC Rank equal
+MOVE_STACK CIZAM CIZAM
+DEST Rank K
+$win
+PILE ALL CIZAM Empty

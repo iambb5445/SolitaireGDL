@@ -1,0 +1,32 @@
+Giop
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 12 DEAL EXI
+FOPA 0 FACE_ALTERNATE_LAST
+FOPA 4 FACE_ALL
+
+EXI 10 FACE_LAST
+
+$moves
+MOVE EXI FOPA
+OR
+    DEST Empty
+    AND
+        SRC Suit {HEARTS}
+        DEST Rank 1
+MOVE {EXI, FOPA} EXI
+OR
+    SRC Suit {DIAMONDS, CLUBS}
+    SRC Suit {DIAMONDS, CLUBS}
+MOVE_STACK FOPA EXI
+OR
+    SRC Rank K
+    AND
+        SRC Suit {CLUBS}
+        SRCSTACK Rank ascending
+MOVE_STACK FOPA FOPA
+SRCSTACK Suit alternate_color
+$win
+PILE ALL DRAW Empty

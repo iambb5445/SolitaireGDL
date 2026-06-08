@@ -1,0 +1,27 @@
+Jaivog
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 87 DEAL CEFI
+CEFI 7 FACE_ALTERNATE_LAST
+CEFI 5 FACE_ALTERNATE_LAST
+CEFI 5 FACE_HALF
+
+$moves
+MOVE CEFI CEFI
+DESTSRC Rank descending
+MOVE_STACK CEFI CEFI
+OR
+    AND
+        SRCSTACK Size >= 8
+        SRCSTACK Size >= 8
+    AND
+        DESTSRC Suit alternate_color
+        SRCSTACK Suit match_color
+$win
+OR
+    PILE ALL CEFI Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

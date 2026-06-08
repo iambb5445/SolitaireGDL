@@ -1,0 +1,26 @@
+Ufev
+$cards
+DECK 1 SPADES
+
+$initial
+DELAP 9 FACE_ALL
+
+COLUMN 4 FACE_LAST
+
+$moves
+MOVE DELAP COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        DEST Rank 1
+    DESTSRC Suit alternate_color
+MOVE DELAP DELAP
+AND
+    OR
+        DEST Size == 6
+        DEST Rank K
+    SRC Suit {HEARTS, DIAMONDS, SPADES}
+MOVE_STACK DELAP {DELAP, COLUMN}
+DEST Empty
+$win
+PILE ALL DELAP Empty

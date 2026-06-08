@@ -1,0 +1,23 @@
+Eqiov
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 96 ROTATE 1 U 1
+COLUMN 8 FACE_HALF
+
+$moves
+MOVE DRAW COLUMN
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Suit match
+    DEST Size == 7
+MOVE COLUMN COLUMN
+DESTSRC Suit match_color
+MOVE_STACK COLUMN COLUMN
+SRCSTACK Rank ascending
+$win
+OR
+    PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

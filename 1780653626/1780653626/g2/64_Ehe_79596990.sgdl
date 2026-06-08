@@ -1,0 +1,30 @@
+Ehe
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+LUIVA 0 FACE_ALTERNATE_LAST
+LUIVA 8 FACE_LAST
+LUIVA 0 FACE_LAST
+LUIVA 8 FACE_LAST
+LUIVA 10 FACE_LAST
+
+$moves
+MOVE LUIVA LUIVA
+OR
+    AND
+        DEST Empty
+        DESTSRC Rank descending
+    DEST Suit {CLUBS, DIAMONDS, HEARTS, SPADES}
+MOVE_STACK LUIVA LUIVA
+AND
+    OR
+        SRCSTACK Suit alternate_color
+        SRCSTACK Rank add_14
+    OR
+        DEST Rank 1
+        DESTSRC Suit match_color
+$win
+OR
+    PILE ALL LUIVA Empty
+    PILE ALL LUIVA Empty

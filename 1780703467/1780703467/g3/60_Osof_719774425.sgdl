@@ -1,0 +1,23 @@
+Osof
+$cards
+DECK 2 SPADES
+
+$initial
+TOUVU 2 FACE_LAST
+TOUVU 1 FACE_LAST
+TOUVU 8 FACE_LAST
+TOUVU 7 FACE_LAST
+TOUVU 8 FACE_LAST
+TOUVU 0 FACE_LAST
+
+$moves
+MOVE TOUVU TOUVU
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Empty
+    OR
+        SRC Rank 1
+        SRC Rank K
+$win
+PILE ALL TOUVU Empty

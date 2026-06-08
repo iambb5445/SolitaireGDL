@@ -1,0 +1,35 @@
+Haecon
+$cards
+DECK 2 SPADES
+
+$initial
+ABU 1 FACE_ALL
+ABU 2 FACE_ALL
+ABU 8 FACE_ALL
+ABU 1 FACE_ALL
+ABU 8 FACE_ALL
+ABU 6 FACE_ALL
+
+$moves
+MOVE ABU ABU
+AND
+    OR
+        SRC Rank 1
+        DEST Empty
+    OR
+        DESTSRC Rank descending
+        DEST Empty
+MOVE_STACK ABU ABU
+OR
+    AND
+        DESTSRC Rank add_13
+        DESTSRC Suit alternate_color
+    AND
+        SRC Rank 1
+        SRC Suit {SPADES}
+$win
+AND
+    OR
+        PILE ALL ABU Empty
+        PILE ALL ABU Empty
+    PILE ALL ABU Empty

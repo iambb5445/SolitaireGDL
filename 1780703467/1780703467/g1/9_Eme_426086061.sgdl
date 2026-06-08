@@ -1,0 +1,42 @@
+Eme
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+UJU 5 FACE_ALL
+UJU 3 FACE_ALL
+UJU 8 FACE_ALL
+UJU 10 FACE_ALTERNATE_LAST
+UJU 4 FACE_ALTERNATE_LAST
+UJU 6 FACE_ALTERNATE_LAST
+
+STEJIK 9 FACE_ALL
+STEJIK 7 FACE_ALTERNATE_LAST
+
+$moves
+MOVE UJU STEJIK
+SRC Rank K
+MOVE STEJIK STEJIK
+AND
+    SRC Rank 1
+    OR
+        SRC Rank K
+        SRC Suit {SPADES, DIAMONDS}
+MOVE_STACK {UJU, STEJIK} STEJIK
+AND
+    AND
+        DEST Rank K
+        DESTSRC Suit match
+    OR
+        SRCSTACK Size >= 1
+        SRCSTACK Size >= 5
+MOVE_STACK UJU UJU
+OR
+    DEST Empty
+    AND
+        DEST Size >= 7
+        SRC Rank K
+$win
+OR
+    PILE ALL STEJIK Empty
+    PILE ALL UJU Empty

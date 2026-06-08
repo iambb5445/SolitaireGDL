@@ -1,0 +1,33 @@
+Buxez
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 85 DEAL EXAIB
+EXAIB 6 FACE_LAST
+EXAIB 2 FACE_LAST
+EXAIB 3 FACE_LAST
+EXAIB 2 FACE_HALF
+EXAIB 0 FACE_HALF
+EXAIB 0 FACE_HALF
+EXAIB 6 FACE_HALF
+
+$moves
+MOVE EXAIB EXAIB
+OR
+    AND
+        DEST Empty
+        DEST Rank K
+    AND
+        DEST Size <= 5
+        DEST Size < 3
+MOVE_STACK EXAIB EXAIB
+AND
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Suit match_color
+    OR
+        DEST Size > 2
+        DEST Rank K
+$win
+PILE ALL EXAIB Empty

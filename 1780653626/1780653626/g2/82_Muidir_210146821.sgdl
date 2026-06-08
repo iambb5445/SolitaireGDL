@@ -1,0 +1,27 @@
+Muidir
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 75 DEAL TRAIN
+TRAIN 9 FACE_LAST
+TRAIN 7 FACE_ALL
+TRAIN 3 FACE_ALL
+TRAIN 4 FACE_ALL
+TRAIN 6 FACE_ALL
+
+$moves
+MOVE_STACK TRAIN TRAIN
+OR
+    AND
+        DEST Rank 1
+        SRC Suit {CLUBS}
+    SRCSTACK Rank add_14
+DRAW
+PILE ANY DRAW Empty
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    PILE ALL TRAIN Empty

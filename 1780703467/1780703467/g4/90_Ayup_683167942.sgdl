@@ -1,0 +1,19 @@
+Ayup
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 45 DEAL ESU
+ESU 7 FACE_LAST
+
+$moves
+MOVE ESU ESU
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DEST Empty
+        DEST Size <= 4
+MOVE_STACK ESU ESU
+DESTSRC Suit match_color
+$win
+PILE ALL ESU Empty

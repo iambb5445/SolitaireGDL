@@ -1,0 +1,21 @@
+Piok
+$cards
+DECK 1 SPADES
+
+$initial
+AJU 4 FACE_ALL
+
+MOUTIW 5 FACE_HALF
+MOUTIW 4 FACE_LAST
+
+$moves
+MOVE_STACK MOUTIW MOUTIW
+AND
+    DEST Rank 1
+    OR
+        DESTSRC Rank equal
+        SRCSTACK Size >= 10
+$win
+OR
+    PILE ALL AJU Empty
+    PILE ALL MOUTIW Empty

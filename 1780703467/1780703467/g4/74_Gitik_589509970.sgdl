@@ -1,0 +1,28 @@
+Gitik
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 6 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 1 FACE_LAST
+COLUMN 10 FACE_LAST
+COLUMN 7 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    AND
+        DEST Rank 1
+        DESTSRC Suit match
+    OR
+        DESTSRC Suit alternate_color
+        SRC Suit {DIAMONDS, HEARTS}
+MOVE_STACK COLUMN COLUMN
+AND
+    DESTSRC Suit alternate_color
+    AND
+        SRC Rank 1
+        DESTSRC Suit match
+$win
+PILE ALL COLUMN Empty

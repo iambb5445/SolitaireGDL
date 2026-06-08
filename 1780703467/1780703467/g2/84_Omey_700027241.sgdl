@@ -1,0 +1,39 @@
+Omey
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 4 ROTATE 3 U 1
+DAWE 9 FACE_LAST
+
+OPI 10 FACE_LAST
+OPI 0 FACE_LAST
+OPI 6 FACE_LAST
+OPI 2 FACE_LAST
+OPI 6 FACE_LAST
+OPI 8 FACE_LAST
+OPI 7 FACE_LAST
+
+$moves
+MOVE DAWE OPI
+DEST Suit {HEARTS, SPADES, DIAMONDS}
+MOVE DAWE DAWE
+SRC Suit {HEARTS}
+MOVE_STACK DAWE OPI
+OR
+    AND
+        SRC Rank K
+        DEST Size >= 4
+    AND
+        DEST Empty
+        DESTSRC Rank add_14
+MOVE_STACK DAWE DAWE
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Rank 1
+    SRCSTACK Suit match_color
+$win
+OR
+    PILE ALL DAWE Empty
+    PILE ALL DAWE Empty

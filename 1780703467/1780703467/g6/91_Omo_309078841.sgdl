@@ -1,0 +1,17 @@
+Omo
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 21 ROTATE 3 U 1
+EFUF 5 FACE_ALL
+
+$moves
+MOVE EFUF EFUF
+DEST Suit {HEARTS, CLUBS, SPADES}
+MOVE_STACK EFUF EFUF
+SRCSTACK Suit alternate_color
+$win
+OR
+    PILE ALL EFUF Empty
+    PILE ALL DRAW Empty

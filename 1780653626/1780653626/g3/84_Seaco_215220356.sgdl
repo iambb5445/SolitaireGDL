@@ -1,0 +1,20 @@
+Seaco
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 50 ROTATE 1 1 U
+ACO 2 FACE_ALTERNATE_LAST
+ACO 0 FACE_ALL
+
+$moves
+MOVE_STACK ACO ACO
+DESTSRC Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL ACO Empty
+        PILE ALL ACO Empty

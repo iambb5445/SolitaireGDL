@@ -1,0 +1,22 @@
+Ciop
+$cards
+DECK 1 SPADES
+
+$initial
+KIQIV 5 FACE_HALF
+KIQIV 3 FACE_HALF
+KIQIV 5 FACE_HALF
+
+$moves
+MOVE_STACK KIQIV KIQIV
+OR
+    DESTSRC Suit match
+    DEST Rank 1
+$win
+AND
+    AND
+        PILE ALL KIQIV Empty
+        PILE ALL KIQIV Empty
+    AND
+        PILE ALL KIQIV Empty
+        PILE ALL KIQIV Empty

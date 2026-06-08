@@ -1,0 +1,28 @@
+Cur
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 19 ROTATE 3 U U
+ELEAZ 7 FACE_LAST
+ELEAZ 1 FACE_LAST
+ELEAZ 4 FACE_LAST
+ELEAZ 1 FACE_LAST
+ELEAZ 2 FACE_LAST
+ELEAZ 8 FACE_LAST
+ELEAZ 9 FACE_LAST
+ELEAZ 1 FACE_LAST
+
+$moves
+MOVE {DRAW, ELEAZ} ELEAZ
+OR
+    AND
+        DEST Size >= 1
+        DEST Size > 8
+    DESTSRC Rank descending
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    PILE ALL ELEAZ Empty

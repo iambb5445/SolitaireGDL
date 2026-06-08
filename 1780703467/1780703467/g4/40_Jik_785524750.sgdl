@@ -1,0 +1,29 @@
+Jik
+$cards
+DECK 1 SPADES
+
+$initial
+BAERO 1 FACE_ALL
+BAERO 9 FACE_ALL
+BAERO 0 FACE_ALL
+BAERO 3 FACE_ALL
+
+$moves
+MOVE BAERO BAERO
+AND
+    DESTSRC Rank descending
+    SRC Rank 1
+MOVE_STACK BAERO BAERO
+OR
+    AND
+        SRCSTACK Suit match_color
+        DEST Rank K
+    SRC Suit {HEARTS, CLUBS, SPADES, DIAMONDS}
+$win
+AND
+    AND
+        PILE ALL BAERO Empty
+        PILE ALL BAERO Empty
+    OR
+        PILE ALL BAERO Empty
+        PILE ALL BAERO Empty

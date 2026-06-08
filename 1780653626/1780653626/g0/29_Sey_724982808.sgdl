@@ -1,0 +1,25 @@
+Sey
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 38 DEAL COLUMN
+COLUMN 4 FACE_HALF
+COLUMN 5 FACE_HALF
+COLUMN 5 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    SRC Rank 1
+    OR
+        DEST Rank 1
+        DEST Rank K
+MOVE_STACK COLUMN COLUMN
+SRCSTACK Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

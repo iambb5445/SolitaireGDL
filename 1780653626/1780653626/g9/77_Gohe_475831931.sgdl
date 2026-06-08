@@ -1,0 +1,24 @@
+Gohe
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 9 ROTATE 3 U 2
+UNOD 0 FACE_ALTERNATE_LAST
+UNOD 7 FACE_ALTERNATE_LAST
+UNOD 3 FACE_ALL
+UNOD 7 FACE_ALL
+
+$moves
+MOVE_STACK UNOD UNOD
+OR
+    DEST Suit {HEARTS, SPADES}
+    AND
+        SRCSTACK Size < 8
+        DESTSRC Suit match_color
+$win
+OR
+    AND
+        PILE ALL UNOD Empty
+        PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

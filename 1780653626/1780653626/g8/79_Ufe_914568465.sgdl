@@ -1,0 +1,27 @@
+Ufe
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 34 ROTATE 3 U U
+FRIOQ 5 FACE_HALF
+FRIOQ 10 FACE_LAST
+FRIOQ 3 FACE_LAST
+
+$moves
+MOVE {FRIOQ, DRAW} FRIOQ
+DEST Empty
+MOVE_STACK FRIOQ FRIOQ
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Empty
+    DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

@@ -1,0 +1,25 @@
+Eqe
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 44 DEAL COLUMN
+COLUMN 8 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    AND
+        DEST Suit {HEARTS, SPADES, DIAMONDS, CLUBS}
+        DESTSRC Suit alternate_color
+    DEST Empty
+MOVE_STACK COLUMN COLUMN
+AND
+    SRC Suit {SPADES, HEARTS}
+    SRCSTACK Size < 7
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

@@ -1,0 +1,25 @@
+Asu
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 70 DEAL DRUIBAP
+DRUIBAP 4 FACE_LAST
+DRUIBAP 5 FACE_ALL
+DRUIBAP 9 FACE_ALL
+DRUIBAP 8 FACE_ALL
+DRUIBAP 8 FACE_ALL
+
+$moves
+MOVE DRUIBAP DRUIBAP
+AND
+    DESTSRC Suit alternate_color
+    DEST Empty
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

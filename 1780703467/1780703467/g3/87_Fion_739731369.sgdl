@@ -1,0 +1,28 @@
+Fion
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+EME 6 FACE_HALF
+EME 6 FACE_HALF
+EME 1 FACE_HALF
+EME 6 FACE_HALF
+EME 7 FACE_HALF
+
+$moves
+MOVE EME EME
+DEST Empty
+MOVE_STACK EME EME
+OR
+    AND
+        SRCSTACK Rank equal
+        SRC Suit {SPADES, HEARTS}
+    DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL EME Empty
+        PILE ALL EME Empty
+    AND
+        PILE ALL EME Empty
+        PILE ALL EME Empty

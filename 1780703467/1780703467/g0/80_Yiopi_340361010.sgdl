@@ -1,0 +1,25 @@
+Yiopi
+$cards
+DECK 4 SPADES
+
+$initial
+OVI 7 FACE_LAST
+OVI 10 FACE_LAST
+OVI 1 FACE_LAST
+OVI 10 FACE_LAST
+OVI 9 FACE_LAST
+OVI 7 FACE_ALL
+OVI 5 FACE_ALL
+OVI 3 FACE_ALL
+
+$moves
+MOVE OVI OVI
+AND
+    DEST Empty
+    OR
+        DEST Empty
+        SRC Rank 1
+$win
+OR
+    PILE ALL OVI Empty
+    PILE ALL OVI Empty

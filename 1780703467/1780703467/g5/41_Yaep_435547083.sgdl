@@ -1,0 +1,26 @@
+Yaep
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 36 ROTATE 3 U 2
+VEK 9 FACE_HALF
+VEK 7 FACE_LAST
+
+$moves
+MOVE_STACK VEK VEK
+OR
+    AND
+        SRC Suit {DIAMONDS}
+        DEST Empty
+    AND
+        SRCSTACK Rank ascending
+        DESTSRC Suit match
+$win
+AND
+    OR
+        PILE ALL VEK Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL VEK Empty
+        PILE ALL VEK Empty

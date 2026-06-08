@@ -1,0 +1,26 @@
+Hoyeg
+$cards
+DECK 1 SPADES
+
+$initial
+GUPIX 1 FACE_ALL
+GUPIX 0 FACE_ALL
+GUPIX 4 FACE_ALL
+GUPIX 8 FACE_ALL
+GUPIX 0 FACE_ALL
+
+$moves
+MOVE GUPIX GUPIX
+OR
+    AND
+        SRC Suit {CLUBS, HEARTS}
+        SRC Rank 1
+    AND
+        DEST Suit {SPADES, CLUBS, HEARTS}
+        DESTSRC Rank equal
+$win
+OR
+    PILE ALL GUPIX Empty
+    AND
+        PILE ALL GUPIX Empty
+        PILE ALL GUPIX Empty

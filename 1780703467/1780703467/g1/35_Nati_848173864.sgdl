@@ -1,0 +1,39 @@
+Nati
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+OTA 6 FACE_LAST
+
+CRIREJ 10 FACE_LAST
+CRIREJ 9 FACE_LAST
+CRIREJ 5 FACE_LAST
+CRIREJ 10 FACE_HALF
+CRIREJ 10 FACE_HALF
+CRIREJ 2 FACE_HALF
+
+$moves
+MOVE OTA CRIREJ
+OR
+    AND
+        DESTSRC Rank descending
+        DESTSRC Rank descending
+    AND
+        SRC Rank 1
+        DEST Suit {HEARTS, CLUBS}
+MOVE_STACK {OTA, CRIREJ} OTA
+DESTSRC Suit match_color
+MOVE_STACK OTA CRIREJ
+OR
+    AND
+        DEST Empty
+        SRCSTACK Rank descending
+    DEST Rank K
+$win
+OR
+    AND
+        PILE ALL CRIREJ Empty
+        PILE ALL CRIREJ Empty
+    AND
+        PILE ALL OTA Empty
+        PILE ALL OTA Empty

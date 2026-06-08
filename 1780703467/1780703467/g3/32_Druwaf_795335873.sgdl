@@ -1,0 +1,26 @@
+Druwaf
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 10 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 6 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        SRC Suit {CLUBS, SPADES}
+        DESTSRC Suit match
+    AND
+        DEST Empty
+        SRC Rank 1
+MOVE_STACK COLUMN COLUMN
+SRC Suit {SPADES}
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

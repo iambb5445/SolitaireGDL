@@ -1,0 +1,24 @@
+Zaeluv
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 22 ROTATE 3 U 3
+UKU 4 FACE_ALL
+UKU 0 FACE_ALTERNATE_LAST
+
+$moves
+MOVE UKU UKU
+AND
+    OR
+        DEST Size > 9
+        DESTSRC Rank ascending
+    DESTSRC Rank add_14
+$win
+OR
+    AND
+        PILE ALL UKU Empty
+        PILE ALL UKU Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

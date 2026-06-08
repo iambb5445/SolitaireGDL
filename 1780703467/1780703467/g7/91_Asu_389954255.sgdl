@@ -1,0 +1,25 @@
+Asu
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+OXE 9 FACE_ALTERNATE_LAST
+OXE 10 FACE_ALTERNATE_LAST
+OXE 1 FACE_ALTERNATE_LAST
+OXE 6 FACE_ALL
+
+$moves
+MOVE OXE OXE
+SRC Suit {CLUBS, DIAMONDS, HEARTS, SPADES}
+MOVE_STACK OXE OXE
+OR
+    AND
+        DEST Empty
+        SRCSTACK Rank ascending
+    AND
+        DEST Size < 8
+        DESTSRC Suit match_color
+$win
+OR
+    PILE ALL OXE Empty
+    PILE ALL OXE Empty

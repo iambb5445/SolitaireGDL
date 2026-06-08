@@ -1,0 +1,48 @@
+Igec
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 45 ROTATE 3 U 2
+COLUMN 5 FACE_ALTERNATE_LAST
+COLUMN 7 FACE_ALTERNATE_LAST
+COLUMN 8 FACE_ALTERNATE_LAST
+COLUMN 0 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 7 FACE_ALL
+COLUMN 4 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 10 FACE_ALL
+
+$moves
+MOVE DRAW COLUMN
+AND
+    DESTSRC Rank descending
+    DEST Empty
+MOVE {DRAW, COLUMN} COLUMN
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK COLUMN COLUMN
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

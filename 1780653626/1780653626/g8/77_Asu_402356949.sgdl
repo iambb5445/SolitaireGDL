@@ -1,0 +1,21 @@
+Asu
+$cards
+DECK 1 SPADES
+
+$initial
+OQUIQ 10 FACE_HALF
+OQUIQ 3 FACE_ALL
+
+$moves
+MOVE OQUIQ OQUIQ
+DESTSRC Suit match_color
+MOVE_STACK OQUIQ OQUIQ
+OR
+    AND
+        DEST Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+        DEST Suit {DIAMONDS, CLUBS}
+    AND
+        DEST Size > 6
+        DESTSRC Suit match_color
+$win
+PILE ALL OQUIQ Empty

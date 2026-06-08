@@ -1,0 +1,20 @@
+Quif
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 2 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 5 FACE_LAST
+COLUMN 1 FACE_LAST
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Size <= 2
+    AND
+        SRCSTACK Rank equal
+        DESTSRC Suit match
+$win
+PILE ALL COLUMN Empty

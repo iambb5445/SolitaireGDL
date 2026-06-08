@@ -1,0 +1,25 @@
+Ogail
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 104 DEAL SOUR
+SOUR 0 FACE_ALL
+
+$moves
+MOVE SOUR SOUR
+OR
+    AND
+        SRC Rank 1
+        DEST Suit {HEARTS, DIAMONDS, CLUBS}
+    DEST Suit {SPADES, CLUBS}
+MOVE_STACK SOUR SOUR
+SRCSTACK Rank equal
+DRAW
+PILE ANY DRAW Size > 0
+$win
+OR
+    PILE ALL SOUR Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL SOUR Empty

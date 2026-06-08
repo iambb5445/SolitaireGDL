@@ -1,0 +1,50 @@
+Qoup
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 55 DEAL {AZA, PAQ, COLUMN}
+AZA 8 FACE_HALF
+AZA 2 FACE_ALL
+AZA 8 FACE_ALL
+AZA 2 FACE_ALL
+AZA 0 FACE_ALL
+AZA 0 FACE_ALL
+AZA 10 FACE_ALL
+
+COLUMN 2 FACE_HALF
+
+PAQ 8 FACE_LAST
+PAQ 9 FACE_LAST
+
+$moves
+MOVE {COLUMN, AZA, PAQ} PAQ
+AND
+    AND
+        SRC Rank K
+        DEST Rank 1
+    OR
+        DEST Empty
+        DESTSRC Suit alternate_color
+MOVE {AZA, COLUMN, PAQ} AZA
+OR
+    AND
+        DEST Size == 3
+        DESTSRC Suit match
+    AND
+        DEST Size < 8
+        DESTSRC Suit match
+MOVE_STACK AZA AZA
+OR
+    DESTSRC Rank descending
+    AND
+        DESTSRC Suit match
+        SRCSTACK Rank add_14
+$win
+OR
+    AND
+        PILE ALL AZA Empty
+        PILE ALL PAQ Empty
+    AND
+        PILE ALL PAQ Empty
+        PILE ALL DRAW Empty

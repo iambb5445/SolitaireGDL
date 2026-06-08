@@ -1,0 +1,30 @@
+Ugu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+IZIOZ 7 FACE_ALTERNATE_LAST
+IZIOZ 2 FACE_ALL
+
+IVE 5 FACE_LAST
+IVE 8 FACE_LAST
+IVE 4 FACE_LAST
+IVE 0 FACE_ALL
+
+$moves
+MOVE {IZIOZ, IVE} IZIOZ
+DEST Empty
+MOVE IZIOZ IVE
+DEST Rank 1
+MOVE_STACK {IZIOZ, IVE} IVE
+OR
+    AND
+        SRCSTACK Suit alternate_color
+        SRC Rank 1
+    DEST Size < 5
+$win
+OR
+    AND
+        PILE ALL IVE Empty
+        PILE ALL IVE Empty
+    PILE ALL IVE Empty

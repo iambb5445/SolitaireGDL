@@ -1,0 +1,25 @@
+Gabu
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 51 DEAL ZOUVU
+ZOUVU 1 FACE_LAST
+
+$moves
+MOVE ZOUVU ZOUVU
+DEST Suit {CLUBS, DIAMONDS}
+MOVE_STACK ZOUVU ZOUVU
+OR
+    DEST Rank 1
+    AND
+        SRC Rank K
+        DESTSRC Suit match_color
+$win
+OR
+    AND
+        PILE ALL ZOUVU Empty
+        PILE ALL ZOUVU Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

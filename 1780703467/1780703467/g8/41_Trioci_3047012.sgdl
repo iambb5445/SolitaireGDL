@@ -1,0 +1,20 @@
+Trioci
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 99 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Size < 2
+    DEST Rank 1
+$win
+AND
+    PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

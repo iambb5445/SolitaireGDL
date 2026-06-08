@@ -1,0 +1,33 @@
+Faer
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 82 ROTATE 3 U 3
+ACIS 0 FACE_ALTERNATE_LAST
+ACIS 9 FACE_HALF
+ACIS 5 FACE_HALF
+ACIS 0 FACE_HALF
+ACIS 8 FACE_HALF
+
+$moves
+MOVE DRAW ACIS
+DESTSRC Suit match_color
+MOVE ACIS ACIS
+SRC Suit {SPADES, CLUBS, HEARTS}
+MOVE_STACK ACIS ACIS
+OR
+    AND
+        SRCSTACK Suit alternate_color
+        DEST Size <= 6
+    AND
+        SRC Suit {CLUBS}
+        SRC Rank 1
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL ACIS Empty

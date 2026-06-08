@@ -1,0 +1,26 @@
+Trotem
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+AQA 3 FACE_ALL
+AQA 6 FACE_ALL
+AQA 8 FACE_ALL
+AQA 5 FACE_ALL
+AQA 4 FACE_ALL
+
+$moves
+MOVE AQA AQA
+OR
+    DEST Suit {CLUBS}
+    AND
+        DESTSRC Rank ascending
+        DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL AQA Empty
+        PILE ALL AQA Empty
+    AND
+        PILE ALL AQA Empty
+        PILE ALL AQA Empty

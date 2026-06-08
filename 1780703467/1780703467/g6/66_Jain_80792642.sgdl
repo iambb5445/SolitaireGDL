@@ -1,0 +1,20 @@
+Jain
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 103 ROTATE 1 U 1
+OBE 0 FACE_ALL
+OBE 1 FACE_ALL
+
+$moves
+MOVE_STACK OBE OBE
+OR
+    AND
+        SRC Rank 1
+        DEST Rank K
+    AND
+        DEST Size > 5
+        DESTSRC Rank equal
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,34 @@
+Ozed
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+PRUIDE 1 FACE_HALF
+PRUIDE 7 FACE_LAST
+PRUIDE 10 FACE_LAST
+
+CUZU 6 FACE_HALF
+CUZU 5 FACE_HALF
+CUZU 2 FACE_HALF
+
+ULO 2 FACE_ALL
+ULO 10 FACE_ALL
+ULO 5 FACE_ALL
+ULO 2 FACE_ALL
+ULO 2 FACE_ALL
+
+$moves
+MOVE {PRUIDE, CUZU, ULO} ULO
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DEST Suit {CLUBS}
+    DEST Size < 7
+$win
+OR
+    AND
+        PILE ALL ULO Empty
+        PILE ALL ULO Empty
+    AND
+        PILE ALL PRUIDE Empty
+        PILE ALL ULO Empty

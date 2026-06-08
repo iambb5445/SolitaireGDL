@@ -1,0 +1,32 @@
+Esouh
+$cards
+DECK 1 SPADES
+
+$initial
+UFEAF 7 FACE_HALF
+UFEAF 6 FACE_HALF
+UFEAF 0 FACE_HALF
+
+$moves
+MOVE UFEAF UFEAF
+OR
+    AND
+        DESTSRC Rank descending
+        DESTSRC Rank ascending
+    DEST Rank K
+MOVE_STACK UFEAF UFEAF
+OR
+    AND
+        DEST Size > 6
+        DESTSRC Suit match_color
+    AND
+        DESTSRC Suit alternate_color
+        DEST Size >= 3
+$win
+OR
+    AND
+        PILE ALL UFEAF Empty
+        PILE ALL UFEAF Empty
+    AND
+        PILE ALL UFEAF Empty
+        PILE ALL UFEAF Empty

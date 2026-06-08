@@ -1,0 +1,30 @@
+Oga
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 47 ROTATE 1 2 U
+OGU 2 FACE_ALTERNATE_LAST
+OGU 3 FACE_LAST
+
+$moves
+MOVE DRAW OGU
+OR
+    AND
+        DESTSRC Rank add_14
+        DESTSRC Rank descending
+    DEST Size == 3
+MOVE OGU OGU
+OR
+    DESTSRC Suit match_color
+    AND
+        DEST Rank 1
+        DESTSRC Rank add_14
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL OGU Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL OGU Empty

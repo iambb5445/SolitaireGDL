@@ -1,0 +1,38 @@
+Xeaw
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+OPU 10 FACE_HALF
+OPU 3 FACE_HALF
+OPU 1 FACE_HALF
+OPU 8 FACE_HALF
+OPU 3 FACE_LAST
+
+NAEP 1 FACE_ALL
+
+$moves
+MOVE {OPU, NAEP} OPU
+AND
+    AND
+        DEST Suit {DIAMONDS, SPADES, CLUBS, HEARTS}
+        DESTSRC Suit match
+    OR
+        DESTSRC Rank ascending
+        DESTSRC Suit match
+MOVE NAEP NAEP
+OR
+    AND
+        SRC Suit {SPADES, DIAMONDS}
+        DEST Size <= 3
+    AND
+        SRC Suit {SPADES, CLUBS, HEARTS}
+        DESTSRC Suit alternate_color
+$win
+AND
+    OR
+        PILE ALL OPU Empty
+        PILE ALL NAEP Empty
+    OR
+        PILE ALL NAEP Empty
+        PILE ALL OPU Empty

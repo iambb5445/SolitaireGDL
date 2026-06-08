@@ -1,0 +1,28 @@
+Aqa
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+UWAEX 10 FACE_HALF
+UWAEX 9 FACE_HALF
+UWAEX 7 FACE_HALF
+UWAEX 7 FACE_HALF
+UWAEX 7 FACE_HALF
+UWAEX 8 FACE_HALF
+UWAEX 4 FACE_HALF
+
+$moves
+MOVE UWAEX UWAEX
+AND
+    AND
+        SRC Rank K
+        DEST Size == 10
+    AND
+        SRC Rank K
+        DEST Size < 9
+$win
+OR
+    AND
+        PILE ALL UWAEX Empty
+        PILE ALL UWAEX Empty
+    PILE ALL UWAEX Empty

@@ -1,0 +1,26 @@
+Ovo
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 46 ROTATE 1 U 1
+COLUMN 1 FACE_LAST
+COLUMN 5 FACE_LAST
+
+$moves
+MOVE DRAW COLUMN
+OR
+    AND
+        DEST Rank K
+        DEST Empty
+    AND
+        DEST Rank 1
+        DEST Rank K
+MOVE_STACK COLUMN COLUMN
+DESTSRC Suit match_color
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

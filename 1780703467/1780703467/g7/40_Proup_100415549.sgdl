@@ -1,0 +1,23 @@
+Proup
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 6 DEAL DUX
+DUX 4 FACE_LAST
+DUX 9 FACE_LAST
+DUX 7 FACE_LAST
+
+$moves
+MOVE DUX DUX
+SRC Suit {HEARTS}
+MOVE_STACK DUX DUX
+DEST Empty
+DRAW
+PILE ANY DUX Size > 0
+$win
+OR
+    PILE ALL DUX Empty
+    AND
+        PILE ALL DUX Empty
+        PILE ALL DRAW Empty

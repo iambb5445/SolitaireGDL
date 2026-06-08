@@ -1,0 +1,33 @@
+Ehic
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 41 ROTATE 1 U U
+MACA 6 FACE_LAST
+MACA 2 FACE_ALTERNATE_LAST
+MACA 3 FACE_ALTERNATE_LAST
+
+$moves
+MOVE {DRAW, MACA} MACA
+OR
+    AND
+        DEST Suit {DIAMONDS, CLUBS, SPADES}
+        DEST Empty
+    AND
+        DEST Empty
+        DEST Empty
+MOVE_STACK MACA MACA
+OR
+    DESTSRC Suit match
+    AND
+        DEST Suit {CLUBS, SPADES, HEARTS, DIAMONDS}
+        SRCSTACK Rank add_13
+$win
+OR
+    AND
+        PILE ALL MACA Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL MACA Empty
+        PILE ALL DRAW Empty

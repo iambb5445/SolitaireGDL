@@ -1,0 +1,35 @@
+Yuy
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 48 ROTATE 1 2 U
+ZEAXU 0 FACE_ALL
+ZEAXU 3 FACE_LAST
+ZEAXU 1 FACE_LAST
+
+$moves
+MOVE ZEAXU ZEAXU
+OR
+    AND
+        DEST Size <= 9
+        DEST Suit {CLUBS, SPADES}
+    AND
+        DEST Empty
+        DESTSRC Suit match
+MOVE DRAW ZEAXU
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Rank add_14
+    AND
+        SRC Rank K
+        DEST Suit {DIAMONDS, HEARTS, CLUBS, SPADES}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL ZEAXU Empty

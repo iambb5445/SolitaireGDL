@@ -1,0 +1,25 @@
+Vaquc
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+UYAIY 1 FACE_ALL
+UYAIY 8 FACE_ALL
+UYAIY 10 FACE_ALL
+UYAIY 7 FACE_ALL
+
+$moves
+MOVE UYAIY UYAIY
+OR
+    AND
+        SRC Rank 1
+        DEST Empty
+    AND
+        DESTSRC Rank equal
+        DEST Empty
+$win
+OR
+    AND
+        PILE ALL UYAIY Empty
+        PILE ALL UYAIY Empty
+    PILE ALL UYAIY Empty

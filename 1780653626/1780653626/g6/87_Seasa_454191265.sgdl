@@ -1,0 +1,28 @@
+Seasa
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+IGAF 3 FACE_HALF
+IGAF 8 FACE_HALF
+IGAF 5 FACE_HALF
+IGAF 7 FACE_HALF
+IGAF 3 FACE_HALF
+
+$moves
+MOVE IGAF IGAF
+OR
+    AND
+        SRC Rank 1
+        DESTSRC Rank add_14
+    AND
+        DESTSRC Rank descending
+        SRC Rank K
+MOVE_STACK IGAF IGAF
+DEST Suit {DIAMONDS, HEARTS, SPADES}
+$win
+OR
+    AND
+        PILE ALL IGAF Empty
+        PILE ALL IGAF Empty
+    PILE ALL IGAF Empty

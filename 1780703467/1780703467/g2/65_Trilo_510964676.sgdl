@@ -1,0 +1,21 @@
+Trilo
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 4 FACE_LAST
+COLUMN 9 FACE_LAST
+COLUMN 9 FACE_LAST
+COLUMN 4 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+DESTSRC Rank descending
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        SRCSTACK Suit match
+        DESTSRC Rank add_14
+    SRCSTACK Suit alternate_color
+$win
+PILE ALL COLUMN Empty

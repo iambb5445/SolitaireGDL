@@ -1,0 +1,18 @@
+Stiovab
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 97 ROTATE 1 U 2
+RIYU 6 FACE_ALL
+RIYU 1 FACE_ALL
+
+$moves
+MOVE_STACK RIYU RIYU
+OR
+    DEST Suit {CLUBS, DIAMONDS, SPADES, HEARTS}
+    AND
+        SRC Rank 1
+        DEST Rank K
+$win
+PILE ALL RIYU Empty

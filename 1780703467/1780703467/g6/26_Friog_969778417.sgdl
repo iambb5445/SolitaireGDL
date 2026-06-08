@@ -1,0 +1,23 @@
+Friog
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 24 DEAL GAIXI
+GAIXI 1 FACE_ALL
+GAIXI 1 FACE_LAST
+GAIXI 0 FACE_LAST
+
+$moves
+MOVE GAIXI GAIXI
+DESTSRC Rank ascending
+MOVE_STACK GAIXI GAIXI
+SRCSTACK Rank add_13
+$win
+OR
+    AND
+        PILE ALL GAIXI Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

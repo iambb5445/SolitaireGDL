@@ -1,0 +1,23 @@
+Braiq
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+AFEAP 0 FACE_LAST
+AFEAP 5 FACE_LAST
+AFEAP 9 FACE_LAST
+AFEAP 1 FACE_LAST
+AFEAP 8 FACE_LAST
+AFEAP 3 FACE_LAST
+
+$moves
+MOVE AFEAP AFEAP
+SRC Suit {SPADES}
+MOVE_STACK AFEAP AFEAP
+OR
+    AND
+        DESTSRC Suit match
+        DESTSRC Suit alternate_color
+    SRC Rank K
+$win
+PILE ALL AFEAP Empty

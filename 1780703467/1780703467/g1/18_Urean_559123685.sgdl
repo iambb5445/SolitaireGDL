@@ -1,0 +1,22 @@
+Urean
+$cards
+DECK 1 SPADES
+
+$initial
+DRAW 9 DEAL AZUIX
+AZUIX 1 FACE_LAST
+AZUIX 3 FACE_HALF
+
+$moves
+MOVE_STACK AZUIX AZUIX
+OR
+    AND
+        SRC Rank 1
+        SRC Suit {SPADES, CLUBS, DIAMONDS}
+    SRCSTACK Size > 2
+DRAW
+PILE ALL DRAW Empty
+$win
+OR
+    PILE ALL DRAW Empty
+    PILE ALL AZUIX Empty

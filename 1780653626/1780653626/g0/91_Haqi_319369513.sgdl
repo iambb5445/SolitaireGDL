@@ -1,0 +1,30 @@
+Haqi
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 35 DEAL {COLUMN, TUIGIT}
+COLUMN 3 FACE_LAST
+COLUMN 5 FACE_LAST
+
+TUIGIT 9 FACE_ALTERNATE_LAST
+
+$moves
+MOVE COLUMN TUIGIT
+OR
+    AND
+        DEST Suit {CLUBS, SPADES, DIAMONDS, HEARTS}
+        DEST Rank K
+    AND
+        DEST Rank 1
+        SRC Rank K
+MOVE_STACK COLUMN TUIGIT
+AND
+    SRC Rank 1
+    AND
+        DEST Empty
+        DESTSRC Suit match_color
+MOVE_STACK COLUMN COLUMN
+SRC Suit {DIAMONDS, SPADES}
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,17 @@
+Owew
+$cards
+DECK 1 SPADES
+
+$initial
+LAEKOK 6 FACE_ALL
+LAEKOK 7 FACE_HALF
+
+$moves
+MOVE_STACK LAEKOK LAEKOK
+DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL LAEKOK Empty
+        PILE ALL LAEKOK Empty
+    PILE ALL LAEKOK Empty

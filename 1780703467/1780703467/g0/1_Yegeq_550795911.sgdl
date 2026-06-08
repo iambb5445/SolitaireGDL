@@ -1,0 +1,25 @@
+Yegeq
+$cards
+DECK 2 SPADES
+
+$initial
+MEWON 9 FACE_LAST
+MEWON 6 FACE_LAST
+MEWON 7 FACE_LAST
+MEWON 4 FACE_LAST
+
+$moves
+MOVE MEWON MEWON
+OR
+    DEST Size < 7
+    AND
+        DEST Empty
+        DEST Size <= 5
+MOVE_STACK MEWON MEWON
+SRC Rank 1
+$win
+OR
+    AND
+        PILE ALL MEWON Empty
+        PILE ALL MEWON Empty
+    PILE ALL MEWON Empty

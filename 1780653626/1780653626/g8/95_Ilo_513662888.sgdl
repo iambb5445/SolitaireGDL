@@ -1,0 +1,26 @@
+Ilo
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 82 DEAL RUKEQ
+RUKEQ 10 FACE_LAST
+RUKEQ 7 FACE_LAST
+RUKEQ 4 FACE_LAST
+RUKEQ 1 FACE_LAST
+
+$moves
+MOVE RUKEQ RUKEQ
+AND
+    OR
+        DESTSRC Suit alternate_color
+        SRC Suit {SPADES, DIAMONDS}
+    OR
+        DESTSRC Rank equal
+        DEST Size < 5
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL RUKEQ Empty
+        PILE ALL DRAW Empty

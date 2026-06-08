@@ -1,0 +1,34 @@
+Azo
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 24 ROTATE 3 U 2
+HUL 2 FACE_ALL
+HUL 1 FACE_ALTERNATE_LAST
+HUL 9 FACE_ALTERNATE_LAST
+HUL 4 FACE_ALTERNATE_LAST
+HUL 4 FACE_ALTERNATE_LAST
+HUL 8 FACE_ALTERNATE_LAST
+
+$moves
+MOVE DRAW HUL
+OR
+    AND
+        DEST Empty
+        SRC Rank K
+    AND
+        DEST Size > 2
+        DESTSRC Rank add_13
+MOVE_STACK HUL HUL
+OR
+    AND
+        SRCSTACK Suit match
+        SRC Rank K
+    AND
+        DEST Empty
+        DEST Empty
+$win
+OR
+    PILE ALL HUL Empty
+    PILE ALL DRAW Empty

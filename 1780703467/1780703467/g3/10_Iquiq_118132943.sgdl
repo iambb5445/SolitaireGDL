@@ -1,0 +1,42 @@
+Iquiq
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+CAIGO 0 FACE_ALL
+CAIGO 6 FACE_ALL
+CAIGO 10 FACE_ALL
+CAIGO 8 FACE_ALL
+CAIGO 9 FACE_ALL
+CAIGO 2 FACE_ALL
+CAIGO 2 FACE_ALL
+CAIGO 9 FACE_ALL
+
+VION 4 FACE_HALF
+VION 0 FACE_HALF
+VION 1 FACE_HALF
+VION 1 FACE_HALF
+
+$moves
+MOVE VION VION
+OR
+    SRC Suit {SPADES, DIAMONDS, CLUBS, HEARTS}
+    AND
+        DEST Size < 1
+        DEST Rank 1
+MOVE CAIGO VION
+OR
+    AND
+        SRC Suit {DIAMONDS, SPADES, HEARTS}
+        DEST Size <= 7
+    AND
+        DEST Size >= 8
+        DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL VION Empty
+        PILE ALL VION Empty
+    AND
+        PILE ALL CAIGO Empty
+        PILE ALL CAIGO Empty

@@ -1,0 +1,31 @@
+Xaima
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 42 ROTATE 3 U 1
+SIOHAG 2 FACE_ALTERNATE_LAST
+SIOHAG 4 FACE_ALTERNATE_LAST
+SIOHAG 4 FACE_HALF
+
+$moves
+MOVE {SIOHAG, DRAW} SIOHAG
+OR
+    SRC Rank 1
+    AND
+        DESTSRC Suit alternate_color
+        SRC Rank 1
+MOVE_STACK SIOHAG SIOHAG
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size == 3
+    AND
+        SRCSTACK Suit match
+        SRC Suit {SPADES, CLUBS}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

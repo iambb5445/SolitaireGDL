@@ -1,0 +1,18 @@
+Izu
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 38 ROTATE 3 U U
+GRAIK 9 FACE_LAST
+GRAIK 5 FACE_LAST
+
+$moves
+MOVE_STACK GRAIK GRAIK
+DESTSRC Rank descending
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

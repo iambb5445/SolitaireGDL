@@ -1,0 +1,30 @@
+Vaz
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 8 FACE_HALF
+COLUMN 8 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 2 FACE_HALF
+COLUMN 5 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DESTSRC Rank descending
+    AND
+        DESTSRC Suit alternate_color
+        SRC Rank 1
+MOVE_STACK COLUMN COLUMN
+AND
+    DEST Rank K
+    OR
+        DEST Empty
+        SRC Suit {SPADES}
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

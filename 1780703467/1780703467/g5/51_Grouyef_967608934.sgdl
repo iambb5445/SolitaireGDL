@@ -1,0 +1,25 @@
+Grouyef
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+SAEMUL 5 FACE_HALF
+SAEMUL 8 FACE_HALF
+SAEMUL 9 FACE_HALF
+SAEMUL 4 FACE_HALF
+
+$moves
+MOVE_STACK SAEMUL SAEMUL
+AND
+    AND
+        DEST Suit {SPADES, HEARTS, DIAMONDS, CLUBS}
+        SRC Rank 1
+    OR
+        SRCSTACK Suit match
+        DEST Rank 1
+$win
+AND
+    PILE ALL SAEMUL Empty
+    OR
+        PILE ALL SAEMUL Empty
+        PILE ALL SAEMUL Empty

@@ -1,0 +1,28 @@
+Laf
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 2 FACE_LAST
+COLUMN 10 FACE_LAST
+COLUMN 6 FACE_LAST
+COLUMN 3 FACE_ALL
+COLUMN 5 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Rank equal
+        SRC Suit {SPADES, DIAMONDS, CLUBS}
+    AND
+        DESTSRC Rank ascending
+        SRC Rank 1
+MOVE_STACK COLUMN COLUMN
+AND
+    DEST Empty
+    OR
+        DEST Size < 5
+        DEST Size <= 8
+$win
+PILE ALL COLUMN Empty

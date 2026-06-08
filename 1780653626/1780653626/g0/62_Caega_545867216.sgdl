@@ -1,0 +1,21 @@
+Caega
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 91 DEAL AMAH
+AMAH 4 FACE_HALF
+AMAH 6 FACE_ALL
+AMAH 3 FACE_ALL
+
+$moves
+MOVE AMAH AMAH
+OR
+    AND
+        DEST Empty
+        DEST Size == 9
+    DESTSRC Suit match_color
+DRAW
+PILE ALL AMAH Empty
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,25 @@
+Oce
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 39 ROTATE 1 1 U
+COLUMN 10 FACE_HALF
+COLUMN 2 FACE_HALF
+COLUMN 1 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        DESTSRC Rank ascending
+    DESTSRC Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

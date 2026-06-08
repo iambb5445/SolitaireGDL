@@ -1,0 +1,28 @@
+Alaiy
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 72 ROTATE 3 U 2
+EJAED 4 FACE_ALL
+EJAED 10 FACE_ALL
+EJAED 1 FACE_ALL
+EJAED 9 FACE_ALL
+EJAED 1 FACE_ALL
+EJAED 7 FACE_ALL
+
+$moves
+MOVE {DRAW, EJAED} EJAED
+AND
+    OR
+        DEST Rank 1
+        DEST Size < 4
+    DEST Size > 0
+MOVE_STACK EJAED EJAED
+SRC Rank 1
+$win
+AND
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

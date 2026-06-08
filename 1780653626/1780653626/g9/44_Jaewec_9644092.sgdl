@@ -1,0 +1,51 @@
+Jaewec
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 39 ROTATE 3 U 2
+FEHA 10 FACE_HALF
+FEHA 6 FACE_HALF
+FEHA 4 FACE_ALL
+FEHA 1 FACE_ALL
+FEHA 9 FACE_ALL
+FEHA 7 FACE_ALL
+FEHA 1 FACE_ALL
+FEHA 2 FACE_ALL
+FEHA 8 FACE_ALL
+FEHA 6 FACE_ALL
+
+BAMUF 2 FACE_LAST
+BAMUF 9 FACE_LAST
+
+$moves
+MOVE BAMUF BAMUF
+AND
+    DESTSRC Rank descending
+    DEST Empty
+MOVE {FEHA, BAMUF, DRAW} BAMUF
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK {FEHA, BAMUF} BAMUF
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK {FEHA, BAMUF} BAMUF
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL BAMUF Empty
+        PILE ALL FEHA Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

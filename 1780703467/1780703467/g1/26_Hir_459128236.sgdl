@@ -1,0 +1,38 @@
+Hir
+$cards
+DECK 2 SPADES
+
+$initial
+EXA 9 FACE_LAST
+EXA 10 FACE_LAST
+EXA 1 FACE_LAST
+EXA 2 FACE_LAST
+
+ONO 1 FACE_HALF
+ONO 3 FACE_HALF
+
+$moves
+MOVE {ONO, EXA} EXA
+DEST Size < 0
+MOVE ONO ONO
+AND
+    OR
+        SRC Rank 1
+        DESTSRC Rank ascending
+    DESTSRC Suit match
+MOVE_STACK EXA EXA
+OR
+    SRC Rank 1
+    AND
+        DEST Size <= 5
+        DESTSRC Suit alternate_color
+MOVE_STACK ONO ONO
+AND
+    OR
+        DESTSRC Suit alternate_color
+        SRCSTACK Size < 10
+    AND
+        SRC Rank K
+        DEST Suit {DIAMONDS, CLUBS}
+$win
+PILE ALL ONO Empty

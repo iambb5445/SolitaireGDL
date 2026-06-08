@@ -1,0 +1,30 @@
+Ojeal
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 43 ROTATE 1 U U
+UVU 0 FACE_ALL
+UVU 9 FACE_LAST
+
+$moves
+MOVE UVU UVU
+AND
+    AND
+        DEST Rank K
+        DEST Empty
+    AND
+        DESTSRC Rank descending
+        DESTSRC Suit match
+MOVE_STACK UVU UVU
+OR
+    SRC Suit {CLUBS, HEARTS}
+    DEST Empty
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL UVU Empty
+        PILE ALL DRAW Empty

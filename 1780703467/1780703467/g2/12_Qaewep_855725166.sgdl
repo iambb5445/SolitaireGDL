@@ -1,0 +1,41 @@
+Qaewep
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 5 FACE_HALF
+COLUMN 4 FACE_HALF
+COLUMN 1 FACE_HALF
+COLUMN 0 FACE_HALF
+
+RUIC 3 FACE_ALL
+RUIC 4 FACE_ALL
+RUIC 2 FACE_ALL
+RUIC 1 FACE_ALL
+RUIC 6 FACE_ALL
+
+$moves
+MOVE COLUMN RUIC
+AND
+    DESTSRC Suit match_color
+    DEST Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        DEST Suit {DIAMONDS, SPADES}
+    AND
+        SRC Suit {HEARTS, SPADES}
+        DEST Suit {DIAMONDS, SPADES, CLUBS, HEARTS}
+MOVE_STACK {COLUMN, RUIC} RUIC
+AND
+    OR
+        SRC Rank K
+        SRC Rank 1
+    OR
+        SRCSTACK Suit alternate_color
+        DEST Size == 0
+$win
+AND
+    PILE ALL RUIC Empty
+    PILE ALL COLUMN Empty

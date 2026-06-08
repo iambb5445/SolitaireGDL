@@ -1,0 +1,28 @@
+Anuj
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 75 ROTATE 3 U 2
+DEJ 4 FACE_HALF
+DEJ 9 FACE_HALF
+DEJ 6 FACE_HALF
+DEJ 2 FACE_HALF
+DEJ 2 FACE_HALF
+DEJ 6 FACE_HALF
+
+$moves
+MOVE DEJ DEJ
+DEST Rank 1
+MOVE_STACK DEJ DEJ
+OR
+    SRC Suit {CLUBS}
+    DEST Rank K
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DEJ Empty
+    AND
+        PILE ALL DEJ Empty
+        PILE ALL DEJ Empty

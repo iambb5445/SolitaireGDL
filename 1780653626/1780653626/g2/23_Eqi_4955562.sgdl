@@ -1,0 +1,55 @@
+Eqi
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 35 ROTATE 3 U 2
+MIN 4 FACE_HALF
+MIN 10 FACE_HALF
+MIN 10 FACE_HALF
+MIN 4 FACE_HALF
+MIN 0 FACE_HALF
+MIN 8 FACE_HALF
+MIN 7 FACE_HALF
+MIN 2 FACE_HALF
+MIN 3 FACE_ALL
+MIN 3 FACE_ALL
+
+HOUH 9 FACE_HALF
+HOUH 4 FACE_ALTERNATE_LAST
+HOUH 0 FACE_ALTERNATE_LAST
+HOUH 5 FACE_HALF
+
+$moves
+MOVE MIN HOUH
+OR
+    AND
+        DEST Size >= 0
+        SRC Rank K
+    DESTSRC Suit alternate_color
+MOVE {HOUH, MIN, DRAW} MIN
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK {HOUH, MIN} MIN
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK {MIN, HOUH} MIN
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL HOUH Empty
+        PILE ALL HOUH Empty
+    AND
+        PILE ALL HOUH Empty
+        PILE ALL MIN Empty

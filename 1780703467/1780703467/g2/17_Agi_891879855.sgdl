@@ -1,0 +1,22 @@
+Agi
+$cards
+DECK 1 SPADES
+
+$initial
+FEB 4 FACE_ALL
+FEB 3 FACE_ALL
+FEB 3 FACE_ALL
+FEB 0 FACE_HALF
+FEB 3 FACE_HALF
+
+$moves
+MOVE FEB FEB
+DEST Size < 7
+MOVE_STACK FEB FEB
+AND
+    OR
+        SRCSTACK Size >= 4
+        SRCSTACK Size > 7
+    SRCSTACK Size >= 2
+$win
+PILE ALL FEB Empty

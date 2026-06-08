@@ -1,0 +1,23 @@
+Dox
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 25 DEAL GUG
+GUG 9 FACE_ALTERNATE_LAST
+GUG 9 FACE_ALL
+GUG 9 FACE_ALL
+
+$moves
+MOVE GUG GUG
+DESTSRC Rank ascending
+MOVE_STACK GUG GUG
+DEST Size == 7
+DRAW
+PILE ANY GUG Empty
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL GUG Empty
+    PILE ALL DRAW Empty

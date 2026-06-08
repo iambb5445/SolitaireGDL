@@ -1,0 +1,38 @@
+Greapu
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 4 FACE_ALTERNATE_LAST
+COLUMN 0 FACE_ALTERNATE_LAST
+COLUMN 0 FACE_ALTERNATE_LAST
+
+FRUIJE 2 FACE_ALTERNATE_LAST
+FRUIJE 6 FACE_LAST
+FRUIJE 1 FACE_LAST
+
+$moves
+MOVE COLUMN {COLUMN, FRUIJE}
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank add_14
+    AND
+        DESTSRC Rank ascending
+        DESTSRC Suit alternate_color
+MOVE FRUIJE COLUMN
+OR
+    AND
+        DESTSRC Rank equal
+        DEST Rank 1
+    AND
+        SRC Rank 1
+        DEST Size >= 10
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL FRUIJE Empty

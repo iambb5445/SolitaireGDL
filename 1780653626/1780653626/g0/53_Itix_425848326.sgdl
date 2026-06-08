@@ -1,0 +1,50 @@
+Itix
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 32 DEAL COLUMN
+COLUMN 9 FACE_ALL
+COLUMN 4 FACE_ALL
+COLUMN 5 FACE_ALTERNATE_LAST
+
+ZENA 6 FACE_ALL
+ZENA 2 FACE_ALL
+ZENA 6 FACE_ALL
+ZENA 9 FACE_ALL
+ZENA 5 FACE_LAST
+ZENA 10 FACE_LAST
+ZENA 9 FACE_LAST
+ZENA 7 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        SRC Suit {SPADES}
+        DESTSRC Rank equal
+    SRC Rank 1
+MOVE ZENA COLUMN
+AND
+    DEST Size <= 2
+    OR
+        DEST Empty
+        DESTSRC Suit alternate_color
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Suit {HEARTS, DIAMONDS}
+    DESTSRC Suit match_color
+MOVE_STACK ZENA COLUMN
+AND
+    OR
+        DEST Rank 1
+        DESTSRC Suit alternate_color
+    AND
+        SRC Rank 1
+        SRCSTACK Size >= 1
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    PILE ALL COLUMN Empty

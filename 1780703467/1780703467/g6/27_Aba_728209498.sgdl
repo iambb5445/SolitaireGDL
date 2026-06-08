@@ -1,0 +1,28 @@
+Aba
+$cards
+DECK 2 SPADES
+
+$initial
+DAJAF 5 FACE_HALF
+DAJAF 3 FACE_HALF
+DAJAF 2 FACE_HALF
+
+ACA 2 FACE_HALF
+
+YARI 10 FACE_LAST
+YARI 4 FACE_LAST
+YARI 0 FACE_LAST
+
+$moves
+MOVE DAJAF DAJAF
+SRC Suit {SPADES, DIAMONDS}
+MOVE ACA DAJAF
+OR
+    AND
+        SRC Rank K
+        DESTSRC Suit match_color
+    AND
+        DEST Empty
+        SRC Rank K
+$win
+PILE ALL YARI Empty

@@ -1,0 +1,21 @@
+Acail
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+FRARIY 10 FACE_LAST
+FRARIY 6 FACE_LAST
+FRARIY 6 FACE_HALF
+FRARIY 4 FACE_HALF
+
+$moves
+MOVE FRARIY FRARIY
+OR
+    AND
+        DESTSRC Rank equal
+        DEST Empty
+    DEST Suit {HEARTS}
+MOVE_STACK FRARIY FRARIY
+SRCSTACK Suit alternate_color
+$win
+PILE ALL FRARIY Empty

@@ -1,0 +1,23 @@
+Eka
+$cards
+DECK 1 SPADES
+
+$initial
+VUID 9 FACE_HALF
+VUID 4 FACE_ALL
+
+$moves
+MOVE VUID VUID
+OR
+    AND
+        DEST Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+        DESTSRC Rank equal
+    DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL VUID Empty
+        PILE ALL VUID Empty
+    AND
+        PILE ALL VUID Empty
+        PILE ALL VUID Empty

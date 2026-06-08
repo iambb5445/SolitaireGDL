@@ -1,0 +1,22 @@
+Draite
+$cards
+DECK 1 SPADES
+
+$initial
+QOVU 2 FACE_ALL
+QOVU 5 FACE_LAST
+QOVU 2 FACE_LAST
+QOVU 2 FACE_LAST
+QOVU 2 FACE_LAST
+
+$moves
+MOVE QOVU QOVU
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank add_13
+    AND
+        DEST Suit {HEARTS, CLUBS}
+        DEST Empty
+$win
+PILE ALL QOVU Empty

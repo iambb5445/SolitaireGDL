@@ -1,0 +1,26 @@
+Adu
+$cards
+DECK 1 SPADES
+
+$initial
+UPA 3 FACE_ALL
+UPA 6 FACE_ALTERNATE_LAST
+UPA 4 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK UPA UPA
+OR
+    AND
+        DEST Rank 1
+        DESTSRC Suit match_color
+    AND
+        DEST Empty
+        DEST Size <= 8
+$win
+AND
+    OR
+        PILE ALL UPA Empty
+        PILE ALL UPA Empty
+    AND
+        PILE ALL UPA Empty
+        PILE ALL UPA Empty

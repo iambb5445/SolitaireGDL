@@ -1,0 +1,23 @@
+Ukah
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+ICAEJ 9 FACE_HALF
+ICAEJ 7 FACE_HALF
+ICAEJ 7 FACE_HALF
+ICAEJ 3 FACE_HALF
+
+$moves
+MOVE ICAEJ ICAEJ
+DESTSRC Suit alternate_color
+MOVE_STACK ICAEJ ICAEJ
+DEST Size > 9
+$win
+AND
+    AND
+        PILE ALL ICAEJ Empty
+        PILE ALL ICAEJ Empty
+    OR
+        PILE ALL ICAEJ Empty
+        PILE ALL ICAEJ Empty

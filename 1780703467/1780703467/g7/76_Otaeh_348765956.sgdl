@@ -1,0 +1,30 @@
+Otaeh
+$cards
+DECK 1 SPADES
+
+$initial
+DRAW 6 ROTATE 1 U 2
+GAIMAD 4 FACE_ALL
+GAIMAD 3 FACE_ALL
+
+$moves
+MOVE DRAW GAIMAD
+AND
+    OR
+        DEST Size >= 9
+        SRC Suit {DIAMONDS, SPADES}
+    OR
+        SRC Suit {DIAMONDS, CLUBS, HEARTS, SPADES}
+        DESTSRC Suit alternate_color
+MOVE GAIMAD GAIMAD
+SRC Rank K
+MOVE_STACK GAIMAD GAIMAD
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size > 2
+    AND
+        SRC Rank 1
+        SRC Rank 1
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,42 @@
+Friopof
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+ICAF 9 FACE_LAST
+ICAF 6 FACE_ALTERNATE_LAST
+ICAF 3 FACE_ALTERNATE_LAST
+
+QES 4 FACE_ALL
+
+FRAID 6 FACE_HALF
+FRAID 6 FACE_HALF
+FRAID 2 FACE_HALF
+FRAID 10 FACE_HALF
+FRAID 6 FACE_ALL
+
+$moves
+MOVE ICAF FRAID
+DEST Empty
+MOVE QES ICAF
+AND
+    DEST Size == 3
+    OR
+        DEST Empty
+        DEST Rank 1
+MOVE_STACK QES {FRAID, ICAF, QES}
+OR
+    AND
+        SRCSTACK Rank descending
+        SRCSTACK Size < 10
+    AND
+        SRC Rank 1
+        DEST Size > 1
+MOVE_STACK {ICAF, FRAID} FRAID
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Rank add_14
+    SRC Suit {SPADES, CLUBS}
+$win
+PILE ALL FRAID Empty

@@ -1,0 +1,21 @@
+Paedad
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 22 DEAL CAEBA
+CAEBA 4 FACE_ALL
+
+$moves
+MOVE CAEBA CAEBA
+DEST Rank K
+MOVE_STACK CAEBA CAEBA
+AND
+    AND
+        SRCSTACK Suit match
+        SRCSTACK Suit match
+    OR
+        DEST Empty
+        DESTSRC Suit alternate_color
+$win
+PILE ALL DRAW Empty

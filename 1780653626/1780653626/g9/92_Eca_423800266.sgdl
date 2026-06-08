@@ -1,0 +1,24 @@
+Eca
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 43 DEAL COLUMN
+COLUMN 0 FACE_ALL
+COLUMN 9 FACE_ALTERNATE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DEST Empty
+    AND
+        SRC Suit {DIAMONDS, SPADES, CLUBS}
+        DESTSRC Suit match_color
+MOVE_STACK COLUMN COLUMN
+OR
+    SRCSTACK Suit alternate_color
+    AND
+        DESTSRC Rank add_13
+        SRCSTACK Size <= 3
+$win
+PILE ALL DRAW Empty

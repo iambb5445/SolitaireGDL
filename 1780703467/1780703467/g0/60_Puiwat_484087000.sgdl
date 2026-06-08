@@ -1,0 +1,17 @@
+Puiwat
+$cards
+DECK 1 SPADES
+
+$initial
+YAIY 9 FACE_ALL
+YAIY 4 FACE_LAST
+
+$moves
+MOVE YAIY YAIY
+DESTSRC Rank descending
+$win
+AND
+    AND
+        PILE ALL YAIY Empty
+        PILE ALL YAIY Empty
+    PILE ALL YAIY Empty

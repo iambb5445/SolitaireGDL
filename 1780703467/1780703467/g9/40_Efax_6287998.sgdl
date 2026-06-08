@@ -1,0 +1,27 @@
+Efax
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 99 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+DEST Empty
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        DEST Suit {HEARTS, DIAMONDS, SPADES, CLUBS}
+        SRC Suit {DIAMONDS}
+    AND
+        SRCSTACK Size >= 7
+        DEST Suit {CLUBS}
+    DEST Size < 2
+$win
+AND
+    PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

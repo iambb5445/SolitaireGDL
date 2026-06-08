@@ -1,0 +1,25 @@
+Luiq
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+ODUF 0 FACE_LAST
+ODUF 9 FACE_LAST
+ODUF 3 FACE_LAST
+ODUF 7 FACE_LAST
+ODUF 3 FACE_LAST
+ODUF 4 FACE_ALL
+
+$moves
+MOVE_STACK ODUF ODUF
+OR
+    DEST Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+    DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL ODUF Empty
+        PILE ALL ODUF Empty
+    AND
+        PILE ALL ODUF Empty
+        PILE ALL ODUF Empty

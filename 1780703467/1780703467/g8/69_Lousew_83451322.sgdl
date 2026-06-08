@@ -1,0 +1,19 @@
+Lousew
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 0 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 2 FACE_ALL
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        DEST Empty
+    SRC Suit {SPADES}
+$win
+PILE ALL COLUMN Empty

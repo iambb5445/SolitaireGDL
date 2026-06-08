@@ -1,0 +1,24 @@
+Croul
+$cards
+DECK 1 SPADES
+
+$initial
+MEAZAK 4 FACE_HALF
+MEAZAK 7 FACE_HALF
+MEAZAK 2 FACE_LAST
+
+$moves
+MOVE MEAZAK MEAZAK
+OR
+    SRC Rank 1
+    AND
+        DESTSRC Rank ascending
+        DESTSRC Suit match_color
+MOVE_STACK MEAZAK MEAZAK
+OR
+    DEST Suit {HEARTS, CLUBS}
+    AND
+        DEST Size >= 10
+        SRC Suit {HEARTS, SPADES}
+$win
+PILE ALL MEAZAK Empty

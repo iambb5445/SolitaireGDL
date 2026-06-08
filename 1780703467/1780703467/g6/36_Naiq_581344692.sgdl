@@ -1,0 +1,29 @@
+Naiq
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 2 FACE_HALF
+COLUMN 10 FACE_HALF
+COLUMN 4 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 7 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        DESTSRC Rank equal
+    AND
+        DEST Empty
+        DESTSRC Suit alternate_color
+MOVE_STACK COLUMN COLUMN
+DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

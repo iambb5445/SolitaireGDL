@@ -1,0 +1,31 @@
+Ovip
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 96 ROTATE 3 U 2
+COLUMN 8 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        SRC Suit {CLUBS, DIAMONDS}
+        DESTSRC Rank add_14
+    AND
+        SRC Rank K
+        DEST Rank 1
+MOVE DRAW COLUMN
+SRC Suit {HEARTS, CLUBS}
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        DEST Size < 1
+    DEST Empty
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

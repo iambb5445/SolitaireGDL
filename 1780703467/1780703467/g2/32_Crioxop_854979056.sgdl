@@ -1,0 +1,21 @@
+Crioxop
+$cards
+DECK 2 SPADES
+
+$initial
+WEHE 9 FACE_ALTERNATE_LAST
+WEHE 2 FACE_ALTERNATE_LAST
+WEHE 10 FACE_LAST
+WEHE 5 FACE_LAST
+
+$moves
+MOVE WEHE WEHE
+AND
+    OR
+        SRC Rank K
+        DESTSRC Suit match_color
+    OR
+        DEST Suit {HEARTS}
+        DESTSRC Rank add_13
+$win
+PILE ALL WEHE Empty

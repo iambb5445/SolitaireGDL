@@ -1,0 +1,30 @@
+Wouji
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+BRAKO 3 FACE_ALTERNATE_LAST
+BRAKO 4 FACE_ALTERNATE_LAST
+BRAKO 4 FACE_ALTERNATE_LAST
+BRAKO 2 FACE_ALTERNATE_LAST
+BRAKO 0 FACE_LAST
+BRAKO 8 FACE_LAST
+BRAKO 5 FACE_LAST
+
+$moves
+MOVE_STACK BRAKO BRAKO
+AND
+    OR
+        DEST Empty
+        SRCSTACK Suit alternate_color
+    OR
+        DEST Empty
+        DEST Empty
+$win
+AND
+    OR
+        PILE ALL BRAKO Empty
+        PILE ALL BRAKO Empty
+    AND
+        PILE ALL BRAKO Empty
+        PILE ALL BRAKO Empty

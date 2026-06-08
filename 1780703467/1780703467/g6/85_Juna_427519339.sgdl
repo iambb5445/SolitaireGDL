@@ -1,0 +1,23 @@
+Juna
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+UHIH 8 FACE_HALF
+UHIH 7 FACE_HALF
+UHIH 10 FACE_HALF
+UHIH 1 FACE_HALF
+
+$moves
+MOVE UHIH UHIH
+SRC Rank 1
+MOVE_STACK UHIH UHIH
+OR
+    AND
+        DEST Empty
+        DEST Suit {SPADES, HEARTS, DIAMONDS}
+    DESTSRC Suit match_color
+$win
+OR
+    PILE ALL UHIH Empty
+    PILE ALL UHIH Empty

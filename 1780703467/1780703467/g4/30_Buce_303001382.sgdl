@@ -1,0 +1,29 @@
+Buce
+$cards
+DECK 2 SPADES
+
+$initial
+GOUX 2 FACE_HALF
+GOUX 0 FACE_HALF
+GOUX 1 FACE_HALF
+GOUX 10 FACE_HALF
+GOUX 10 FACE_HALF
+GOUX 3 FACE_HALF
+
+$moves
+MOVE GOUX GOUX
+AND
+    AND
+        DESTSRC Suit match
+        DEST Suit {HEARTS}
+    OR
+        DEST Suit {HEARTS, CLUBS, SPADES, DIAMONDS}
+        SRC Rank K
+MOVE_STACK GOUX GOUX
+SRCSTACK Rank descending
+$win
+AND
+    PILE ALL GOUX Empty
+    AND
+        PILE ALL GOUX Empty
+        PILE ALL GOUX Empty

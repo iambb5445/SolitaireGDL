@@ -1,0 +1,36 @@
+Maiq
+$cards
+DECK 4 SPADES
+
+$initial
+IRA 7 FACE_LAST
+IRA 1 FACE_HALF
+IRA 2 FACE_HALF
+IRA 10 FACE_HALF
+IRA 6 FACE_HALF
+IRA 2 FACE_HALF
+IRA 9 FACE_HALF
+IRA 0 FACE_HALF
+IRA 6 FACE_HALF
+
+ZUID 8 FACE_HALF
+
+AJO 1 FACE_LAST
+
+$moves
+MOVE ZUID AJO
+AND
+    OR
+        DESTSRC Rank ascending
+        DEST Size >= 4
+    SRC Rank K
+MOVE AJO IRA
+DESTSRC Suit match
+MOVE_STACK ZUID ZUID
+OR
+    SRCSTACK Suit match
+    AND
+        SRCSTACK Rank ascending
+        DESTSRC Rank ascending
+$win
+PILE ALL AJO Empty

@@ -1,0 +1,23 @@
+Craize
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 10 FACE_HALF
+COLUMN 4 FACE_HALF
+COLUMN 6 FACE_LAST
+COLUMN 6 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Rank ascending
+        DESTSRC Rank ascending
+    AND
+        DEST Empty
+        DEST Rank K
+MOVE_STACK COLUMN COLUMN
+SRCSTACK Size <= 9
+$win
+PILE ALL COLUMN Empty

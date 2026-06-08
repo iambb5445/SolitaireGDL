@@ -1,0 +1,13 @@
+Eyuil
+$cards
+DECK 1 SPADES
+
+$initial
+IPE 7 FACE_HALF
+IPE 6 FACE_LAST
+
+$moves
+MOVE IPE IPE
+SRC Suit {HEARTS, CLUBS}
+$win
+PILE ALL IPE Empty

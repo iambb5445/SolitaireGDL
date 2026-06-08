@@ -1,0 +1,21 @@
+Guizex
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 18 DEAL HEGEC
+HEGEC 8 FACE_LAST
+
+$moves
+MOVE HEGEC HEGEC
+OR
+    AND
+        DESTSRC Rank add_14
+        DESTSRC Suit alternate_color
+    DEST Size >= 2
+DRAW
+PILE ALL DRAW Empty
+$win
+OR
+    PILE ALL HEGEC Empty
+    PILE ALL DRAW Empty

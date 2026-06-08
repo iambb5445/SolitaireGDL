@@ -1,0 +1,28 @@
+Ecu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+VUR 6 FACE_HALF
+
+COLUMN 8 FACE_HALF
+COLUMN 8 FACE_HALF
+COLUMN 4 FACE_HALF
+
+$moves
+MOVE COLUMN VUR
+OR
+    AND
+        SRC Suit {DIAMONDS}
+        DEST Rank 1
+    AND
+        SRC Suit {HEARTS}
+        DEST Suit {CLUBS, SPADES}
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL VUR Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

@@ -1,0 +1,21 @@
+Troum
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 100 ROTATE 1 2 U
+COLUMN 4 FACE_HALF
+
+$moves
+MOVE DRAW COLUMN
+DEST Empty
+MOVE COLUMN COLUMN
+DEST Empty
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Empty
+    AND
+        SRCSTACK Size >= 10
+        DEST Size <= 6
+$win
+PILE ALL DRAW Empty

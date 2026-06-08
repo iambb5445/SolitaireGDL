@@ -1,0 +1,30 @@
+Weva
+$cards
+DECK 1 SPADES
+
+$initial
+EDUIJ 5 FACE_HALF
+EDUIJ 4 FACE_HALF
+EDUIJ 4 FACE_ALTERNATE_LAST
+
+$moves
+MOVE EDUIJ EDUIJ
+AND
+    OR
+        DESTSRC Rank descending
+        DEST Suit {HEARTS}
+    SRC Suit {SPADES}
+MOVE_STACK EDUIJ EDUIJ
+OR
+    AND
+        DEST Size < 8
+        DESTSRC Rank add_14
+    AND
+        SRC Rank 1
+        DEST Empty
+$win
+OR
+    PILE ALL EDUIJ Empty
+    AND
+        PILE ALL EDUIJ Empty
+        PILE ALL EDUIJ Empty

@@ -1,0 +1,26 @@
+Ikis
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 32 DEAL KOUWU
+KOUWU 10 FACE_ALL
+KOUWU 10 FACE_HALF
+
+$moves
+MOVE KOUWU KOUWU
+AND
+    OR
+        DEST Empty
+        SRC Suit {CLUBS, DIAMONDS, SPADES, HEARTS}
+    SRC Rank 1
+MOVE_STACK KOUWU KOUWU
+SRCSTACK Suit match_color
+$win
+OR
+    AND
+        PILE ALL KOUWU Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL KOUWU Empty
+        PILE ALL KOUWU Empty

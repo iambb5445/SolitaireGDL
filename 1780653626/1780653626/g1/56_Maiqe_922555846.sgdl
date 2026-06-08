@@ -1,0 +1,22 @@
+Maiqe
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 39 DEAL FAGIC
+FAGIC 5 FACE_ALL
+FAGIC 8 FACE_HALF
+
+$moves
+MOVE FAGIC FAGIC
+AND
+    OR
+        SRC Rank K
+        DESTSRC Suit match
+    OR
+        SRC Rank 1
+        DEST Empty
+DRAW
+PILE ANY FAGIC Size > 0
+$win
+PILE ALL FAGIC Empty

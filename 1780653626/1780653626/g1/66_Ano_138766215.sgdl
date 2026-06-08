@@ -1,0 +1,36 @@
+Ano
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+JIOR 0 FACE_ALL
+JIOR 3 FACE_ALL
+JIOR 0 FACE_ALL
+JIOR 10 FACE_ALL
+JIOR 5 FACE_ALL
+JIOR 8 FACE_ALL
+JIOR 4 FACE_ALL
+JIOR 10 FACE_ALL
+JIOR 9 FACE_ALL
+
+AJEAK 3 FACE_ALL
+
+$moves
+MOVE AJEAK AJEAK
+OR
+    AND
+        DESTSRC Suit alternate_color
+        SRC Suit {CLUBS}
+    AND
+        DEST Rank K
+        SRC Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+MOVE {JIOR, AJEAK} JIOR
+OR
+    DESTSRC Suit match
+    AND
+        DESTSRC Suit alternate_color
+        DEST Suit {HEARTS, DIAMONDS}
+MOVE_STACK JIOR JIOR
+DESTSRC Rank equal
+$win
+PILE ALL AJEAK Empty

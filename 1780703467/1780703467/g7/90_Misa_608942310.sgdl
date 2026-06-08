@@ -1,0 +1,32 @@
+Misa
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 23 ROTATE 3 U 1
+COLUMN 1 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 10 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 9 FACE_HALF
+COLUMN 4 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DESTSRC Rank equal
+    AND
+        DEST Empty
+        DESTSRC Rank add_13
+MOVE DRAW COLUMN
+AND
+    OR
+        DESTSRC Suit match_color
+        SRC Rank 1
+    DESTSRC Suit match
+MOVE_STACK COLUMN COLUMN
+DEST Empty
+$win
+OR
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

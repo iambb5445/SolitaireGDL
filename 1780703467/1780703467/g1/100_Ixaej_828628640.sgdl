@@ -1,0 +1,26 @@
+Ixaej
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 3 FACE_HALF
+COLUMN 4 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 8 FACE_LAST
+COLUMN 8 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DESTSRC Rank equal
+    AND
+        DESTSRC Rank descending
+        SRC Suit {CLUBS, SPADES}
+MOVE_STACK COLUMN COLUMN
+AND
+    AND
+        DESTSRC Rank add_13
+        SRC Rank K
+    SRCSTACK Size < 6
+$win
+PILE ALL COLUMN Empty

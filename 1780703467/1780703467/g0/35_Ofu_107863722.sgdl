@@ -1,0 +1,33 @@
+Ofu
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 86 DEAL YUIBU
+YUIBU 2 FACE_HALF
+YUIBU 4 FACE_HALF
+YUIBU 0 FACE_HALF
+YUIBU 7 FACE_HALF
+YUIBU 2 FACE_HALF
+YUIBU 2 FACE_HALF
+YUIBU 1 FACE_HALF
+
+$moves
+MOVE YUIBU YUIBU
+SRC Rank K
+MOVE_STACK YUIBU YUIBU
+OR
+    AND
+        DESTSRC Rank ascending
+        DESTSRC Suit match_color
+    AND
+        SRCSTACK Suit match_color
+        SRCSTACK Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL YUIBU Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL YUIBU Empty

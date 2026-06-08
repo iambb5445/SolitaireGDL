@@ -1,0 +1,41 @@
+Oqi
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+ACO 5 FACE_ALL
+ACO 8 FACE_ALL
+ACO 7 FACE_ALL
+ACO 10 FACE_ALL
+ACO 0 FACE_ALL
+ACO 6 FACE_HALF
+ACO 8 FACE_HALF
+ACO 7 FACE_HALF
+ACO 0 FACE_HALF
+ACO 0 FACE_HALF
+
+COLUMN 1 FACE_LAST
+
+$moves
+MOVE {ACO, COLUMN} ACO
+AND
+    OR
+        DEST Rank K
+        DEST Rank 1
+    SRC Suit {DIAMONDS, SPADES}
+MOVE_STACK COLUMN COLUMN
+AND
+    AND
+        DESTSRC Suit alternate_color
+        SRCSTACK Rank add_13
+    OR
+        DEST Size > 1
+        DEST Suit {DIAMONDS, SPADES}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL ACO Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL ACO Empty

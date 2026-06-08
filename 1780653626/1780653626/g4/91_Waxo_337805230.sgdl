@@ -1,0 +1,35 @@
+Waxo
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 89 ROTATE 1 1 U
+SUTU 3 FACE_ALL
+SUTU 5 FACE_ALL
+SUTU 7 FACE_ALL
+
+$moves
+MOVE DRAW SUTU
+OR
+    AND
+        DEST Rank K
+        SRC Rank 1
+    SRC Suit {DIAMONDS, SPADES, HEARTS, CLUBS}
+MOVE SUTU SUTU
+OR
+    DEST Rank K
+    AND
+        DEST Suit {SPADES, CLUBS}
+        DEST Rank 1
+MOVE_STACK SUTU SUTU
+OR
+    SRC Rank 1
+    AND
+        SRCSTACK Rank equal
+        SRC Rank 1
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

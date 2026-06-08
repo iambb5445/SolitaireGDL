@@ -1,0 +1,25 @@
+Graiqiy
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 38 ROTATE 3 U 1
+FOUJU 0 FACE_HALF
+FOUJU 4 FACE_HALF
+FOUJU 10 FACE_LAST
+
+$moves
+MOVE_STACK FOUJU FOUJU
+OR
+    AND
+        SRC Rank K
+        DESTSRC Suit match_color
+    AND
+        DESTSRC Rank ascending
+        DEST Size < 5
+$win
+AND
+    AND
+        PILE ALL FOUJU Empty
+        PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

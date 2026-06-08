@@ -1,0 +1,42 @@
+Ihioq
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 78 ROTATE 3 U 2
+NIWU 1 FACE_LAST
+NIWU 7 FACE_LAST
+NIWU 6 FACE_LAST
+NIWU 2 FACE_LAST
+NIWU 3 FACE_LAST
+NIWU 7 FACE_LAST
+
+$moves
+MOVE NIWU NIWU
+OR
+    AND
+        DEST Suit {HEARTS, CLUBS, DIAMONDS}
+        AND
+            DEST Rank 1
+            DESTSRC Suit alternate_color
+    DESTSRC Suit alternate_color
+MOVE {DRAW, NIWU} NIWU
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK NIWU NIWU
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+$win
+OR
+    AND
+        PILE ALL NIWU Empty
+        PILE ALL NIWU Empty
+    AND
+        PILE ALL NIWU Empty
+        PILE ALL DRAW Empty

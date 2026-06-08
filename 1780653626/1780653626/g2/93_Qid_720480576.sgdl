@@ -1,0 +1,13 @@
+Qid
+$cards
+DECK 1 SPADES
+
+$initial
+XAME 5 FACE_ALL
+XAME 8 FACE_LAST
+
+$moves
+MOVE_STACK XAME XAME
+DESTSRC Suit match
+$win
+PILE ALL XAME Empty

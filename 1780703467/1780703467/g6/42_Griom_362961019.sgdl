@@ -1,0 +1,29 @@
+Griom
+$cards
+DECK 4 SPADES
+
+$initial
+COLUMN 9 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 10 FACE_ALL
+
+GEC 9 FACE_ALL
+GEC 10 FACE_HALF
+GEC 6 FACE_HALF
+GEC 3 FACE_HALF
+
+$moves
+MOVE {GEC, COLUMN} GEC
+OR
+    DESTSRC Suit match_color
+    DEST Rank K
+MOVE_STACK GEC COLUMN
+SRCSTACK Rank ascending
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    OR
+        PILE ALL GEC Empty
+        PILE ALL GEC Empty

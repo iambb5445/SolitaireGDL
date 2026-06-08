@@ -1,0 +1,25 @@
+Egu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 18 DEAL IVIT
+IVIT 0 FACE_LAST
+IVIT 5 FACE_LAST
+IVIT 3 FACE_LAST
+
+$moves
+MOVE IVIT IVIT
+OR
+    AND
+        DESTSRC Rank equal
+        DEST Suit {SPADES}
+    DESTSRC Rank add_13
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL IVIT Empty
+    AND
+        PILE ALL IVIT Empty
+        PILE ALL IVIT Empty

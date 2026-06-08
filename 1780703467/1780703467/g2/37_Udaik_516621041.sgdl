@@ -1,0 +1,48 @@
+Udaik
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 1 ROTATE 1 U 3
+UHO 0 FACE_ALL
+
+RAEGI 5 FACE_ALTERNATE_LAST
+
+GRINOG 9 FACE_LAST
+GRINOG 2 FACE_LAST
+GRINOG 3 FACE_ALTERNATE_LAST
+GRINOG 6 FACE_ALTERNATE_LAST
+
+$moves
+MOVE UHO UHO
+OR
+    SRC Suit {DIAMONDS, CLUBS, SPADES, HEARTS}
+    AND
+        DEST Empty
+        DEST Size == 2
+MOVE {UHO, RAEGI, DRAW, GRINOG} GRINOG
+OR
+    DEST Empty
+    AND
+        DEST Empty
+        DEST Rank K
+MOVE_STACK UHO RAEGI
+OR
+    AND
+        SRCSTACK Size > 2
+        DEST Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+    DESTSRC Rank equal
+MOVE_STACK GRINOG GRINOG
+AND
+    DEST Size >= 10
+    OR
+        DEST Empty
+        DESTSRC Suit alternate_color
+$win
+AND
+    AND
+        PILE ALL RAEGI Empty
+        PILE ALL RAEGI Empty
+    AND
+        PILE ALL UHO Empty
+        PILE ALL UHO Empty

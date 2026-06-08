@@ -1,0 +1,22 @@
+Zacog
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 11 ROTATE 3 U 1
+ESA 7 FACE_HALF
+ESA 8 FACE_LAST
+
+$moves
+MOVE DRAW ESA
+DEST Suit {SPADES, DIAMONDS, CLUBS, HEARTS}
+MOVE ESA ESA
+OR
+    AND
+        DEST Empty
+        DEST Suit {HEARTS, CLUBS, SPADES}
+    AND
+        DESTSRC Rank ascending
+        DEST Suit {SPADES, CLUBS, DIAMONDS, HEARTS}
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,21 @@
+Yec
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 98 ROTATE 3 U U
+COLUMN 6 FACE_LAST
+
+$moves
+MOVE {DRAW, COLUMN} COLUMN
+OR
+    AND
+        DEST Suit {CLUBS, SPADES, DIAMONDS}
+        SRC Rank K
+    AND
+        DEST Empty
+        DEST Empty
+$win
+OR
+    PILE ALL COLUMN Empty
+    PILE ALL DRAW Empty

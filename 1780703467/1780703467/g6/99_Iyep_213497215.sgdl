@@ -1,0 +1,26 @@
+Iyep
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 8 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 8 FACE_ALL
+COLUMN 4 FACE_ALL
+COLUMN 0 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        SRC Rank 1
+        DESTSRC Rank ascending
+    DEST Rank K
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        DESTSRC Rank descending
+        DESTSRC Suit match
+    DEST Empty
+$win
+PILE ALL COLUMN Empty

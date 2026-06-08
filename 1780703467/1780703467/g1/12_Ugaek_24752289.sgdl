@@ -1,0 +1,24 @@
+Ugaek
+$cards
+DECK 1 SPADES
+
+$initial
+SAENA 5 FACE_ALTERNATE_LAST
+SAENA 2 FACE_ALTERNATE_LAST
+SAENA 6 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK SAENA SAENA
+AND
+    AND
+        DESTSRC Rank add_14
+        SRCSTACK Rank add_13
+    AND
+        SRCSTACK Rank add_14
+        DEST Rank K
+$win
+AND
+    PILE ALL SAENA Empty
+    AND
+        PILE ALL SAENA Empty
+        PILE ALL SAENA Empty

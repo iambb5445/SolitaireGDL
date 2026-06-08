@@ -1,0 +1,20 @@
+Iri
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 6 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 1 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 4 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Rank 1
+        DEST Size < 3
+    DEST Empty
+$win
+PILE ALL COLUMN Empty

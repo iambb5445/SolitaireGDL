@@ -1,0 +1,28 @@
+Exi
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 41 DEAL ETU
+ETU 3 FACE_LAST
+ETU 3 FACE_LAST
+ETU 3 FACE_LAST
+ETU 2 FACE_ALL
+
+$moves
+MOVE ETU ETU
+OR
+    AND
+        DEST Suit {SPADES, DIAMONDS, CLUBS}
+        DESTSRC Suit match
+    AND
+        DEST Empty
+        SRC Suit {CLUBS}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL ETU Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL ETU Empty

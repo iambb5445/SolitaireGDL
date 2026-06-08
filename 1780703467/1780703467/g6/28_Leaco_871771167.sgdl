@@ -1,0 +1,18 @@
+Leaco
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 9 FACE_LAST
+COLUMN 4 FACE_LAST
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Rank K
+    AND
+        DEST Size <= 7
+        DESTSRC Suit match_color
+$win
+PILE ALL COLUMN Empty

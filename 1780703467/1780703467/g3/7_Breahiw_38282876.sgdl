@@ -1,0 +1,38 @@
+Breahiw
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 76 ROTATE 3 U 2
+XIY 10 FACE_LAST
+XIY 8 FACE_LAST
+XIY 10 FACE_LAST
+XIY 0 FACE_LAST
+
+$moves
+MOVE XIY XIY
+AND
+    OR
+        DEST Size > 4
+        DEST Rank 1
+    AND
+        DEST Suit {SPADES, HEARTS, CLUBS}
+        DESTSRC Suit match_color
+MOVE DRAW XIY
+AND
+    DEST Rank 1
+    OR
+        DESTSRC Rank add_14
+        DEST Size < 3
+MOVE_STACK XIY XIY
+AND
+    AND
+        DEST Rank K
+        SRCSTACK Rank add_13
+    DEST Suit {HEARTS, CLUBS}
+$win
+AND
+    AND
+        PILE ALL XIY Empty
+        PILE ALL DRAW Empty
+    PILE ALL XIY Empty

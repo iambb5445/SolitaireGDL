@@ -1,0 +1,22 @@
+Nuip
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 4 FACE_HALF
+
+NUK 0 FACE_ALL
+NUK 1 FACE_ALL
+NUK 8 FACE_ALL
+
+$moves
+MOVE NUK COLUMN
+DEST Rank K
+MOVE_STACK COLUMN COLUMN
+DESTSRC Suit match
+$win
+AND
+    PILE ALL NUK Empty
+    OR
+        PILE ALL NUK Empty
+        PILE ALL COLUMN Empty

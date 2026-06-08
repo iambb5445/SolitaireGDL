@@ -1,0 +1,34 @@
+Usu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 9 FACE_HALF
+COLUMN 3 FACE_HALF
+
+UHEF 10 FACE_LAST
+UHEF 4 FACE_LAST
+
+$moves
+MOVE COLUMN UHEF
+AND
+    AND
+        DEST Empty
+        SRC Suit {HEARTS, DIAMONDS, SPADES}
+    OR
+        DEST Suit {HEARTS}
+        DEST Suit {CLUBS}
+MOVE {COLUMN, UHEF} COLUMN
+DESTSRC Rank add_14
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Suit {SPADES}
+    AND
+        DESTSRC Rank ascending
+        DEST Suit {HEARTS, CLUBS, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL UHEF Empty
+        PILE ALL UHEF Empty
+    PILE ALL UHEF Empty

@@ -1,0 +1,22 @@
+Idi
+$cards
+DECK 1 SPADES
+
+$initial
+BOXI 2 FACE_LAST
+BOXI 9 FACE_ALTERNATE_LAST
+BOXI 2 FACE_ALTERNATE_LAST
+
+$moves
+MOVE BOXI BOXI
+DESTSRC Suit match
+MOVE_STACK BOXI BOXI
+AND
+    OR
+        DESTSRC Rank descending
+        SRCSTACK Suit match
+    OR
+        SRC Suit {HEARTS, SPADES, DIAMONDS}
+        SRCSTACK Suit match_color
+$win
+PILE ALL BOXI Empty

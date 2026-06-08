@@ -1,0 +1,38 @@
+Uka
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+COLUMN 8 FACE_ALTERNATE_LAST
+COLUMN 0 FACE_ALL
+COLUMN 2 FACE_ALL
+
+AWOUQ 8 FACE_LAST
+AWOUQ 8 FACE_HALF
+
+CIL 7 FACE_LAST
+CIL 2 FACE_LAST
+CIL 5 FACE_LAST
+CIL 10 FACE_LAST
+
+OFE 2 FACE_LAST
+
+$moves
+MOVE AWOUQ CIL
+OR
+    DESTSRC Rank equal
+    AND
+        DEST Size < 6
+        DEST Empty
+MOVE_STACK COLUMN CIL
+OR
+    AND
+        SRCSTACK Rank equal
+        SRCSTACK Rank ascending
+    AND
+        DEST Rank 1
+        DEST Size >= 3
+MOVE_STACK AWOUQ AWOUQ
+SRCSTACK Rank ascending
+$win
+PILE ALL CIL Empty

@@ -1,0 +1,29 @@
+Cuivo
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 66 ROTATE 1 U 1
+COLUMN 8 FACE_LAST
+COLUMN 4 FACE_LAST
+COLUMN 0 FACE_LAST
+COLUMN 8 FACE_LAST
+COLUMN 2 FACE_LAST
+COLUMN 8 FACE_LAST
+COLUMN 8 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DESTSRC Rank descending
+        SRC Suit {HEARTS, SPADES, DIAMONDS}
+    AND
+        DEST Size >= 8
+        SRC Suit {CLUBS}
+$win
+OR
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

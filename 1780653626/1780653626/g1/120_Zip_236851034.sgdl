@@ -1,0 +1,22 @@
+Zip
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 36 ROTATE 1 U 2
+COLUMN 3 FACE_LAST
+COLUMN 4 FACE_LAST
+COLUMN 0 FACE_LAST
+COLUMN 9 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DESTSRC Suit match_color
+    SRC Rank K
+$win
+AND
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

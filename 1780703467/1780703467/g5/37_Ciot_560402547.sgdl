@@ -1,0 +1,25 @@
+Ciot
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 101 DEAL EROUN
+EROUN 3 FACE_ALTERNATE_LAST
+
+$moves
+MOVE EROUN EROUN
+OR
+    SRC Rank K
+    AND
+        DESTSRC Suit match
+        DEST Empty
+MOVE_STACK EROUN EROUN
+DEST Empty
+$win
+OR
+    AND
+        PILE ALL EROUN Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL EROUN Empty
+        PILE ALL EROUN Empty

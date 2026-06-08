@@ -1,0 +1,22 @@
+Atu
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+NOBA 9 FACE_LAST
+NOBA 6 FACE_LAST
+NOBA 3 FACE_LAST
+NOBA 6 FACE_LAST
+NOBA 2 FACE_LAST
+
+$moves
+MOVE NOBA NOBA
+DESTSRC Suit alternate_color
+$win
+OR
+    AND
+        PILE ALL NOBA Empty
+        PILE ALL NOBA Empty
+    AND
+        PILE ALL NOBA Empty
+        PILE ALL NOBA Empty

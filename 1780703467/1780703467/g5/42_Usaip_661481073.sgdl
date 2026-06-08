@@ -1,0 +1,23 @@
+Usaip
+$cards
+DECK 1 SPADES
+
+$initial
+IRIOY 1 FACE_ALL
+IRIOY 5 FACE_ALL
+IRIOY 6 FACE_ALL
+IRIOY 1 FACE_ALL
+
+$moves
+MOVE IRIOY IRIOY
+DEST Suit {CLUBS}
+MOVE_STACK IRIOY IRIOY
+DEST Rank 1
+$win
+OR
+    AND
+        PILE ALL IRIOY Empty
+        PILE ALL IRIOY Empty
+    AND
+        PILE ALL IRIOY Empty
+        PILE ALL IRIOY Empty

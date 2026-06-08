@@ -1,0 +1,32 @@
+Asad
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 42 ROTATE 3 U 2
+DIOGAM 9 FACE_HALF
+DIOGAM 1 FACE_ALL
+
+$moves
+MOVE {DRAW, DIOGAM} DIOGAM
+OR
+    AND
+        DEST Rank K
+        SRC Suit {CLUBS, SPADES}
+    AND
+        DEST Size >= 5
+        DESTSRC Rank equal
+MOVE_STACK DIOGAM DIOGAM
+OR
+    AND
+        SRCSTACK Rank ascending
+        DEST Size <= 9
+    AND
+        SRCSTACK Size > 8
+        DEST Rank 1
+$win
+AND
+    PILE ALL DIOGAM Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

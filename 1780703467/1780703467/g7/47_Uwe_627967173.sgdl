@@ -1,0 +1,31 @@
+Uwe
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 25 DEAL CIW
+CIW 8 FACE_LAST
+CIW 9 FACE_ALL
+CIW 10 FACE_ALL
+
+$moves
+MOVE CIW CIW
+OR
+    SRC Rank K
+    DESTSRC Suit alternate_color
+MOVE_STACK CIW CIW
+OR
+    AND
+        SRC Rank 1
+        SRC Rank 1
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank equal
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL CIW Empty
+    OR
+        PILE ALL CIW Empty
+        PILE ALL DRAW Empty

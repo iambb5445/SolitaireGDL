@@ -1,0 +1,28 @@
+Fuil
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 78 DEAL TUSOB
+TUSOB 6 FACE_LAST
+TUSOB 9 FACE_LAST
+TUSOB 7 FACE_ALTERNATE_LAST
+TUSOB 4 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK TUSOB TUSOB
+OR
+    AND
+        SRC Suit {HEARTS, DIAMONDS}
+        DEST Rank K
+    AND
+        SRCSTACK Rank ascending
+        SRCSTACK Size == 3
+DRAW
+PILE ALL TUSOB Size > 0
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL TUSOB Empty
+    PILE ALL DRAW Empty

@@ -1,0 +1,40 @@
+Draeheg
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 56 DEAL SAIXU
+SAIXU 2 FACE_HALF
+SAIXU 9 FACE_LAST
+SAIXU 2 FACE_LAST
+SAIXU 8 FACE_LAST
+SAIXU 10 FACE_LAST
+SAIXU 0 FACE_LAST
+SAIXU 1 FACE_LAST
+SAIXU 8 FACE_LAST
+SAIXU 8 FACE_LAST
+SAIXU 0 FACE_LAST
+
+$moves
+MOVE SAIXU SAIXU
+OR
+    AND
+        DEST Rank K
+        DESTSRC Rank add_14
+    DEST Size > 0
+MOVE_STACK SAIXU SAIXU
+AND
+    OR
+        SRC Rank 1
+        SRCSTACK Size < 9
+    AND
+        SRCSTACK Size <= 8
+        SRC Suit {SPADES}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL SAIXU Empty
+    AND
+        PILE ALL SAIXU Empty
+        PILE ALL DRAW Empty

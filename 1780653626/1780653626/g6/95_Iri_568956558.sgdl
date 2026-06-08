@@ -1,0 +1,27 @@
+Iri
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 7 FACE_LAST
+COLUMN 4 FACE_LAST
+COLUMN 7 FACE_LAST
+COLUMN 5 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+AND
+    OR
+        SRCSTACK Size == 1
+        DEST Empty
+    OR
+        DESTSRC Rank equal
+        DEST Suit {CLUBS, SPADES, HEARTS, DIAMONDS}
+$win
+AND
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

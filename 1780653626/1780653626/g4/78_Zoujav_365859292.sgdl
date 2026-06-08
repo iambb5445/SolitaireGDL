@@ -1,0 +1,21 @@
+Zoujav
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 44 DEAL CRAQ
+CRAQ 8 FACE_HALF
+
+$moves
+MOVE CRAQ CRAQ
+DESTSRC Suit match
+MOVE_STACK CRAQ CRAQ
+OR
+    AND
+        DEST Empty
+        DEST Empty
+    DEST Size == 10
+DRAW
+PILE ALL CRAQ Empty
+$win
+PILE ALL DRAW Empty

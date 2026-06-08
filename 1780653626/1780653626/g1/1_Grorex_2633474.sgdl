@@ -1,0 +1,44 @@
+Grorex
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 91 ROTATE 3 U 2
+PRIQOX 3 FACE_HALF
+PRIQOX 3 FACE_HALF
+PRIQOX 7 FACE_HALF
+PRIQOX 0 FACE_HALF
+
+$moves
+MOVE PRIQOX PRIQOX
+OR
+    AND
+        DEST Size >= 0
+        SRC Rank K
+    DESTSRC Suit alternate_color
+MOVE {DRAW, PRIQOX} PRIQOX
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK PRIQOX PRIQOX
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK PRIQOX PRIQOX
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL PRIQOX Empty
+        PILE ALL PRIQOX Empty
+    AND
+        PILE ALL PRIQOX Empty
+        PILE ALL DRAW Empty

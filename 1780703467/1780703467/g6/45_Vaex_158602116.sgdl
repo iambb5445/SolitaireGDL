@@ -1,0 +1,28 @@
+Vaex
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+EVE 4 FACE_HALF
+EVE 6 FACE_HALF
+EVE 3 FACE_HALF
+EVE 0 FACE_HALF
+EVE 6 FACE_HALF
+EVE 5 FACE_HALF
+EVE 2 FACE_HALF
+
+$moves
+MOVE EVE EVE
+OR
+    AND
+        DESTSRC Rank add_13
+        DESTSRC Rank ascending
+    SRC Rank K
+MOVE_STACK EVE EVE
+OR
+    AND
+        SRCSTACK Suit match
+        DEST Rank K
+    SRC Suit {DIAMONDS, HEARTS}
+$win
+PILE ALL EVE Empty

@@ -1,0 +1,23 @@
+Hul
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 94 DEAL OYI
+OYI 1 FACE_HALF
+OYI 2 FACE_HALF
+OYI 7 FACE_HALF
+
+$moves
+MOVE OYI OYI
+DESTSRC Suit match_color
+MOVE_STACK OYI OYI
+SRCSTACK Size < 6
+DRAW
+PILE ANY DRAW Empty
+$win
+OR
+    PILE ALL OYI Empty
+    AND
+        PILE ALL OYI Empty
+        PILE ALL DRAW Empty

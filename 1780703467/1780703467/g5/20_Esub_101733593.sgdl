@@ -1,0 +1,27 @@
+Esub
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 50 DEAL AZI
+AZI 2 FACE_ALL
+
+$moves
+MOVE AZI AZI
+AND
+    DEST Suit {CLUBS, HEARTS, SPADES}
+    OR
+        DESTSRC Suit match
+        SRC Rank 1
+MOVE_STACK AZI AZI
+OR
+    AND
+        SRCSTACK Size < 2
+        SRCSTACK Suit match
+    AND
+        DESTSRC Suit alternate_color
+        DEST Size < 9
+DRAW
+PILE ALL DRAW Size > 0
+$win
+PILE ALL DRAW Empty

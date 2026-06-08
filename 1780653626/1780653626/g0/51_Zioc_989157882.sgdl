@@ -1,0 +1,28 @@
+Zioc
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 81 DEAL GUZOB
+GUZOB 1 FACE_ALL
+GUZOB 8 FACE_ALL
+GUZOB 5 FACE_ALL
+GUZOB 9 FACE_ALL
+
+$moves
+MOVE GUZOB GUZOB
+AND
+    OR
+        DEST Rank 1
+        DESTSRC Rank add_14
+    SRC Rank K
+MOVE_STACK GUZOB GUZOB
+DEST Size > 1
+$win
+AND
+    OR
+        PILE ALL GUZOB Empty
+        PILE ALL GUZOB Empty
+    AND
+        PILE ALL GUZOB Empty
+        PILE ALL GUZOB Empty

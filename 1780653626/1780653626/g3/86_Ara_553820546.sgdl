@@ -1,0 +1,29 @@
+Ara
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 83 DEAL COLUMN
+COLUMN 9 FACE_ALL
+COLUMN 8 FACE_ALL
+COLUMN 0 FACE_ALL
+COLUMN 1 FACE_ALL
+COLUMN 3 FACE_ALL
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Size >= 9
+    AND
+        SRC Rank 1
+        DEST Rank 1
+DRAW
+PILE ANY DRAW Empty
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

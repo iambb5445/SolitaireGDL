@@ -1,0 +1,22 @@
+Olouv
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 47 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    DESTSRC Suit match_color
+    DEST Rank 1
+MOVE_STACK COLUMN COLUMN
+DEST Size < 2
+$win
+AND
+    PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

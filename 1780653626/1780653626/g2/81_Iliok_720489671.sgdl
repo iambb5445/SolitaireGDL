@@ -1,0 +1,22 @@
+Iliok
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+SEDEX 10 FACE_HALF
+SEDEX 5 FACE_HALF
+SEDEX 7 FACE_HALF
+
+YAEYIV 4 FACE_HALF
+
+$moves
+MOVE_STACK YAEYIV SEDEX
+DEST Empty
+$win
+OR
+    AND
+        PILE ALL SEDEX Empty
+        PILE ALL YAEYIV Empty
+    AND
+        PILE ALL YAEYIV Empty
+        PILE ALL SEDEX Empty

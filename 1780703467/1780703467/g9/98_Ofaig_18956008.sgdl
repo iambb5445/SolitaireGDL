@@ -1,0 +1,29 @@
+Ofaig
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 86 ROTATE 3 U 2
+APO 3 FACE_HALF
+APO 5 FACE_HALF
+APO 10 FACE_ALL
+
+$moves
+MOVE APO APO
+DESTSRC Suit match
+MOVE DRAW APO
+AND
+    DEST Empty
+    OR
+        DEST Suit {CLUBS, HEARTS}
+        SRC Rank 1
+MOVE_STACK APO APO
+OR
+    AND
+        SRC Suit {DIAMONDS}
+        DESTSRC Suit match_color
+    AND
+        DESTSRC Suit match
+        DEST Suit {CLUBS, SPADES, DIAMONDS}
+$win
+PILE ALL APO Empty

@@ -1,0 +1,21 @@
+Triog
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+IBOUD 6 FACE_HALF
+IBOUD 10 FACE_HALF
+IBOUD 1 FACE_LAST
+IBOUD 9 FACE_LAST
+
+$moves
+MOVE IBOUD IBOUD
+SRC Suit {SPADES, DIAMONDS, CLUBS, HEARTS}
+$win
+OR
+    AND
+        PILE ALL IBOUD Empty
+        PILE ALL IBOUD Empty
+    AND
+        PILE ALL IBOUD Empty
+        PILE ALL IBOUD Empty

@@ -1,0 +1,36 @@
+Iqe
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 35 ROTATE 1 1 U
+ESA 3 FACE_HALF
+ESA 9 FACE_HALF
+ESA 5 FACE_HALF
+ESA 0 FACE_HALF
+
+$moves
+MOVE DRAW ESA
+AND
+    OR
+        DEST Size >= 3
+        DEST Suit {HEARTS}
+    OR
+        SRC Suit {CLUBS}
+        DESTSRC Suit alternate_color
+MOVE ESA ESA
+OR
+    AND
+        DEST Size == 5
+        DESTSRC Suit alternate_color
+    DEST Empty
+MOVE_STACK ESA ESA
+DESTSRC Suit match_color
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL ESA Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

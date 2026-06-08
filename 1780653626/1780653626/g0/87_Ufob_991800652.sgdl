@@ -1,0 +1,48 @@
+Ufob
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+MAYA 7 FACE_LAST
+MAYA 8 FACE_LAST
+MAYA 0 FACE_LAST
+MAYA 1 FACE_LAST
+MAYA 7 FACE_LAST
+
+COLUMN 10 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 9 FACE_ALL
+COLUMN 8 FACE_ALL
+COLUMN 0 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        SRC Rank 1
+        DEST Suit {HEARTS}
+    AND
+        DEST Size > 8
+        SRC Rank 1
+MOVE MAYA MAYA
+OR
+    AND
+        DEST Size <= 3
+        DESTSRC Suit match_color
+    DESTSRC Suit match_color
+MOVE_STACK COLUMN MAYA
+DESTSRC Suit match
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRCSTACK Rank add_13
+        SRC Rank K
+    DEST Rank K
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL MAYA Empty
+    AND
+        PILE ALL MAYA Empty
+        PILE ALL MAYA Empty

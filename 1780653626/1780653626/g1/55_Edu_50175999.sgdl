@@ -1,0 +1,34 @@
+Edu
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 91 DEAL POUXE
+POUXE 6 FACE_ALL
+POUXE 7 FACE_HALF
+
+$moves
+MOVE POUXE POUXE
+OR
+    AND
+        DEST Empty
+        DESTSRC Rank descending
+    AND
+        DESTSRC Rank add_13
+        DEST Suit {DIAMONDS, CLUBS, SPADES}
+MOVE_STACK POUXE POUXE
+AND
+    AND
+        SRC Rank K
+        SRCSTACK Size <= 3
+    OR
+        SRCSTACK Size >= 6
+        DESTSRC Rank add_13
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL POUXE Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

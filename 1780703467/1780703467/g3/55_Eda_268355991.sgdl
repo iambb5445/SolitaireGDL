@@ -1,0 +1,43 @@
+Eda
+$cards
+DECK 1 SPADES
+
+$initial
+MAR 3 FACE_LAST
+MAR 4 FACE_LAST
+
+COLUMN 4 FACE_HALF
+
+OPU 2 FACE_ALTERNATE_LAST
+
+$moves
+MOVE OPU OPU
+AND
+    OR
+        DESTSRC Suit match
+        DEST Rank 1
+    AND
+        DESTSRC Suit match
+        SRC Suit {CLUBS, SPADES, HEARTS}
+MOVE {OPU, MAR} MAR
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Empty
+    AND
+        DEST Suit {DIAMONDS, HEARTS, SPADES, CLUBS}
+        DEST Rank K
+MOVE_STACK COLUMN MAR
+OR
+    AND
+        SRCSTACK Size >= 5
+        DEST Suit {CLUBS, HEARTS}
+    AND
+        SRCSTACK Size > 3
+        SRC Rank 1
+MOVE_STACK OPU {MAR, OPU, COLUMN}
+OR
+    SRCSTACK Suit match_color
+    SRCSTACK Suit match_color
+$win
+PILE ALL OPU Empty

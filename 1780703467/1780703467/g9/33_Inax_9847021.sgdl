@@ -1,0 +1,26 @@
+Inax
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 91 DEAL COLUMN
+WOUPOF 9 FACE_ALL
+WOUPOF 4 FACE_HALF
+
+$moves
+MOVE WOUPOF WOUPOF
+OR
+    AND
+        AND
+            DESTSRC Suit match_color
+            SRC Suit {DIAMONDS}
+        SRC Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+    AND
+        SRC Suit {CLUBS, SPADES, HEARTS, DIAMONDS}
+        DEST Size >= 6
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL WOUPOF Empty

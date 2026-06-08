@@ -1,0 +1,26 @@
+Creaf
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 3 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 9 FACE_LAST
+
+STEAPA 3 FACE_LAST
+STEAPA 8 FACE_LAST
+STEAPA 1 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK STEAPA COLUMN
+AND
+    DEST Empty
+    OR
+        SRCSTACK Suit alternate_color
+        SRC Rank 1
+$win
+AND
+    PILE ALL COLUMN Empty
+    AND
+        PILE ALL STEAPA Empty
+        PILE ALL COLUMN Empty

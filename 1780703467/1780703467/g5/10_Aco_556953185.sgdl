@@ -1,0 +1,33 @@
+Aco
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+RAID 8 FACE_ALTERNATE_LAST
+RAID 3 FACE_ALTERNATE_LAST
+RAID 4 FACE_ALTERNATE_LAST
+RAID 3 FACE_ALTERNATE_LAST
+RAID 8 FACE_ALTERNATE_LAST
+RAID 0 FACE_ALTERNATE_LAST
+
+$moves
+MOVE RAID RAID
+AND
+    OR
+        DESTSRC Suit match_color
+        SRC Rank 1
+    OR
+        DEST Suit {DIAMONDS}
+        DESTSRC Suit match_color
+MOVE_STACK RAID RAID
+OR
+    AND
+        SRCSTACK Rank add_14
+        SRCSTACK Rank add_13
+    AND
+        DEST Rank K
+        DESTSRC Rank equal
+$win
+OR
+    PILE ALL RAID Empty
+    PILE ALL RAID Empty

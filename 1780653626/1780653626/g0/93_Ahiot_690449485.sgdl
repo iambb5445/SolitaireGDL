@@ -1,0 +1,37 @@
+Ahiot
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 65 DEAL PRUXE
+PRUXE 7 FACE_LAST
+PRUXE 2 FACE_LAST
+PRUXE 0 FACE_LAST
+PRUXE 3 FACE_HALF
+PRUXE 7 FACE_HALF
+PRUXE 7 FACE_HALF
+PRUXE 5 FACE_HALF
+PRUXE 0 FACE_HALF
+PRUXE 8 FACE_HALF
+
+$moves
+MOVE PRUXE PRUXE
+AND
+    AND
+        DEST Empty
+        DESTSRC Rank descending
+    OR
+        DEST Rank 1
+        DESTSRC Rank descending
+MOVE_STACK PRUXE PRUXE
+AND
+    DESTSRC Suit match
+    AND
+        DESTSRC Suit match
+        SRCSTACK Rank add_13
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL PRUXE Empty
+    PILE ALL PRUXE Empty

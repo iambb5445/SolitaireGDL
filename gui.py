@@ -176,22 +176,40 @@ class RectGE(GraphicElement):
         super().__init__(pos, tex)
 
 class TextGE(GraphicElement):
+    _font_cache: dict[int, pygame.font.Font] = {}
+
     def __init__(self, pos: Vec2D, text: str, text_color: Color, font_size: int, rotated:bool=False) -> None:
-        font = pygame.font.SysFont('Corbel',font_size)
+        font = TextGE._get_font(font_size)
         tex = font.render(text, False, text_color)
         if rotated:
             tex = pygame.transform.rotate(tex, 90)
         super().__init__(pos, tex)
 
     @staticmethod
+    def _get_font(font_size: int) -> pygame.font.Font:
+        if font_size not in TextGE._font_cache:
+            TextGE._font_cache[font_size] = pygame.font.SysFont('Corbel', font_size)
+        return TextGE._font_cache[font_size]
+
+    @staticmethod
+    def _fits(text: str, font_size: int, available_space: Vec2D, rotated: bool) -> bool:
+        font = TextGE._get_font(font_size)
+        size = font.size(text)
+        w, h = (size[1], size[0]) if rotated else size
+        return w <= available_space.x and h <= available_space.y
+
+    @staticmethod
     def biggest_font(available_space: Vec2D, text: str, rotated: bool=False) -> int:
-        font_size = 1
-        for font_size in range(1, 500):
-            text_ge = TextGE(Vec2D(0, 0), text, (0, 0, 0), font_size, rotated)
-            text_size = text_ge.tex.get_size()
-            if text_size[0] > available_space.x or text_size[1] > available_space.y:
-                return font_size - 1
-        return 500 # max reached
+        lo, hi = 1, 499
+        if not TextGE._fits(text, lo, available_space, rotated):
+            return 0
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if TextGE._fits(text, mid, available_space, rotated):
+                lo = mid
+            else:
+                hi = mid - 1
+        return lo
 
 class LabelGE(RectGE):
     def __init__(self, pos: Vec2D, size: Vec2D, color: Color, text: str, text_color: Color = (0, 0, 0), font_size: int|None=None, rotated:bool=False) -> None:

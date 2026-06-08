@@ -1,0 +1,25 @@
+Vaiyiw
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 9 DEAL FREAMA
+FREAMA 10 FACE_ALL
+FREAMA 5 FACE_ALL
+FREAMA 2 FACE_HALF
+
+$moves
+MOVE FREAMA FREAMA
+AND
+    AND
+        DESTSRC Suit alternate_color
+        SRC Suit {HEARTS, DIAMONDS, CLUBS, SPADES}
+    OR
+        DESTSRC Rank add_14
+        DEST Size < 9
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL FREAMA Empty
+        PILE ALL FREAMA Empty

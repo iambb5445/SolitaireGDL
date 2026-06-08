@@ -1,0 +1,20 @@
+Xaebo
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 5 FACE_LAST
+COLUMN 6 FACE_LAST
+COLUMN 2 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+DEST Empty
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DEST Size <= 3
+        DEST Suit {HEARTS, SPADES, CLUBS}
+    SRC Rank K
+$win
+PILE ALL COLUMN Empty

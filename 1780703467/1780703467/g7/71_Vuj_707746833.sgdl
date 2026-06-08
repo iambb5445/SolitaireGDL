@@ -1,0 +1,22 @@
+Vuj
+$cards
+DECK 4 {SPADES, HEARTS}
+
+$initial
+DRAW 93 ROTATE 1 U 3
+RAVUS 8 FACE_ALL
+RAVUS 3 FACE_ALL
+
+$moves
+MOVE_STACK RAVUS RAVUS
+OR
+    AND
+        SRCSTACK Suit alternate_color
+        SRCSTACK Size <= 3
+    AND
+        DESTSRC Rank equal
+        DEST Suit {HEARTS, CLUBS, SPADES, DIAMONDS}
+$win
+OR
+    PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

@@ -1,0 +1,18 @@
+Trum
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 0 FACE_ALL
+COLUMN 7 FACE_LAST
+COLUMN 6 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    DEST Empty
+    OR
+        SRC Suit {HEARTS, DIAMONDS, CLUBS}
+        DEST Rank 1
+$win
+PILE ALL COLUMN Empty

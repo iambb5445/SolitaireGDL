@@ -1,0 +1,38 @@
+Dim
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 9 FACE_LAST
+COLUMN 0 FACE_LAST
+COLUMN 1 FACE_ALL
+
+DRIOJ 2 FACE_ALL
+DRIOJ 5 FACE_ALL
+
+UYE 5 FACE_ALL
+UYE 4 FACE_ALL
+
+$moves
+MOVE {COLUMN, UYE} COLUMN
+AND
+    OR
+        DESTSRC Rank descending
+        DEST Rank 1
+    DEST Empty
+MOVE COLUMN DRIOJ
+OR
+    AND
+        DEST Empty
+        DESTSRC Suit match
+    DESTSRC Rank descending
+MOVE_STACK DRIOJ UYE
+DEST Empty
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRIOJ Empty
+    AND
+        PILE ALL UYE Empty
+        PILE ALL DRIOJ Empty

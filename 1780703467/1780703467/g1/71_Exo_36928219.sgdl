@@ -1,0 +1,28 @@
+Exo
+$cards
+DECK 1 SPADES
+
+$initial
+XIVE 5 FACE_HALF
+XIVE 6 FACE_HALF
+XIVE 0 FACE_HALF
+XIVE 1 FACE_HALF
+XIVE 1 FACE_HALF
+
+$moves
+MOVE XIVE XIVE
+AND
+    OR
+        DESTSRC Rank add_14
+        DEST Rank 1
+    AND
+        DESTSRC Suit alternate_color
+        SRC Suit {SPADES}
+MOVE_STACK XIVE XIVE
+DEST Empty
+$win
+OR
+    PILE ALL XIVE Empty
+    AND
+        PILE ALL XIVE Empty
+        PILE ALL XIVE Empty

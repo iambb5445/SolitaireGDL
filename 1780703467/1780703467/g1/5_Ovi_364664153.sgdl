@@ -1,0 +1,22 @@
+Ovi
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 98 ROTATE 3 U 2
+OHA 4 FACE_LAST
+OHA 2 FACE_ALL
+
+$moves
+MOVE DRAW OHA
+OR
+    AND
+        DEST Empty
+        DEST Empty
+    DESTSRC Suit match_color
+MOVE_STACK OHA OHA
+OR
+    DEST Size > 1
+    SRCSTACK Rank add_13
+$win
+PILE ALL OHA Empty

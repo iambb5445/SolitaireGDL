@@ -1,0 +1,28 @@
+Gead
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 12 DEAL ORA
+ORA 8 FACE_ALTERNATE_LAST
+ORA 6 FACE_ALTERNATE_LAST
+
+$moves
+MOVE ORA ORA
+AND
+    DESTSRC Rank add_14
+    AND
+        DEST Size == 1
+        DEST Size < 6
+MOVE_STACK ORA ORA
+OR
+    AND
+        DEST Rank 1
+        DESTSRC Suit alternate_color
+    AND
+        DEST Size < 3
+        SRCSTACK Rank descending
+DRAW
+PILE ALL ORA Empty
+$win
+PILE ALL ORA Empty

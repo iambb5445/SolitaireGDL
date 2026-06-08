@@ -1,0 +1,37 @@
+Xaeza
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+UWAIN 3 FACE_HALF
+
+ZIOD 2 FACE_HALF
+ZIOD 6 FACE_HALF
+ZIOD 7 FACE_HALF
+ZIOD 6 FACE_HALF
+ZIOD 5 FACE_LAST
+ZIOD 2 FACE_LAST
+ZIOD 0 FACE_LAST
+ZIOD 10 FACE_LAST
+ZIOD 10 FACE_LAST
+ZIOD 1 FACE_LAST
+
+$moves
+MOVE {ZIOD, UWAIN} UWAIN
+DESTSRC Suit alternate_color
+MOVE UWAIN ZIOD
+OR
+    AND
+        DESTSRC Rank descending
+        DESTSRC Rank equal
+    AND
+        DESTSRC Rank add_13
+        DESTSRC Rank add_14
+$win
+OR
+    AND
+        PILE ALL ZIOD Empty
+        PILE ALL UWAIN Empty
+    AND
+        PILE ALL ZIOD Empty
+        PILE ALL UWAIN Empty

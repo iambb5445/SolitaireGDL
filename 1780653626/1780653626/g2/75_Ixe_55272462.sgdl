@@ -1,0 +1,13 @@
+Ixe
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 99 ROTATE 1 U 2
+ITA 5 FACE_ALL
+
+$moves
+MOVE ITA ITA
+DESTSRC Rank add_14
+$win
+PILE ALL DRAW Empty

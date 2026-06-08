@@ -1,0 +1,31 @@
+Cohi
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 100 ROTATE 3 U U
+COLUMN 4 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        DESTSRC Rank ascending
+        DESTSRC Rank add_13
+    DEST Empty
+MOVE DRAW COLUMN
+AND
+    OR
+        DESTSRC Rank add_14
+        DEST Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    AND
+        DEST Suit {SPADES, HEARTS, CLUBS}
+        DEST Empty
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty

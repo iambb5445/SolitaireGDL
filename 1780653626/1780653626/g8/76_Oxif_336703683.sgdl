@@ -1,0 +1,30 @@
+Oxif
+$cards
+DECK 1 SPADES
+
+$initial
+GOUQ 1 FACE_LAST
+GOUQ 3 FACE_HALF
+GOUQ 4 FACE_HALF
+
+ZON 5 FACE_ALTERNATE_LAST
+
+$moves
+MOVE {GOUQ, ZON} GOUQ
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank ascending
+    AND
+        DEST Suit {DIAMONDS, CLUBS}
+        DEST Empty
+MOVE ZON ZON
+DEST Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL GOUQ Empty
+        PILE ALL ZON Empty
+    AND
+        PILE ALL ZON Empty
+        PILE ALL ZON Empty

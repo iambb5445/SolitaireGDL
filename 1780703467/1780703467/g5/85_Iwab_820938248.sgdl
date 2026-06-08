@@ -1,0 +1,28 @@
+Iwab
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 89 DEAL COLUMN
+COLUMN 3 FACE_HALF
+COLUMN 8 FACE_HALF
+COLUMN 3 FACE_HALF
+COLUMN 1 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        SRC Suit {DIAMONDS, SPADES}
+        DEST Suit {SPADES}
+    AND
+        DEST Suit {HEARTS, CLUBS, DIAMONDS, SPADES}
+        DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

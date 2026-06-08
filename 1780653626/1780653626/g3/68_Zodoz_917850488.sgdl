@@ -1,0 +1,30 @@
+Zodoz
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 26 ROTATE 1 U 2
+COLUMN 5 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 10 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        SRC Suit {HEARTS, DIAMONDS, CLUBS, SPADES}
+    DESTSRC Suit alternate_color
+MOVE DRAW COLUMN
+DEST Empty
+MOVE_STACK COLUMN COLUMN
+DEST Size < 5
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

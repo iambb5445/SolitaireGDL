@@ -1,0 +1,21 @@
+Ziw
+$cards
+DECK 1 SPADES
+
+$initial
+AXU 8 FACE_LAST
+AXU 5 FACE_LAST
+
+$moves
+MOVE AXU AXU
+DESTSRC Rank ascending
+MOVE_STACK AXU AXU
+DESTSRC Rank equal
+$win
+OR
+    AND
+        PILE ALL AXU Empty
+        PILE ALL AXU Empty
+    AND
+        PILE ALL AXU Empty
+        PILE ALL AXU Empty

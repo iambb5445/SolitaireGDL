@@ -1,0 +1,24 @@
+Haej
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 13 ROTATE 3 U U
+COLUMN 4 FACE_ALTERNATE_LAST
+COLUMN 9 FACE_ALTERNATE_LAST
+
+$moves
+MOVE {COLUMN, DRAW} COLUMN
+OR
+    AND
+        DEST Suit {SPADES}
+        DEST Empty
+    DEST Size < 1
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DEST Empty
+        DEST Size > 9
+    DEST Suit {HEARTS}
+$win
+PILE ALL COLUMN Empty

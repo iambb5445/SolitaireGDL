@@ -1,0 +1,15 @@
+Peag
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 49 ROTATE 3 U 1
+BODUH 3 FACE_ALL
+
+$moves
+MOVE BODUH BODUH
+DESTSRC Suit alternate_color
+$win
+OR
+    PILE ALL DRAW Empty
+    PILE ALL BODUH Empty

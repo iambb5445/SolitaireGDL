@@ -1,0 +1,29 @@
+Ema
+$cards
+DECK 1 SPADES
+
+$initial
+DRAW 13 DEAL GUIN
+GUIN 0 FACE_ALL
+
+$moves
+MOVE GUIN GUIN
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Rank 1
+    AND
+        SRC Rank 1
+        DEST Size > 2
+MOVE_STACK GUIN GUIN
+OR
+    AND
+        SRCSTACK Size > 1
+        SRCSTACK Size <= 6
+    AND
+        SRCSTACK Rank add_14
+        SRCSTACK Suit alternate_color
+DRAW
+PILE ANY GUIN Empty
+$win
+PILE ALL GUIN Empty

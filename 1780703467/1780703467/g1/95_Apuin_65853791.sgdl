@@ -1,0 +1,30 @@
+Apuin
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 5 FACE_ALTERNATE_LAST
+
+TONAF 8 FACE_ALTERNATE_LAST
+
+$moves
+MOVE COLUMN TONAF
+AND
+    DEST Suit {CLUBS}
+    DESTSRC Rank add_14
+MOVE_STACK COLUMN TONAF
+OR
+    AND
+        DEST Suit {HEARTS, DIAMONDS}
+        SRCSTACK Rank equal
+    AND
+        SRCSTACK Rank descending
+        DEST Suit {SPADES, HEARTS}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL TONAF Empty
+    AND
+        PILE ALL TONAF Empty
+        PILE ALL TONAF Empty

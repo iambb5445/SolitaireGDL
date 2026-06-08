@@ -1,0 +1,34 @@
+Douvo
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 7 DEAL {COLUMN, PEAM}
+COLUMN 7 FACE_HALF
+COLUMN 6 FACE_HALF
+COLUMN 8 FACE_HALF
+COLUMN 5 FACE_HALF
+COLUMN 9 FACE_HALF
+COLUMN 3 FACE_HALF
+
+PEAM 7 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN {PEAM, COLUMN}
+AND
+    SRC Rank K
+    OR
+        DESTSRC Suit alternate_color
+        DESTSRC Rank ascending
+MOVE_STACK PEAM COLUMN
+SRCSTACK Rank descending
+DRAW
+PILE ALL PEAM Size > 0
+$win
+AND
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL PEAM Empty

@@ -1,0 +1,23 @@
+Grouc
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 26 ROTATE 1 1 U
+UNOUB 1 FACE_LAST
+UNOUB 9 FACE_ALL
+UNOUB 5 FACE_ALL
+UNOUB 9 FACE_ALL
+UNOUB 2 FACE_ALL
+
+$moves
+MOVE_STACK UNOUB UNOUB
+DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL UNOUB Empty
+    AND
+        PILE ALL UNOUB Empty
+        PILE ALL UNOUB Empty

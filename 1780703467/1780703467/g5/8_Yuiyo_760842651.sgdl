@@ -1,0 +1,20 @@
+Yuiyo
+$cards
+DECK 1 SPADES
+
+$initial
+XIONOX 9 FACE_ALL
+XIONOX 1 FACE_ALL
+XIONOX 3 FACE_ALL
+
+$moves
+MOVE_STACK XIONOX XIONOX
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Suit {SPADES, DIAMONDS, HEARTS, CLUBS}
+    AND
+        DEST Rank 1
+        SRC Rank 1
+$win
+PILE ALL XIONOX Empty

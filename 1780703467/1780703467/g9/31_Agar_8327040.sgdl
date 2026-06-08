@@ -1,0 +1,26 @@
+Agar
+$cards
+DECK 2 {SPADES, CLUBS}
+
+$initial
+DRAW 47 DEAL COLUMN
+COLUMN 5 FACE_HALF
+COLUMN 0 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        DEST Empty
+        AND
+            DEST Rank K
+            SRC Suit {SPADES, DIAMONDS, CLUBS}
+    OR
+        SRC Suit {HEARTS, SPADES}
+        DEST Size < 0
+$win
+AND
+    PILE ALL DRAW Empty
+    OR
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

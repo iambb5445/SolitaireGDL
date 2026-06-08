@@ -1,0 +1,20 @@
+Detut
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 2 FACE_HALF
+
+DRAQ 9 FACE_ALL
+DRAQ 1 FACE_HALF
+DRAQ 1 FACE_HALF
+
+$moves
+MOVE COLUMN DRAQ
+AND
+    DEST Suit {HEARTS}
+    AND
+        DEST Size > 10
+        DEST Size < 3
+$win
+PILE ALL COLUMN Empty

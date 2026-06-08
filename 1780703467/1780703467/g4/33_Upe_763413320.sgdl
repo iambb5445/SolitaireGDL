@@ -1,0 +1,24 @@
+Upe
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 20 ROTATE 1 2 U
+COLUMN 1 FACE_ALTERNATE_LAST
+COLUMN 5 FACE_ALTERNATE_LAST
+
+$moves
+MOVE DRAW COLUMN
+OR
+    AND
+        DEST Size > 7
+        DESTSRC Rank equal
+    AND
+        DEST Size >= 6
+        SRC Suit {DIAMONDS, CLUBS, SPADES, HEARTS}
+MOVE_STACK COLUMN COLUMN
+DESTSRC Rank descending
+$win
+OR
+    PILE ALL DRAW Empty
+    PILE ALL COLUMN Empty

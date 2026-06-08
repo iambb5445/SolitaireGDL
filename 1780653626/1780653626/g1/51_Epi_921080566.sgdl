@@ -1,0 +1,26 @@
+Epi
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+ITI 7 FACE_LAST
+ITI 5 FACE_LAST
+ITI 5 FACE_LAST
+ITI 3 FACE_LAST
+ITI 3 FACE_LAST
+ITI 0 FACE_LAST
+ITI 3 FACE_LAST
+
+$moves
+MOVE_STACK ITI ITI
+AND
+    SRCSTACK Suit match
+    OR
+        DEST Size <= 3
+        DESTSRC Suit alternate_color
+$win
+OR
+    PILE ALL ITI Empty
+    AND
+        PILE ALL ITI Empty
+        PILE ALL ITI Empty

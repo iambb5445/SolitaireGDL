@@ -1,0 +1,31 @@
+Ewo
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 21 DEAL IHU
+IHU 3 FACE_ALL
+IHU 7 FACE_ALL
+IHU 2 FACE_ALL
+IHU 10 FACE_ALL
+IHU 9 FACE_ALL
+
+$moves
+MOVE IHU IHU
+AND
+    OR
+        DEST Suit {SPADES}
+        DEST Suit {SPADES, DIAMONDS}
+    AND
+        DEST Empty
+        DESTSRC Rank add_14
+MOVE_STACK IHU IHU
+AND
+    AND
+        SRCSTACK Rank equal
+        DEST Rank 1
+    AND
+        DEST Empty
+        SRCSTACK Suit match_color
+$win
+PILE ALL DRAW Empty

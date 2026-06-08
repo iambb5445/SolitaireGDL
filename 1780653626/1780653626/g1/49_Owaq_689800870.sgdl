@@ -1,0 +1,36 @@
+Owaq
+$cards
+DECK 1 SPADES
+
+$initial
+STIONEK 0 FACE_LAST
+STIONEK 0 FACE_LAST
+STIONEK 7 FACE_LAST
+
+ZIK 1 FACE_HALF
+ZIK 3 FACE_LAST
+ZIK 2 FACE_LAST
+
+$moves
+MOVE {ZIK, STIONEK} STIONEK
+AND
+    AND
+        DESTSRC Suit alternate_color
+        DEST Empty
+    DESTSRC Rank add_13
+MOVE_STACK ZIK STIONEK
+OR
+    DEST Suit {CLUBS}
+    AND
+        DESTSRC Suit match_color
+        DEST Empty
+MOVE_STACK STIONEK STIONEK
+DEST Suit {CLUBS, DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL STIONEK Empty
+        PILE ALL ZIK Empty
+    AND
+        PILE ALL STIONEK Empty
+        PILE ALL ZIK Empty

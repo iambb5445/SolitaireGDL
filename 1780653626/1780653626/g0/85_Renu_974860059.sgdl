@@ -1,0 +1,20 @@
+Renu
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 10 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 6 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DEST Rank K
+    DEST Size < 4
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

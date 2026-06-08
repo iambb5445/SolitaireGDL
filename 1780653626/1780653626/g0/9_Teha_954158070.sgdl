@@ -1,0 +1,19 @@
+Teha
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+EMO 10 FACE_ALL
+EMO 1 FACE_ALL
+EMO 9 FACE_ALL
+EMO 6 FACE_ALL
+
+$moves
+MOVE_STACK EMO EMO
+DEST Size <= 5
+$win
+OR
+    PILE ALL EMO Empty
+    AND
+        PILE ALL EMO Empty
+        PILE ALL EMO Empty

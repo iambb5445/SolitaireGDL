@@ -1,0 +1,33 @@
+Ipe
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DUTO 6 FACE_ALL
+DUTO 6 FACE_ALL
+DUTO 2 FACE_ALL
+DUTO 6 FACE_HALF
+DUTO 8 FACE_HALF
+DUTO 0 FACE_HALF
+
+ACI 8 FACE_ALL
+ACI 10 FACE_ALL
+ACI 6 FACE_ALTERNATE_LAST
+
+$moves
+MOVE_STACK {DUTO, ACI} DUTO
+AND
+    OR
+        SRCSTACK Size > 1
+        DEST Size <= 5
+    SRCSTACK Rank equal
+MOVE_STACK ACI ACI
+OR
+    AND
+        DEST Empty
+        DEST Rank K
+    AND
+        SRC Rank K
+        DESTSRC Suit match
+$win
+PILE ALL ACI Empty

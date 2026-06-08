@@ -1,0 +1,28 @@
+Steajix
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 24 DEAL COLUMN
+COLUMN 10 FACE_LAST
+COLUMN 9 FACE_LAST
+COLUMN 1 FACE_LAST
+COLUMN 8 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        AND
+            DESTSRC Suit match_color
+            SRC Suit {DIAMONDS}
+        SRC Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+    AND
+        SRC Suit {CLUBS, SPADES, HEARTS, DIAMONDS}
+        DEST Size >= 6
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

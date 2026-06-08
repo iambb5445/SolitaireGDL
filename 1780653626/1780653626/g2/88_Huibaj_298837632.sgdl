@@ -1,0 +1,40 @@
+Huibaj
+$cards
+DECK 4 SPADES
+
+$initial
+RAW 4 FACE_ALL
+RAW 10 FACE_ALL
+RAW 6 FACE_ALL
+RAW 4 FACE_ALL
+RAW 2 FACE_ALL
+RAW 3 FACE_ALL
+RAW 7 FACE_ALL
+RAW 0 FACE_ALL
+
+WIOJ 5 FACE_HALF
+WIOJ 3 FACE_HALF
+WIOJ 5 FACE_HALF
+WIOJ 3 FACE_HALF
+
+$moves
+MOVE WIOJ WIOJ
+OR
+    AND
+        DESTSRC Suit match
+        DEST Size <= 4
+    DESTSRC Suit match_color
+MOVE RAW WIOJ
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DEST Size >= 6
+        DEST Empty
+MOVE_STACK WIOJ RAW
+OR
+    AND
+        SRCSTACK Size > 10
+        DESTSRC Rank descending
+    SRC Suit {DIAMONDS, SPADES, CLUBS, HEARTS}
+$win
+PILE ALL WIOJ Empty

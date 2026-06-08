@@ -1,0 +1,21 @@
+Olu
+$cards
+DECK 2 SPADES
+
+$initial
+DAEL 6 FACE_ALL
+DAEL 2 FACE_ALL
+DAEL 2 FACE_ALL
+DAEL 8 FACE_ALL
+DAEL 5 FACE_ALL
+DAEL 3 FACE_ALL
+
+$moves
+MOVE_STACK DAEL DAEL
+AND
+    OR
+        SRCSTACK Size == 8
+        SRCSTACK Size <= 7
+    SRCSTACK Rank ascending
+$win
+PILE ALL DAEL Empty

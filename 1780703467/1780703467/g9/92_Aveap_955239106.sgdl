@@ -1,0 +1,28 @@
+Aveap
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 2 FACE_HALF
+
+OKO 3 FACE_HALF
+OKO 5 FACE_HALF
+OKO 10 FACE_HALF
+OKO 3 FACE_HALF
+OKO 3 FACE_HALF
+
+$moves
+MOVE OKO COLUMN
+AND
+    OR
+        SRC Suit {HEARTS, CLUBS}
+        SRC Rank 1
+    DEST Empty
+MOVE_STACK {OKO, COLUMN} COLUMN
+OR
+    SRCSTACK Suit match
+    DEST Suit {DIAMONDS}
+$win
+OR
+    PILE ALL COLUMN Empty
+    PILE ALL OKO Empty

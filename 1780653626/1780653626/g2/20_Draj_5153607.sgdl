@@ -1,0 +1,58 @@
+Draj
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 37 ROTATE 3 U 2
+UYO 8 FACE_HALF
+
+UDIOS 3 FACE_ALL
+UDIOS 3 FACE_ALL
+UDIOS 2 FACE_ALL
+UDIOS 7 FACE_ALL
+UDIOS 6 FACE_LAST
+UDIOS 6 FACE_LAST
+UDIOS 3 FACE_LAST
+UDIOS 6 FACE_LAST
+UDIOS 6 FACE_LAST
+UDIOS 0 FACE_LAST
+
+COLUMN 4 FACE_ALL
+COLUMN 3 FACE_LAST
+COLUMN 10 FACE_LAST
+
+$moves
+MOVE COLUMN UYO
+OR
+    AND
+        DEST Suit {HEARTS, CLUBS, DIAMONDS}
+        AND
+            DEST Rank 1
+            DESTSRC Suit alternate_color
+    DESTSRC Suit alternate_color
+MOVE {UYO, UDIOS, COLUMN, DRAW} UYO
+OR
+    AND
+        DESTSRC Rank add_14
+        DEST Size >= 5
+    DESTSRC Suit match
+MOVE_STACK {UDIOS, COLUMN, UYO} UYO
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK {UYO, COLUMN} UDIOS
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL UYO Empty
+    AND
+        PILE ALL UDIOS Empty
+        PILE ALL DRAW Empty

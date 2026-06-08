@@ -1,0 +1,36 @@
+Stuisa
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+COLUMN 1 FACE_LAST
+COLUMN 6 FACE_LAST
+COLUMN 9 FACE_LAST
+COLUMN 5 FACE_LAST
+
+OLA 0 FACE_ALTERNATE_LAST
+OLA 5 FACE_ALL
+
+$moves
+MOVE {OLA, COLUMN} OLA
+OR
+    AND
+        DESTSRC Rank ascending
+        DESTSRC Suit match
+    SRC Suit {SPADES, CLUBS}
+MOVE_STACK {OLA, COLUMN} COLUMN
+OR
+    AND
+        SRC Suit {HEARTS}
+        DEST Empty
+    AND
+        DESTSRC Suit alternate_color
+        DEST Suit {CLUBS}
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL OLA Empty
+    AND
+        PILE ALL OLA Empty
+        PILE ALL OLA Empty

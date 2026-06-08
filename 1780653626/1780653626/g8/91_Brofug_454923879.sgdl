@@ -1,0 +1,24 @@
+Brofug
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+UBIL 7 FACE_ALTERNATE_LAST
+UBIL 5 FACE_ALTERNATE_LAST
+UBIL 7 FACE_ALTERNATE_LAST
+UBIL 4 FACE_ALTERNATE_LAST
+UBIL 3 FACE_HALF
+
+$moves
+MOVE_STACK UBIL UBIL
+OR
+    AND
+        SRCSTACK Rank equal
+        DEST Size >= 3
+    DESTSRC Suit match
+$win
+OR
+    AND
+        PILE ALL UBIL Empty
+        PILE ALL UBIL Empty
+    PILE ALL UBIL Empty

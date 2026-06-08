@@ -1,0 +1,40 @@
+Ipel
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 20 ROTATE 3 U U
+COLUMN 1 FACE_LAST
+COLUMN 5 FACE_LAST
+COLUMN 3 FACE_LAST
+COLUMN 10 FACE_ALL
+COLUMN 4 FACE_ALL
+COLUMN 9 FACE_ALL
+
+$moves
+MOVE DRAW COLUMN
+OR
+    DESTSRC Suit match
+    AND
+        SRC Rank K
+        DESTSRC Suit match_color
+MOVE COLUMN COLUMN
+OR
+    SRC Rank K
+    AND
+        SRC Suit {SPADES, CLUBS, DIAMONDS}
+        SRC Suit {HEARTS, SPADES, DIAMONDS, CLUBS}
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match
+        SRC Suit {DIAMONDS, SPADES}
+    SRC Suit {SPADES, CLUBS}
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty

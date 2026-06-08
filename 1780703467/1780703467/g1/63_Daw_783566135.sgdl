@@ -1,0 +1,30 @@
+Daw
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 10 FACE_ALL
+COLUMN 3 FACE_ALL
+COLUMN 0 FACE_ALTERNATE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+AND
+    OR
+        DESTSRC Rank add_13
+        DEST Rank 1
+    OR
+        DEST Suit {CLUBS}
+        DEST Empty
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DEST Rank 1
+        DEST Rank K
+    AND
+        DEST Size > 1
+        SRCSTACK Rank add_14
+$win
+AND
+    PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

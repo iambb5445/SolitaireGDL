@@ -1,0 +1,19 @@
+Daihem
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 16 DEAL NAT
+NAT 10 FACE_LAST
+
+$moves
+MOVE NAT NAT
+DESTSRC Rank descending
+MOVE_STACK NAT NAT
+SRC Suit {CLUBS, HEARTS, DIAMONDS, SPADES}
+$win
+AND
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL NAT Empty
+    PILE ALL NAT Empty

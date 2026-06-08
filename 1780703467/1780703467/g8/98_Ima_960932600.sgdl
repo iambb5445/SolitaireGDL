@@ -1,0 +1,27 @@
+Ima
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 5 DEAL APA
+APA 7 FACE_HALF
+APA 6 FACE_HALF
+APA 4 FACE_HALF
+APA 7 FACE_ALL
+APA 6 FACE_ALL
+APA 9 FACE_ALL
+APA 8 FACE_ALL
+
+$moves
+MOVE APA APA
+AND
+    OR
+        DESTSRC Rank ascending
+        SRC Suit {HEARTS, DIAMONDS}
+    DEST Size >= 9
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL APA Empty
+        PILE ALL DRAW Empty

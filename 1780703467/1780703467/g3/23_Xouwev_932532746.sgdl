@@ -1,0 +1,27 @@
+Xouwev
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 1 FACE_HALF
+COLUMN 1 FACE_HALF
+COLUMN 6 FACE_HALF
+COLUMN 5 FACE_LAST
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    DEST Empty
+    DESTSRC Suit match
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Suit {DIAMONDS}
+    AND
+        DEST Suit {HEARTS, SPADES, DIAMONDS}
+        SRCSTACK Rank ascending
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    PILE ALL COLUMN Empty

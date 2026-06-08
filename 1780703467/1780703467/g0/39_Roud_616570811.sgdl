@@ -1,0 +1,28 @@
+Roud
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 6 FACE_ALL
+COLUMN 8 FACE_ALL
+COLUMN 6 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 4 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit match_color
+        DEST Rank K
+    AND
+        DEST Size == 10
+        DEST Suit {DIAMONDS, HEARTS, CLUBS}
+$win
+AND
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    OR
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

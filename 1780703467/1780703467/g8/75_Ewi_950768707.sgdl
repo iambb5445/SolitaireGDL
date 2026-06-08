@@ -1,0 +1,29 @@
+Ewi
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 101 ROTATE 1 U 2
+COLUMN 3 FACE_ALTERNATE_LAST
+
+$moves
+MOVE {COLUMN, DRAW} COLUMN
+OR
+    DEST Suit {HEARTS}
+    AND
+        DEST Empty
+        DEST Suit {SPADES, DIAMONDS, HEARTS}
+MOVE_STACK COLUMN COLUMN
+OR
+    DEST Size >= 0
+    AND
+        DESTSRC Suit alternate_color
+        SRC Rank K
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

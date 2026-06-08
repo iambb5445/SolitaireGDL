@@ -1,0 +1,20 @@
+Ofi
+$cards
+DECK 1 SPADES
+
+$initial
+DRAW 12 ROTATE 3 U 3
+QOUJUG 1 FACE_LAST
+QOUJUG 0 FACE_LAST
+
+$moves
+MOVE DRAW QOUJUG
+DEST Empty
+MOVE_STACK QOUJUG QOUJUG
+AND
+    DEST Rank 1
+    AND
+        SRC Rank K
+        SRC Rank 1
+$win
+PILE ALL DRAW Empty

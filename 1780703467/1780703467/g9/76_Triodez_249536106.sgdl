@@ -1,0 +1,31 @@
+Triodez
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+PRAIRU 10 FACE_ALL
+PRAIRU 8 FACE_ALL
+PRAIRU 2 FACE_ALL
+PRAIRU 3 FACE_LAST
+PRAIRU 0 FACE_LAST
+PRAIRU 3 FACE_LAST
+
+$moves
+MOVE PRAIRU PRAIRU
+DESTSRC Rank add_14
+MOVE_STACK PRAIRU PRAIRU
+OR
+    AND
+        DEST Empty
+        DEST Suit {SPADES}
+    AND
+        SRCSTACK Suit alternate_color
+        SRCSTACK Size > 8
+$win
+OR
+    AND
+        PILE ALL PRAIRU Empty
+        PILE ALL PRAIRU Empty
+    AND
+        PILE ALL PRAIRU Empty
+        PILE ALL PRAIRU Empty

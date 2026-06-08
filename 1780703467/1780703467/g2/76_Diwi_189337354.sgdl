@@ -1,0 +1,23 @@
+Diwi
+$cards
+DECK 2 SPADES
+
+$initial
+COLUMN 10 FACE_HALF
+COLUMN 0 FACE_HALF
+COLUMN 6 FACE_ALL
+
+AHAIP 7 FACE_LAST
+AHAIP 3 FACE_LAST
+
+$moves
+MOVE AHAIP {COLUMN, AHAIP}
+SRC Suit {DIAMONDS}
+$win
+OR
+    AND
+        PILE ALL AHAIP Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL AHAIP Empty
+        PILE ALL AHAIP Empty

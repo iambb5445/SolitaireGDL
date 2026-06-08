@@ -1,0 +1,26 @@
+Prage
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+NIOV 3 FACE_ALL
+NIOV 4 FACE_ALL
+NIOV 10 FACE_ALL
+NIOV 5 FACE_HALF
+NIOV 4 FACE_HALF
+
+$moves
+MOVE NIOV NIOV
+OR
+    AND
+        DESTSRC Suit match
+        DEST Rank K
+    AND
+        DEST Rank 1
+        DEST Size < 6
+$win
+OR
+    AND
+        PILE ALL NIOV Empty
+        PILE ALL NIOV Empty
+    PILE ALL NIOV Empty

@@ -1,0 +1,25 @@
+Utu
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 6 ROTATE 1 1 U
+FREABOS 3 FACE_LAST
+FREABOS 8 FACE_LAST
+FREABOS 3 FACE_LAST
+FREABOS 6 FACE_LAST
+FREABOS 0 FACE_LAST
+
+$moves
+MOVE_STACK FREABOS FREABOS
+AND
+    OR
+        DEST Suit {DIAMONDS}
+        DESTSRC Suit match
+    OR
+        DEST Empty
+        DESTSRC Rank ascending
+$win
+AND
+    PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

@@ -1,0 +1,29 @@
+Ceanu
+$cards
+DECK 2 SPADES
+
+$initial
+GRUIGAQ 7 FACE_ALL
+GRUIGAQ 6 FACE_ALL
+GRUIGAQ 8 FACE_ALL
+GRUIGAQ 5 FACE_ALL
+GRUIGAQ 0 FACE_ALL
+GRUIGAQ 0 FACE_ALL
+
+$moves
+MOVE_STACK GRUIGAQ GRUIGAQ
+OR
+    AND
+        DEST Empty
+        DEST Size >= 10
+    AND
+        SRC Suit {HEARTS, SPADES}
+        DEST Rank 1
+$win
+AND
+    OR
+        PILE ALL GRUIGAQ Empty
+        PILE ALL GRUIGAQ Empty
+    OR
+        PILE ALL GRUIGAQ Empty
+        PILE ALL GRUIGAQ Empty

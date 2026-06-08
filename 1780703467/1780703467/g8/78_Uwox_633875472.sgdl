@@ -1,0 +1,34 @@
+Uwox
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 41 ROTATE 1 U 3
+COLUMN 8 FACE_ALL
+COLUMN 3 FACE_HALF
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Suit {HEARTS, CLUBS, SPADES, DIAMONDS}
+        DESTSRC Suit alternate_color
+    AND
+        DEST Rank 1
+        DEST Empty
+MOVE DRAW COLUMN
+DESTSRC Rank add_14
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        DESTSRC Suit alternate_color
+        DEST Empty
+    AND
+        SRCSTACK Size < 6
+        SRCSTACK Size == 2
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL DRAW Empty
+    PILE ALL COLUMN Empty

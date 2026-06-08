@@ -1,0 +1,31 @@
+Ipe
+$cards
+DECK 8 SPADES
+
+$initial
+DRAW 61 ROTATE 1 2 U
+VUM 10 FACE_LAST
+VUM 2 FACE_LAST
+VUM 4 FACE_LAST
+VUM 2 FACE_LAST
+VUM 7 FACE_LAST
+VUM 9 FACE_LAST
+VUM 1 FACE_LAST
+VUM 5 FACE_HALF
+VUM 3 FACE_HALF
+
+$moves
+MOVE_STACK VUM VUM
+OR
+    AND
+        SRCSTACK Size < 1
+        DESTSRC Rank equal
+    AND
+        DEST Suit {HEARTS}
+        SRCSTACK Suit match_color
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL VUM Empty

@@ -1,0 +1,24 @@
+Zuita
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 10 ROTATE 1 U 2
+COLUMN 2 FACE_ALL
+COLUMN 3 FACE_ALL
+COLUMN 5 FACE_ALL
+COLUMN 6 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+SRC Suit {DIAMONDS, SPADES, CLUBS}
+MOVE DRAW COLUMN
+OR
+    AND
+        DEST Suit {DIAMONDS, HEARTS}
+        SRC Rank K
+    AND
+        DESTSRC Suit alternate_color
+        DEST Size == 4
+$win
+PILE ALL DRAW Empty

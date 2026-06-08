@@ -1,0 +1,29 @@
+Edouw
+$cards
+DECK 2 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 79 ROTATE 1 2 U
+JUIVI 1 FACE_HALF
+JUIVI 4 FACE_HALF
+JUIVI 8 FACE_HALF
+JUIVI 5 FACE_HALF
+JUIVI 7 FACE_HALF
+
+$moves
+MOVE JUIVI JUIVI
+OR
+    DEST Size > 3
+    AND
+        DEST Empty
+        DESTSRC Suit alternate_color
+MOVE_STACK JUIVI JUIVI
+OR
+    AND
+        SRCSTACK Size <= 8
+        SRCSTACK Rank add_14
+    AND
+        SRC Suit {HEARTS, CLUBS}
+        SRCSTACK Rank equal
+$win
+PILE ALL DRAW Empty

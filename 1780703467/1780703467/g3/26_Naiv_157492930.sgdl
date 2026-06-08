@@ -1,0 +1,35 @@
+Naiv
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+ETA 7 FACE_HALF
+ETA 7 FACE_HALF
+ETA 8 FACE_HALF
+ETA 0 FACE_HALF
+ETA 1 FACE_ALL
+ETA 2 FACE_ALL
+ETA 5 FACE_ALL
+ETA 4 FACE_ALL
+ETA 8 FACE_ALL
+ETA 7 FACE_ALL
+
+COLUMN 3 FACE_ALL
+
+$moves
+MOVE COLUMN COLUMN
+OR
+    AND
+        DEST Size <= 9
+        DESTSRC Rank add_13
+    AND
+        DEST Rank 1
+        DEST Suit {DIAMONDS}
+MOVE_STACK ETA ETA
+OR
+    SRCSTACK Suit alternate_color
+    AND
+        DESTSRC Rank add_14
+        SRCSTACK Suit match
+$win
+PILE ALL COLUMN Empty

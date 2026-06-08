@@ -1,0 +1,21 @@
+Fibin
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+COLUMN 10 FACE_HALF
+COLUMN 8 FACE_HALF
+COLUMN 6 FACE_HALF
+COLUMN 2 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+DEST Size <= 7
+$win
+OR
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty
+    AND
+        PILE ALL COLUMN Empty
+        PILE ALL COLUMN Empty

@@ -1,0 +1,23 @@
+Luik
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+IDAIR 5 FACE_LAST
+IDAIR 0 FACE_LAST
+IDAIR 8 FACE_LAST
+IDAIR 7 FACE_LAST
+IDAIR 1 FACE_LAST
+IDAIR 5 FACE_LAST
+
+$moves
+MOVE IDAIR IDAIR
+AND
+    AND
+        DESTSRC Suit alternate_color
+        DESTSRC Rank equal
+    OR
+        DESTSRC Suit match
+        DEST Empty
+$win
+PILE ALL IDAIR Empty

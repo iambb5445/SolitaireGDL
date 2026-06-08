@@ -1,0 +1,29 @@
+Searu
+$cards
+DECK 1 {SPADES, HEARTS}
+
+$initial
+DRAW 24 DEAL OJIOZ
+OJIOZ 2 FACE_LAST
+
+$moves
+MOVE OJIOZ OJIOZ
+OR
+    AND
+        DESTSRC Suit match
+        SRC Rank K
+    DEST Size <= 0
+MOVE_STACK OJIOZ OJIOZ
+AND
+    OR
+        DEST Rank 1
+        DEST Size == 4
+    DEST Rank 1
+DRAW
+PILE ALL OJIOZ Size > 0
+$win
+OR
+    PILE ALL DRAW Empty
+    AND
+        PILE ALL OJIOZ Empty
+        PILE ALL DRAW Empty

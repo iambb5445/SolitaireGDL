@@ -1,0 +1,25 @@
+Joucaw
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+ZIOCE 8 FACE_ALL
+ZIOCE 10 FACE_ALL
+ZIOCE 1 FACE_ALL
+ZIOCE 7 FACE_ALL
+
+$moves
+MOVE ZIOCE ZIOCE
+OR
+    AND
+        DEST Empty
+        DEST Size >= 2
+    DEST Empty
+$win
+OR
+    AND
+        PILE ALL ZIOCE Empty
+        PILE ALL ZIOCE Empty
+    AND
+        PILE ALL ZIOCE Empty
+        PILE ALL ZIOCE Empty

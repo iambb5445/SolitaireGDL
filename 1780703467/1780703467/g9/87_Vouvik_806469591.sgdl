@@ -1,0 +1,39 @@
+Vouvik
+$cards
+DECK 4 SPADES
+
+$initial
+DRAW 39 DEAL {BAGE, EZU}
+BAGE 2 FACE_LAST
+
+EZU 3 FACE_HALF
+EZU 7 FACE_ALL
+EZU 1 FACE_ALL
+
+$moves
+MOVE EZU BAGE
+OR
+    AND
+        DESTSRC Suit match_color
+        DEST Suit {CLUBS, SPADES, DIAMONDS, HEARTS}
+    AND
+        DEST Empty
+        SRC Rank K
+MOVE {BAGE, EZU} EZU
+DEST Rank K
+MOVE_STACK EZU BAGE
+OR
+    AND
+        DESTSRC Suit match
+        DESTSRC Rank add_14
+    AND
+        SRCSTACK Rank ascending
+        DEST Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+DRAW
+PILE ANY EZU Size > 0
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty
+    PILE ALL DRAW Empty

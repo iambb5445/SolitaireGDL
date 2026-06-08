@@ -1,0 +1,21 @@
+Equj
+$cards
+DECK 1 SPADES
+
+$initial
+LOBE 9 FACE_HALF
+LOBE 4 FACE_HALF
+
+$moves
+MOVE LOBE LOBE
+SRC Rank 1
+MOVE_STACK LOBE LOBE
+AND
+    AND
+        DEST Rank K
+        SRCSTACK Size > 2
+    OR
+        SRC Rank 1
+        DEST Size <= 7
+$win
+PILE ALL LOBE Empty

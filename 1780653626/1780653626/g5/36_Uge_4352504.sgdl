@@ -1,0 +1,46 @@
+Uge
+$cards
+DECK 4 {SPADES, CLUBS}
+
+$initial
+DRAW 67 ROTATE 3 U 2
+LOUW 4 FACE_ALL
+LOUW 5 FACE_ALL
+LOUW 8 FACE_ALL
+LOUW 6 FACE_ALL
+LOUW 10 FACE_ALL
+LOUW 4 FACE_ALL
+
+$moves
+MOVE LOUW LOUW
+OR
+    AND
+        DEST Suit {HEARTS, CLUBS, DIAMONDS}
+        AND
+            DEST Rank 1
+            DESTSRC Suit alternate_color
+    DESTSRC Suit alternate_color
+MOVE {LOUW, DRAW} LOUW
+OR
+    SRC Rank 1
+    DESTSRC Suit match
+MOVE_STACK LOUW LOUW
+OR
+    DESTSRC Suit alternate_color
+    AND
+        DESTSRC Rank descending
+        SRCSTACK Rank add_14
+MOVE_STACK LOUW LOUW
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {CLUBS, HEARTS, SPADES, DIAMONDS}
+    SRCSTACK Rank ascending
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL LOUW Empty
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL DRAW Empty

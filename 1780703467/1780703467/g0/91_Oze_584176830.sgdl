@@ -1,0 +1,21 @@
+Oze
+$cards
+DECK 2 SPADES
+
+$initial
+DRAW 7 DEAL AQIR
+AQIR 10 FACE_LAST
+AQIR 6 FACE_ALL
+AQIR 3 FACE_ALL
+
+$moves
+MOVE AQIR AQIR
+AND
+    OR
+        DEST Empty
+        DEST Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+    DEST Suit {CLUBS}
+DRAW
+PILE ALL AQIR Size > 0
+$win
+PILE ALL DRAW Empty

@@ -1,0 +1,31 @@
+Oxo
+$cards
+DECK 1 SPADES
+
+$initial
+TAIVA 8 FACE_ALTERNATE_LAST
+TAIVA 5 FACE_ALTERNATE_LAST
+
+$moves
+MOVE TAIVA TAIVA
+OR
+    AND
+        DEST Size == 8
+        DEST Rank K
+    AND
+        SRC Rank 1
+        DEST Rank 1
+MOVE_STACK TAIVA TAIVA
+OR
+    DEST Rank 1
+    AND
+        SRC Suit {SPADES, HEARTS, DIAMONDS}
+        SRCSTACK Size < 3
+$win
+AND
+    OR
+        PILE ALL TAIVA Empty
+        PILE ALL TAIVA Empty
+    OR
+        PILE ALL TAIVA Empty
+        PILE ALL TAIVA Empty

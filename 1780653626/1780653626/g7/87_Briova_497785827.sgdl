@@ -1,0 +1,19 @@
+Briova
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 50 ROTATE 1 U 2
+ATOUY 2 FACE_ALL
+
+$moves
+MOVE ATOUY ATOUY
+DESTSRC Rank equal
+MOVE DRAW ATOUY
+DESTSRC Rank descending
+$win
+OR
+    AND
+        PILE ALL DRAW Empty
+        PILE ALL ATOUY Empty
+    PILE ALL ATOUY Empty

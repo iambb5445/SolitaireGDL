@@ -1,0 +1,25 @@
+Meafah
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 31 ROTATE 1 U 2
+COLUMN 1 FACE_ALL
+COLUMN 10 FACE_ALL
+COLUMN 2 FACE_ALL
+COLUMN 0 FACE_ALL
+COLUMN 8 FACE_HALF
+
+$moves
+MOVE {DRAW, COLUMN} COLUMN
+DESTSRC Suit match_color
+MOVE_STACK COLUMN COLUMN
+OR
+    AND
+        SRCSTACK Rank descending
+        SRC Suit {DIAMONDS}
+    AND
+        DESTSRC Suit match
+        SRCSTACK Rank add_13
+$win
+PILE ALL COLUMN Empty

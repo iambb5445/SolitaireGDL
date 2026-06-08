@@ -1,0 +1,22 @@
+Yaqeb
+$cards
+DECK 1 {SPADES, CLUBS}
+
+$initial
+DRAW 6 DEAL COLUMN
+COLUMN 7 FACE_HALF
+COLUMN 6 FACE_HALF
+COLUMN 2 FACE_HALF
+COLUMN 5 FACE_HALF
+
+$moves
+MOVE_STACK COLUMN COLUMN
+AND
+    SRCSTACK Rank ascending
+    OR
+        SRC Suit {CLUBS}
+        SRCSTACK Suit match
+DRAW
+PILE ANY DRAW Size > 0
+$win
+PILE ALL DRAW Empty

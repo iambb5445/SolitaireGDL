@@ -1,0 +1,32 @@
+Yaju
+$cards
+DECK 2 SPADES
+
+$initial
+PAIYU 5 FACE_LAST
+PAIYU 10 FACE_LAST
+PAIYU 1 FACE_LAST
+PAIYU 5 FACE_LAST
+PAIYU 5 FACE_LAST
+
+$moves
+MOVE PAIYU PAIYU
+AND
+    OR
+        DESTSRC Suit alternate_color
+        DEST Rank K
+    OR
+        DESTSRC Rank descending
+        DEST Rank 1
+MOVE_STACK PAIYU PAIYU
+OR
+    SRC Suit {DIAMONDS, HEARTS, SPADES, CLUBS}
+    SRC Suit {DIAMONDS, HEARTS, SPADES, CLUBS}
+$win
+AND
+    OR
+        PILE ALL PAIYU Empty
+        PILE ALL PAIYU Empty
+    OR
+        PILE ALL PAIYU Empty
+        PILE ALL PAIYU Empty

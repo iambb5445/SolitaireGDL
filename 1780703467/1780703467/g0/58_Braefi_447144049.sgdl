@@ -1,0 +1,41 @@
+Braefi
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 3 DEAL EKUV
+EKUV 0 FACE_ALL
+EKUV 5 FACE_ALL
+EKUV 3 FACE_ALL
+EKUV 7 FACE_ALL
+
+TOL 10 FACE_ALL
+TOL 0 FACE_ALL
+TOL 9 FACE_ALL
+TOL 5 FACE_HALF
+TOL 7 FACE_HALF
+TOL 3 FACE_HALF
+
+$moves
+MOVE EKUV {EKUV, TOL}
+DESTSRC Rank add_14
+MOVE TOL TOL
+AND
+    OR
+        DEST Rank K
+        DESTSRC Suit match_color
+    OR
+        SRC Rank K
+        DESTSRC Suit alternate_color
+MOVE_STACK EKUV TOL
+OR
+    AND
+        SRC Suit {SPADES, HEARTS, DIAMONDS, CLUBS}
+        SRC Suit {SPADES, CLUBS, HEARTS}
+    AND
+        DESTSRC Suit match
+        DEST Empty
+DRAW
+PILE ANY EKUV Empty
+$win
+PILE ALL EKUV Empty

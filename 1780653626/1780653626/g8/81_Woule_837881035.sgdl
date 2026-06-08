@@ -1,0 +1,18 @@
+Woule
+$cards
+DECK 1 {SPADES, HEARTS, CLUBS, DIAMONDS}
+
+$initial
+DRAW 47 DEAL AQI
+AQI 3 FACE_HALF
+AQI 2 FACE_LAST
+
+$moves
+MOVE_STACK AQI AQI
+AND
+    SRC Suit {DIAMONDS}
+    OR
+        SRC Suit {SPADES, HEARTS, CLUBS, DIAMONDS}
+        SRCSTACK Suit match
+$win
+PILE ALL DRAW Empty

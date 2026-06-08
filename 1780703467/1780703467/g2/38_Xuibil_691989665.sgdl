@@ -1,0 +1,25 @@
+Xuibil
+$cards
+DECK 2 {SPADES, HEARTS}
+
+$initial
+DRAW 28 DEAL XER
+XER 7 FACE_LAST
+XER 5 FACE_LAST
+XER 2 FACE_LAST
+XER 8 FACE_LAST
+XER 2 FACE_HALF
+
+$moves
+MOVE XER XER
+OR
+    AND
+        DEST Suit {DIAMONDS, SPADES, HEARTS, CLUBS}
+        DESTSRC Suit match
+    AND
+        SRC Rank 1
+        DEST Suit {CLUBS, DIAMONDS, HEARTS}
+DRAW
+PILE ALL XER Size > 0
+$win
+PILE ALL XER Empty

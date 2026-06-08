@@ -1,0 +1,21 @@
+Joy
+$cards
+DECK 1 SPADES
+
+$initial
+COLUMN 8 FACE_LAST
+
+BRAIP 2 FACE_ALL
+BRAIP 3 FACE_HALF
+
+$moves
+MOVE_STACK {COLUMN, BRAIP} COLUMN
+OR
+    AND
+        DEST Rank 1
+        SRCSTACK Size >= 10
+    SRCSTACK Rank add_13
+MOVE_STACK COLUMN BRAIP
+SRCSTACK Size < 7
+$win
+PILE ALL BRAIP Empty
