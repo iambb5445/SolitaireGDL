@@ -5,95 +5,14 @@ import sys
 import time
 from random import Random
 import os
-
-def get_seed(rnd: Random|None):
-    if rnd is None:
-        rnd = Random()
-    return rnd.randint(0, 1000000000)
+from kube_util import get_seed, setup_logging, get_logger, get_batch_client, run_setup_git, \
+    make_job, wait_for_job, submit_job, get_repo_path, pvc_name, namespace, Images
 
 repo_url = "https://github.com/iambb5445/SolitaireGDL"
-namespace = "design-reasoning-lab"
-pvc_name = "sgdl-evo-results"
-jupyter_image = "gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp"
-pypy3_image = "pypy:3.11-slim"
-pypy3_pandas_image = "gitlab-registry.nrp-nautilus.io/bbateni/pypy3-pandas-image:latest"
-python_image = "python:3.11-slim"
+repo_name = "repo"
 
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format="%(asctime)s [%(levelname)s] %(message)s",
-#     handlers=[logging.StreamHandler(sys.stdout)],
-# )
-log = logging.getLogger(__name__)
-
-def setup_logging(log_path: str):
-    log_path = os.path.join("./nautilus-logs", log_path)
-    handlers: list[logging.Handler] = [logging.StreamHandler(sys.stdout)]
-    
-    if log_path is not None:
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        handlers.append(logging.FileHandler(log_path))
-    
-    logging.basicConfig(level=logging.INFO, handlers=handlers, format="%(asctime)s [%(levelname)s] %(message)s")
-    global log
-    log = logging.getLogger(__name__)
-
-def get_batch_client() -> client.BatchV1Api:
-    config.load_kube_config()
-    return client.BatchV1Api()
-
-def run_setup_git(batch_api: client.BatchV1Api):
-    job_name = "sgdl-evo-pull-git"
-    commands = [
-        f"if [ -d /mnt/repo ]; then cd /mnt/repo && git pull; "
-        f"else git clone --single-branch {repo_url} /mnt/repo; fi"
-    ]
-    job = make_job(job_name, "alpine/git", "/mnt", commands)
-    submit_job(batch_api, job)
-    return wait_for_job(batch_api, job_name)
-
-def make_job(job_name: str, image: str, results_dir: str, commands: list[str]) -> client.V1Job:
-    full_command = " && ".join(commands)
-
-    main = client.V1Container(
-        name="main",
-        image=image,
-        command=["sh", "-c"],
-        args=[full_command],
-        resources=client.V1ResourceRequirements(
-            requests={"cpu": "500m", "memory": "512Mi"},
-            limits={"cpu": "2", "memory": "2Gi"},
-        ),
-        volume_mounts=[
-            client.V1VolumeMount(mount_path='/mnt', name="results"),
-        ],
-    )
-
-    pod_spec = client.V1PodSpec(
-        restart_policy="Never",
-        security_context=client.V1SecurityContext(run_as_user=0),
-        containers=[main],
-        volumes=[
-            client.V1Volume(
-                name="results",
-                persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=pvc_name),
-            ),
-        ],
-    )
-
-    return client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(name=job_name, namespace=namespace),
-        spec=client.V1JobSpec(
-            template=client.V1PodTemplateSpec(spec=pod_spec),
-            backoff_limit=2, # number or retries
-            ttl_seconds_after_finished=3600, # eligibale to be deleted 1 hour after it finishes execution
-        ),
-    )
-
-def make_eval_job(job_name: str, seed: int, results_dir: str, gen_dir: str, num_workers: int):
-    repo_path = f"/mnt/repo"
+def make_eval_job(job_name: str, seed: int, gen_dir: str, num_workers: int):
+    repo_path = get_repo_path(repo_name)
     # Each worker: pip install pandas (if not in image already), then run evaluate.py
     # JOB_COMPLETION_INDEX is injected automatically by k8s Indexed Jobs (it's magic)
     # JOB_COMPLETION_INDEX is per pod, so it won't depend on other jobs (e.g. mutation job) or previous generation
@@ -107,7 +26,7 @@ def make_eval_job(job_name: str, seed: int, results_dir: str, gen_dir: str, num_
     )
     main = client.V1Container(
         name="eval-worker",
-        image=pypy3_pandas_image,
+        image=Images.pypy3_pandas,
         command=["sh", "-c"],
         args=[cmd],
         # I have to monitor and adjust the resources
@@ -147,44 +66,8 @@ def make_eval_job(job_name: str, seed: int, results_dir: str, gen_dir: str, num_
         ),
     )
 
-def submit_job(batch_api: client.BatchV1Api, job: client.V1Job):
-    assert job.metadata is not None
-    name: str = job.metadata.name
-    # delete previous job with same name if it exists (bc of retries)
-    try:
-        batch_api.delete_namespaced_job(
-            name=name, namespace=namespace,
-            body=client.V1DeleteOptions(propagation_policy="Foreground"),
-        )
-        log.info(f"Deleted existing job '{name}', waiting for cleanup...")
-        time.sleep(8)
-    except Exception:
-        pass
-    batch_api.create_namespaced_job(namespace=namespace, body=job)
-    log.info(f"Submitted job: {name}")
-
-
-def wait_for_job(batch_api: client.BatchV1Api, job_name: str, poll_interval: int=20):
-    log.info(f"Waiting for '{job_name}'...")
-    while True:
-        job = batch_api.read_namespaced_job(name=job_name, namespace=namespace)
-        assert isinstance(job, client.V1Job)
-        spec_completions = (job.spec.completions if job.spec else None) or 1
-        backoff_limit = (job.spec.backoff_limit if job.spec else None) or 0
-        succeeded = (job.status.succeeded if job.status else None) or 0
-        failed = (job.status.failed if job.status else None) or 0
-        active = (job.status.active if job.status else None) or 0
-        log.info(f"  {job_name}: active={active} succeeded={succeeded} failed={failed} target={spec_completions}")
-        if succeeded >= spec_completions:
-            log.info(f"  '{job_name}' complete.")
-            return True
-        if failed > backoff_limit:
-            log.error(f"  '{job_name}' failed.")
-            return False
-        time.sleep(poll_interval)
-
 # TODO I can run this at the start of prep job instead of running this in a separate job
-def merge_eval_csvs(batch_api: client.BatchV1Api, gen: int, results_dir: str, variant: str|None):
+def merge_eval_csvs(batch_api: client.BatchV1Api, gen: int, results_dir: str, variant: str|None, log: logging.Logger):
     gen_dir = f"{results_dir}/g{gen}"
     job_name = f"sgdl-evo-merge-g{gen}{('-' + variant) if variant else ''}"
 
@@ -199,18 +82,19 @@ def merge_eval_csvs(batch_api: client.BatchV1Api, gen: int, results_dir: str, va
         "\""
     )
 
-    job = make_job(job_name, "python:3.11-slim", results_dir, [merge_cmd])
-    submit_job(batch_api, job)
-    return wait_for_job(batch_api, job_name)
+    job = make_job(job_name, Images.python, [merge_cmd])
+    submit_job(batch_api, job, log)
+    return wait_for_job(batch_api, job_name, log)
 
 def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, population_size: int,
                  mutation_count: int, crossover_count: int, max_copied_count: int,
-                 max_mutations_per_game: int, max_crossover_per_game: int, batch_api: client.BatchV1Api):
+                 max_mutations_per_game: int, max_crossover_per_game: int, batch_api: client.BatchV1Api,
+                 log: logging.Logger):
     g_prev = f"{results_dir}/g{gen - 1}"
     g_best = f"{results_dir}/g{gen - 1}-best"
     g_curr = f"{results_dir}/g{gen}"
     eval_csv = f"{g_prev}/evaluation.csv"
-    repo_path = f"/mnt/repo"
+    repo_path = get_repo_path(repo_name)
     job_name = f"sgdl-evo-prep-g{gen}{('-' + variant) if variant else ''}"
     # run_command = "pypy3"
     run_command = "python"
@@ -255,20 +139,20 @@ def run_prep_job(gen: int, rnd: Random, results_dir: str, variant: str, populati
             f"$REMAINING {g_curr} --seed {random_seed} --ignore-errors --index-from-existing"
         ]
 
-    job = make_job(job_name, jupyter_image, results_dir, commands)
-    submit_job(batch_api, job)
-    return wait_for_job(batch_api, job_name)
+    job = make_job(job_name, Images.jupyter, commands)
+    submit_job(batch_api, job, log)
+    return wait_for_job(batch_api, job_name, log)
 
-def run_eval_job(gen: int, seed: int, results_dir: str, variant: str, worker_count: int, batch_api: client.BatchV1Api):
+def run_eval_job(
+        gen: int, seed: int, results_dir: str, variant: str, worker_count: int, batch_api: client.BatchV1Api,
+        log: logging.Logger
+    ):
     gen_dir = f"{results_dir}/g{gen}"
     job_name = f"sgdl-evo-eval-g{gen}{('-' + variant) if variant else ''}"
 
-    job = make_eval_job(
-        job_name, seed,
-        results_dir, gen_dir, worker_count,
-    )
-    submit_job(batch_api, job)
-    return wait_for_job(batch_api, job_name)
+    job = make_eval_job(job_name, seed, gen_dir, worker_count)
+    submit_job(batch_api, job, log)
+    return wait_for_job(batch_api, job_name, log)
 
 
 def main():
@@ -305,10 +189,11 @@ def main():
     experiment_rnd = Random(expr_seed)
 
     setup_logging(f"{results_dir}/orchestrator.log")
+    log = get_logger(__name__)
 
     batch_api = get_batch_client()
 
-    run_setup_git(batch_api)
+    run_setup_git(batch_api, repo_url, repo_name, log)
 
     log.info("=" * 50)
     log.info(f"Starting evolution: gen {start_gen} to {end_gen} | Seed: {expr_seed} | Timestamp: {timestamp}")
@@ -326,18 +211,18 @@ def main():
 
         ok = run_prep_job(gen, Random(gen_seed), results_dir, variant, population_size,
                           mutation_count, crossover_count, max_copied_count,
-                          max_mutations_per_game, max_crossover_per_game, batch_api)
+                          max_mutations_per_game, max_crossover_per_game, batch_api, log)
         if not ok:
             log.error(f"Prep job for gen {gen} failed. Exiting.")
             sys.exit(1)
 
-        ok = run_eval_job(gen, eval_seed, results_dir, variant, worker_count, batch_api)
+        ok = run_eval_job(gen, eval_seed, results_dir, variant, worker_count, batch_api, log)
         if not ok:
             log.error(f"Eval job for gen {gen} failed. Exiting.")
             sys.exit(1)
 
         # Merge partial CSVs from eval workers into evaluation.csv
-        ok = merge_eval_csvs(batch_api, gen, results_dir, variant)
+        ok = merge_eval_csvs(batch_api, gen, results_dir, variant, log)
         if not ok:
             log.error(f"Merge job for gen {gen} failed. Exiting.")
             sys.exit(1)
