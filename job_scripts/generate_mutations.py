@@ -32,6 +32,7 @@ if __name__ == "__main__":
     print(f"Mutating games in {dir}")
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
     timestamp = int(time.time())
+    prev_history = History.from_csv(os.path.join(dir, f"history.csv"))
     history = History()
     base_index = 0
     os.makedirs(outpath, exist_ok=True)
@@ -50,15 +51,19 @@ if __name__ == "__main__":
     for i, filename in enumerate(targets):
         try:
             ind = i + base_index
-            gene = GeneParser.from_file(os.path.join(dir, filename))
+            parent = GeneParser.from_file(os.path.join(dir, filename))
             seed = get_seed(experiment_rnd, seed_max)
             if args.ensure_change:
-                mutated, seed = gene.mutate_until_change(Random(seed))
+                mutated, seed = parent.mutate_until_change(Random(seed))
             else:
-                mutated = gene.mutate(Random(seed))
+                mutated = parent.mutate(Random(seed))
             gdl = mutated.get_gdl()
             name = Parser.get_name(gdl)
-            history.add(timestamp, experiment_seed, seed, name, mutated.get_hash(), History.GEN_METHOD.MUTATION, gene.get_hash(), None)
+            hash = mutated.get_hash()
+            parent_hash = parent.get_hash()
+            history.add(
+                timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.MUTATION,
+                parent_hash, None, prev_history.get_ancestor(parent_hash))
             with open(os.path.join(outpath, f"{ind}_{name}_{seed}.sgdl"), "w") as f:
                 f.write(gdl)
         except Exception as e:

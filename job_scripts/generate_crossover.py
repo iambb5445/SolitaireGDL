@@ -30,6 +30,7 @@ if __name__ == "__main__":
     print(f"Crossovering games in {dir}")
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
     timestamp = int(time.time())
+    prev_history = History.from_csv(os.path.join(dir, f"history.csv"))
     history = History()
     base_index = 0
     os.makedirs(outpath, exist_ok=True)
@@ -57,7 +58,11 @@ if __name__ == "__main__":
             new_gene = gene1.crossover(gene2, Random(seed), False)
             gdl = new_gene.get_gdl()
             name = Parser.get_name(gdl)
-            history.add(timestamp, experiment_seed, seed, name, new_gene.get_hash(), History.GEN_METHOD.CROSSOVER, gene1.get_hash(), gene2.get_hash())
+            main_parent_hash = gene1.get_hash()
+            secondary_parent_hash = gene2.get_hash()
+            history.add(
+                timestamp, experiment_seed, seed, name, new_gene.get_hash(), History.GEN_METHOD.CROSSOVER,
+                main_parent_hash, secondary_parent_hash, prev_history.get_ancestor(main_parent_hash))
             with open(os.path.join(outpath, f"{ind}_{name}_{seed}.sgdl"), "w") as f:
                 f.write(gdl)
         except Exception as e:

@@ -32,6 +32,7 @@ if __name__ == "__main__":
     if len(filenames) > max_count:
         filenames = Random(seed).sample(filenames, max_count)
     timestamp = int(time.time())
+    prev_history = History.from_csv(os.path.join(dir, f"history.csv"))
     history = History()
     os.makedirs(outpath, exist_ok=True)
     index = 0
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         name = Parser.get_name(gdl)
         try:
             shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}.sgdl"))
-            history.add(timestamp, seed, None, name, hash, History.GEN_METHOD.BEST_OF, None, None)
+            history.add(timestamp, seed, None, name, hash, History.GEN_METHOD.BEST_OF, None, None, prev_history.get_ancestor(hash))
         except Exception as e:
             if not ignore:
                 raise e

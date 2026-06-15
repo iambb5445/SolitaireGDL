@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import pandas as pd
 from base import BaseStrEnum
@@ -12,6 +13,7 @@ class History:
         GEN_METHOD = "Generation Method"
         PARENT1 = "Parent 1"
         PARENT2 = "Parent 2"
+        ANCESTOR = "Ancestor"
 
     class GEN_METHOD(BaseStrEnum):
         RANDOM = "Random"
@@ -25,7 +27,7 @@ class History:
         self.df = pd.DataFrame(columns=list(History.KEYS))
 
     def add(self, timestamp: int, expr_seed: int|None, sgdl_seed: int|None, game_name: str, game_hash: int,
-            gen_method: GEN_METHOD, parent1_hash: int|None, parent2_hash: int|None):
+            gen_method: GEN_METHOD, parent1_hash: int|None, parent2_hash: int|None, ancestor_hash: int|None):
         self.df.loc[len(self.df)] = {
             History.KEYS.TIMESTAMP: timestamp,
             History.KEYS.EXPR_SEED: expr_seed,
@@ -35,6 +37,7 @@ class History:
             History.KEYS.GEN_METHOD: gen_method,
             History.KEYS.PARENT1: parent1_hash,
             History.KEYS.PARENT2: parent2_hash,
+            History.KEYS.ANCESTOR: ancestor_hash
         }
 
     def to_csv(self, filepath: str, concat: bool):
@@ -47,3 +50,27 @@ class History:
         else:
             self.df.to_csv(filepath)
     
+    @staticmethod
+    def from_csv(filepath: str) -> History:
+        history = History()
+        if os.path.isfile(filepath):
+            df = pd.read_csv(filepath, index_col=False)
+            for key in History.KEYS:
+                if key not in df:
+                    print(f"Cannot read history at {filepath}: key {key} does not exist")
+                    return history
+            for col in df:
+                if col not in History.KEYS:
+                    print(f"Cannot read history at {filepath}: key {col} should not exist")
+                    return history
+            history.df = df
+        return history
+    
+    def get(self, hash: int, col: str) -> str|int|None:
+        return self.df.loc[self.df[History.KEYS.GAME_HASH] == hash, col].iloc[0]
+    
+    def get_ancestor(self, hash: int) -> int|None:
+        ancestor = self.get(hash, History.KEYS.ANCESTOR)
+        if isinstance(ancestor, float) or isinstance(ancestor, int):
+            return int(ancestor)
+        return None
