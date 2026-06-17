@@ -38,7 +38,7 @@ if __name__ == "__main__":
         try:
             verdict = verdicts[hash]
             if verdict == Verdict.OK:
-                shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}.sgdl"))
+                shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}_{hash}.sgdl"))
         except Exception as e:
             if not ignore:
                 raise e

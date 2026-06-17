@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('max_count', type=int, help="Maximum number of files to copy. Chosen randomly if there are more files than maximum.")
     parser.add_argument('outpath', type=str, help="Path to save the sgdl results of copying bests.")
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for choosing the files.")
-    parser.add_argument('--ignore-non-existent', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
+    parser.add_argument('--ignore-non-existent', action="store_true", help="If true, logs errors but continues operation. Useful for when some files in history might not exist as gdls.")
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         hash = Parser.get_deterministic_hash(gdl)
         name = Parser.get_name(gdl)
         try:
-            shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}.sgdl"))
+            shutil.copy(os.path.join(dir, filename), os.path.join(outpath, f"{index}_{name}_{hash}.sgdl"))
             history.add(timestamp, seed, None, name, hash, History.GEN_METHOD.BEST_OF, None, None, prev_history.get_ancestor(hash))
         except Exception as e:
             if not ignore:

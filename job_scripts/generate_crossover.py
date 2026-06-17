@@ -58,12 +58,13 @@ if __name__ == "__main__":
             new_gene = gene1.crossover(gene2, Random(seed), False)
             gdl = new_gene.get_gdl()
             name = Parser.get_name(gdl)
+            hash = new_gene.get_hash()
             main_parent_hash = gene1.get_hash()
             secondary_parent_hash = gene2.get_hash()
             history.add(
-                timestamp, experiment_seed, seed, name, new_gene.get_hash(), History.GEN_METHOD.CROSSOVER,
+                timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.CROSSOVER,
                 main_parent_hash, secondary_parent_hash, prev_history.get_ancestor(main_parent_hash))
-            with open(os.path.join(outpath, f"{ind}_{name}_{seed}.sgdl"), "w") as f:
+            with open(os.path.join(outpath, f"{ind}_{name}_{hash}.sgdl"), "w") as f:
                 f.write(gdl)
         except Exception as e:
             if not args.ignore_errors:

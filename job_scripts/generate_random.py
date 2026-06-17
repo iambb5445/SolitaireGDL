@@ -38,7 +38,7 @@ if __name__ == "__main__":
             name = Parser.get_name(gdl)
             hash = gene.get_hash()
             history.add(timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.RANDOM, None, None, hash)
-            with open(os.path.join(outpath, f"{i + base_index}_{name}_{seed}.sgdl"), "w") as f:
+            with open(os.path.join(outpath, f"{i + base_index}_{name}_{hash}.sgdl"), "w") as f:
                 f.write(gdl)
         except Exception as e:
             if not args.ignore_errors:

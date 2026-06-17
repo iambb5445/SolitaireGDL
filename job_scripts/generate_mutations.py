@@ -64,7 +64,7 @@ if __name__ == "__main__":
             history.add(
                 timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.MUTATION,
                 parent_hash, None, prev_history.get_ancestor(parent_hash))
-            with open(os.path.join(outpath, f"{ind}_{name}_{seed}.sgdl"), "w") as f:
+            with open(os.path.join(outpath, f"{ind}_{name}_{hash}.sgdl"), "w") as f:
                 f.write(gdl)
         except Exception as e:
             if not args.ignore_errors:
