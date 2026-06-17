@@ -23,11 +23,17 @@ class History:
         LLM_ONESHOT = "LLM One-Shot"
         BEST_OF = "Best of Previous Generation"
 
+    @staticmethod
+    def get_llm_mutation_method(included_history: int, skill: bool):
+        return History.GEN_METHOD.LLM_MUTATION + \
+            (f"_{included_history}" if included_history > 0 else "") + \
+            ("_skilled" if skill else "")
+
     def __init__(self) -> None:
         self.df = pd.DataFrame(columns=list(History.KEYS))
 
     def add(self, timestamp: int, expr_seed: int|None, sgdl_seed: int|None, game_name: str, game_hash: int,
-            gen_method: GEN_METHOD, parent1_hash: int|None, parent2_hash: int|None, ancestor_hash: int|None):
+            gen_method: GEN_METHOD|str, parent1_hash: int|None, parent2_hash: int|None, ancestor_hash: int|None):
         self.df.loc[len(self.df)] = {
             History.KEYS.TIMESTAMP: timestamp,
             History.KEYS.EXPR_SEED: expr_seed,
