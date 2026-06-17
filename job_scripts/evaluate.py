@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the evaluation logs.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
+    parser.add_argument('--comment-errors', action="store_true", help="If true, errors will be added as comments to the end of the GDL. !!! This will cause it to stop running games for that gdl to avoid overcommenting on one file.")
     parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {list(players.keys())}, default: dfs-heuristic")
     parser.add_argument('--worker-index', type=int, default=None, help=f"The index of worker. Used for parallelism.")
     parser.add_argument('--worker-count', type=int, default=1, help=f"Number of workers. Used for parallelism.")
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     outpath = args.dir # save in the same path
     should_log = args.should_log
     ignore_errors = args.ignore_errors
+    comment_errors = args.comment_errors
     max_move_count = args.max_move_count
     game_count = args.game_count
     player_creator = lambda: players[args.bot](None)
@@ -56,6 +58,10 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error parsing/evaluating {name}")
             print(f"!!![ERROR]: {e}")
+            if comment_errors:
+                with open(os.path.join(dir, filename), 'a') as f:
+                    f.write("\n\n# ERROR when using this gdl:\n" + "\n".join([f"# {line}" for line in str(e).splitlines()]))
+                continue
             if not ignore_errors:
                 raise e
     if len(dfs) > 0:
