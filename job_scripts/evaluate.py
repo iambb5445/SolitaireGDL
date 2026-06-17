@@ -60,7 +60,7 @@ if __name__ == "__main__":
             print(f"!!![ERROR]: {e}")
             if comment_errors:
                 with open(os.path.join(dir, filename), 'a') as f:
-                    f.write("\n\n# ERROR when using this gdl:\n" + "\n".join([f"# {line}" for line in str(e).splitlines()]))
+                    f.write("\n\n# ERROR when evaluating this gdl:\n" + "\n".join([f"# {line}" for line in str(e).splitlines()]))
                 continue
             if not ignore_errors:
                 raise e
