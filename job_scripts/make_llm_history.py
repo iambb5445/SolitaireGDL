@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('--ignore-non-existent', action="store_true", help="If true, logs errors but continues operation.")
     parser.add_argument('--oneshot', action="store_true", help="If true, it means the LLM generated this from nothing, instead of mutating a previous generation.")
     parser.add_argument('--prev-dir', type=str, default=None, help="Path to the directory containing previous generation, which mapping.txt is referring to. Required if this is not oneshot.")
-    parser.add_argument('--included_history', type=int, default=0, help="Integer showing how many previous decisions the LLM had access to when generating this new file.")
+    parser.add_argument('--included-history', type=int, default=0, help="Integer showing how many previous decisions the LLM had access to when generating this new file.")
     parser.add_argument('--skill', action="store_true", help="If true, it means the LLM used a skill file.")
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir

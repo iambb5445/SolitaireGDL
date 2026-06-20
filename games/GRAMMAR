@@ -46,24 +46,41 @@ $win
 <move_rule> -> MOVE <piles_or_D> <piles><nl><move_conds> # you can move from a DRAW, but not to a DRAW
 <move_stack_rule> -> MOVE_STACK <piles> <piles><nl><stack_conds> # you cannpt move a stack from a DRAW or to a DRAW
 
+
+# DEST card is the last card in the destination pile for MOVE/MOVE_STACK
+# SRC card is the one card being moved in MOVE or the first card in the stack being moved in MOVE_STACK
+
 * conditions (MOVE/MOVE_STACK)
 DEST Empty # empty conditions are redundant, since they can be created with a size condition, but will look nicer
 DEST Size <op> <count>
+# describing suit/rank of SRC/DEST
 SRC Suit <suits>
 SRC Rank <ranks>
-DESTSRC Suit alternate_color
-DESTSRC Suit match_color
-DESTSRC Suit match
-DESTSRC Rank ascending
-DESTSRC Rank descending
+DEST Suit <suits>
+DEST Rank <ranks>
+# describing suit/rank conditions between DEST and SRC cards
+DESTSRC Suit alternate_color # suit colors alternate between black and red
+DESTSRC Suit match_color # suit colors are the same (all black or all red)
+DESTSRC Suit match # suit are the same
+DESTSRC Rank ascending # ranks are stricly ascneding, each rank exactly 1 more than last one
+DESTSRC Rank descending # ranks are stricly descending, each rank exactly 1 less than last one
+DESTSRC Rank equal # ranks are  all equal
+DESTSRC Rank add_13 # ranks add to 13 (J=11, Q=12, K=13)
+DESTSRC Rank add_14 # ranks add to 14 (J=11, Q=12, K=13)
+
 * conditions (MOVE_STACK)
+# describing suit/rank/size conditions between cards in the stack being moved
 SRCSTACK Suit alternate_color
 SRCSTACK Suit match_color
 SRCSTACK Suit match
 SRCSTACK Rank ascending
 SRCSTACK Rank descending
+SRCSTACK Rank equal
+SRCSTACK Rank add_13
+SRCSTACK Rank add_14
 SRCSTACK Size <op> <count>
-* conditions (DRAW/WIN) # can be defined for move/move_stack, but doesn't make sense
+
+* conditions (DRAW/WIN/MOVE/MOVE_STACK) # MOVE/MOVE_STACK rarely use these
 PILE ALL <pileset> Size <op> <count>
 PILE ANY <pileset> Size <op> <count>
 PILE ALL <pileset> Empty
