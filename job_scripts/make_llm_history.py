@@ -53,7 +53,7 @@ if __name__ == "__main__":
     mapping = {}
     if not oneshot:
         prev_history = History.from_csv(os.path.join(prev_dir, f"history.csv"))
-        with open(os.path.join(prev_dir, "mapping.json"), 'r') as f:
+        with open(os.path.join(dir, "mapping.json"), 'r') as f:
             mapping: dict[str, str] = json.load(f)
 
     history = History()
@@ -61,8 +61,9 @@ if __name__ == "__main__":
         hash, name, gdl = get_gdl(dir, filename)
         try:
             parent_hash = get_parent_hash(filename, mapping, prev_dir) if not oneshot else None
+            ancestor_hash = prev_history.get_ancestor(parent_hash) if parent_hash is not None else None
             history.add(timestamp, None, None, name, hash, History.get_llm_mutation_method(included_history, skill),
-                        None, None, prev_history.get_ancestor(parent_hash) if parent_hash is not None else None)
+                        None, None, ancestor_hash)
         except Exception as e:
             if not ignore:
                 raise e

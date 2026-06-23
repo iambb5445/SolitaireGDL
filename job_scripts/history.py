@@ -50,17 +50,19 @@ class History:
         if os.path.isfile(filepath):
             if concat:
                 existing = pd.read_csv(filepath, index_col=False)
-                pd.concat([existing, self.df], ignore_index=True).to_csv(filepath)
+                existing = existing.loc[:, ~existing.columns.str.match(r"^Unnamed:")]
+                pd.concat([existing, self.df], ignore_index=True).to_csv(filepath, index=False)
             else:
                 raise Exception("Filename already exists")
         else:
-            self.df.to_csv(filepath)
+            self.df.to_csv(filepath, index=False)
     
     @staticmethod
     def from_csv(filepath: str) -> History:
         history = History()
         if os.path.isfile(filepath):
             df = pd.read_csv(filepath, index_col=False)
+            df = df.loc[:, ~df.columns.str.match(r"^Unnamed:")]
             for key in History.KEYS:
                 if key not in df:
                     print(f"Cannot read history at {filepath}: key {key} does not exist")
@@ -77,6 +79,6 @@ class History:
     
     def get_ancestor(self, hash: int) -> int|None:
         ancestor = self.get(hash, History.KEYS.ANCESTOR)
-        if isinstance(ancestor, float) or isinstance(ancestor, int):
-            return int(ancestor)
-        return None
+        if ancestor is None or pd.isna(ancestor):
+            return None
+        return int(ancestor)
