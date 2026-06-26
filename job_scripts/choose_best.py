@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument('filename', type=str, help="Evaluation csv file.")
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
     parser.add_argument('outpath', type=str, help="Path to save the sgdl results of choosing bests.")
-    parser.add_argument('max-move-count', type=int, help="What was the maximum move count allowed here, so we can find exhausted cases.")
+    parser.add_argument('max-move-count', type=int, help="What was the maximum move count allowed during simulation, so we can identify exhausted cases.")
     parser.add_argument('--ignore-non-existent', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
     args = parser.parse_args(sys.argv[1:])
