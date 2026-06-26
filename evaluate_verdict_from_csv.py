@@ -24,5 +24,5 @@ if __name__ == "__main__":
     for df in dfs:
         games = df["Game"].unique()
         for game in games:
-            verdict = get_verdict_from_results(df[df["Game"] == game])
+            verdict = get_verdict_from_results(df[df["Game"] == game], 1000)
             print(f"Verdict for game {game} is {verdict}")

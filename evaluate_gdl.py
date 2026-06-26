@@ -11,6 +11,7 @@ import time
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
+    ERROR = "ERROR"
     IMPOSSIBLE = "IMPOSSIBLE"
     TRIVIAL = "TRIVIAL"
     BIPOLAR = "BIPOLAR"
@@ -18,19 +19,21 @@ class Verdict(StrEnum):
     EXTRA_PILE = "EXTRA_PILE"
     OK = "OK"
 
-def get_verdicts_from_results(df: pd.DataFrame) -> dict[int, Verdict]:
+def get_verdicts_from_results(df: pd.DataFrame, max_move_count: int) -> dict[int, Verdict]:
     verdicts: dict[int, Verdict] = {}
     for hash_value, results in df.groupby("SGDL Hash"):
         assert isinstance(hash_value, int)
-        verdicts[hash_value] = get_verdict_from_results(results)
+        verdicts[hash_value] = get_verdict_from_results(results, max_move_count)
     return verdicts
 
-def get_verdict_from_results(df: pd.DataFrame):
-    if df["Exhausted"].mean() > 0.9:
+def get_verdict_from_results(df: pd.DataFrame, max_move_count: int):
+    if len(df) < 10:
+        return Verdict.ERROR
+    if (df["Move Count"] >= max_move_count).mean() > 0.9:
         return Verdict.UNKNOWN
     if df["Win"].mean() < 0.1:
         return Verdict.IMPOSSIBLE
-    if df[df["Win"]]["Move Count"].mean() < 20: # not needed because of card usage unless the game is very few cards
+    if df[df["Win"]]["Move Count"].mean() < 20: # not needed because of card usage unless the game has very few cards
         return Verdict.TRIVIAL
     if (df[df["Win"]]["Card Usage"] < 0.9).any():
         return Verdict.EXTRA_CARD
