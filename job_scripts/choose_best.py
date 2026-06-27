@@ -30,6 +30,7 @@ if __name__ == "__main__":
     index = 0
     timestamp = int(time.time())
     os.makedirs(outpath, exist_ok=True)
+    shutil.copy(os.path.join(dir, "history.csv"), os.path.join(outpath, "history.csv"))
     if args.index_from_existing:
         index = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
     for filename in filenames:
