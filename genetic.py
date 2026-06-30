@@ -1225,6 +1225,29 @@ class MovesGene(GenoType, Reducible):
             for c_option in MovesGene._get_crossover_options()
         ]
 
+    def _deduplicate_moves_(self):
+        seen: set[tuple[str, str]] = set()
+        deduped_moves: list[MoveGene] = []
+        for move in self.moves:
+            new_starts = [s for s in move.starts
+                          if not any((s, e) in seen for e in move.ends)]
+            if len(new_starts) > 0:
+                move.starts = new_starts
+                seen.update(move.get_ends())
+                deduped_moves.append(move)
+        self.moves = deduped_moves
+
+        seen: set[tuple[str, str]] = set()
+        deduped_stacks: list[MoveStackGene] = []
+        for move_stack in self.move_stacks:
+            new_starts = [s for s in move_stack.starts
+                          if not any((s, e) in seen for e in move_stack.ends)]
+            if len(new_starts) > 0:
+                move_stack.starts = new_starts
+                seen.update(move_stack.get_ends())
+                deduped_stacks.append(move_stack)
+        self.move_stacks = deduped_stacks
+
     def _transform_pilenames_(self, rnd: Random, new_setup: SetupGene):
         for move in self.moves:
             move._transform_pilenames_(rnd, new_setup)
@@ -1232,6 +1255,8 @@ class MovesGene(GenoType, Reducible):
             move_stack._transform_pilenames_(rnd, new_setup)
         if self.draw_move is not None:
             self.draw_move._transform_pilenames_(rnd, new_setup)
+        if not Params.DUPLICATE_MOVE_ENDS_ALLOWED:
+            self._deduplicate_moves_()
 
 class WinGene(GenoType, Reducible):
     def __init__(self, cond: ConditionGene, setup: SetupGene) -> None:
