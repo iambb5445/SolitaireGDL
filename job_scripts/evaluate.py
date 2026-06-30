@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the evaluation logs.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
+    parser.add_argument('--hash-as-seed', action="store_true", help="If true, uses the hash of the gdl as seed to ensure evaluation results are always the same.")
     parser.add_argument('--comment-errors', action="store_true", help="If true, errors will be added as comments to the end of the GDL. !!! This will cause it to stop running games for that gdl to avoid overcommenting on one file.")
     parser.add_argument('--bot', type=str, default="dfs-heuristic", help=f"Choose the bot to play the game. Options are: {list(players.keys())}, default: dfs-heuristic")
     parser.add_argument('--worker-index', type=int, default=None, help=f"The index of worker. Used for parallelism.")
@@ -34,7 +35,6 @@ if __name__ == "__main__":
     player_creator = lambda: players[args.bot](None)
     worker_index = args.worker_index
     worker_count = args.worker_count
-    seed = args.seed
 
     experiment_seed: int = args.seed if args.seed is not None else get_seed(None, seed_max)
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
@@ -54,6 +54,8 @@ if __name__ == "__main__":
         name = Parser.get_name(gdl)
         log_filename: str|None = os.path.join(outpath, f"{i}_{name}.log") if should_log else None
         try:
+            if args.hash_as_seed:
+                experiment_seed = Parser.get_deterministic_hash(gdl)
             dfs.append(get_evaluation_results(gdl, max_move_count, game_count, player_creator=player_creator, should_log=should_log, save_as=None, log_at=log_filename, experiment_seed=experiment_seed))
         except Exception as e:
             print(f"Error parsing/evaluating {name}")
