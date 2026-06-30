@@ -28,7 +28,7 @@ class Logger:
         if filename is not None:
             import os
             # possibly instead of throwing errors, change filename to unique name or None as a fallback option?
-            assert not os.path.isfile(filename), f"cannot log in file singe {filename} already exists."
+            assert not os.path.isfile(filename), f"cannot log in file since {filename} already exists."
         self.storage = ""
         self.storage_size = storage_size
     

@@ -37,7 +37,7 @@ def get_verdict_from_results(df: pd.DataFrame, max_move_count: int):
         return Verdict.TRIVIAL
     if (df[df["Win"]]["Card Usage"] < 0.9).any():
         return Verdict.EXTRA_CARD
-    if (df[df["Win"]]["Pile Usage"] < 0.8).any():
+    if (df[df["Win"]]["Pile Usage"] < 1).any():
         return Verdict.EXTRA_PILE
     return Verdict.OK
 
