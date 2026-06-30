@@ -74,7 +74,7 @@ def simulate_one(game_id: int, player: Player, game_desc: str, game_seed: int|No
                     action_trace.pop()
                 action: str|None = player.decide_action(game.copy())
         if action is None or move_count == max_moves or (max_time_per_sim is not None and (time.time() - start_time) > max_time_per_sim):
-            return game, move_count, game_samples, (action_trace if return_trace else []), starting_game, True
+            return game, move_count, game_samples, (action_trace if return_trace else []), starting_game, action is None
         if sample_rnd.random() < sample_rate:
             game_samples.append(sample(sample_rnd, invalid_actions_rate, bot_action_rate, game.copy(), action, game_id))
         if return_trace:
