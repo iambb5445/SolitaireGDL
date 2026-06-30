@@ -29,15 +29,15 @@ def get_verdicts_from_results(df: pd.DataFrame, max_move_count: int) -> dict[int
 def get_verdict_from_results(df: pd.DataFrame, max_move_count: int):
     if len(df) < 10:
         return Verdict.ERROR
-    if (df["Move Count"] >= max_move_count).mean() > 0.9:
+    if df["Win"].mean() < 0.1 and df["Exhausted"].mean() < 0.1: # all games ended without win or exhaustion of states
         return Verdict.UNKNOWN
-    if df["Win"].mean() < 0.1:
+    if df["Win"].mean() < 0.1: # all games ended without a win
         return Verdict.IMPOSSIBLE
-    if df[df["Win"]]["Move Count"].mean() < 20: # not needed because of card usage unless the game has very few cards
+    if df[df["Win"]]["Move Count"].mean() < 70: # because of card/pile usage this happens rarely
         return Verdict.TRIVIAL
     if (df[df["Win"]]["Card Usage"] < 0.9).any():
         return Verdict.EXTRA_CARD
-    if (df[df["Win"]]["Pile Usage"] < 1).any():
+    if (df[df["Win"]]["Pile Usage"] < 0.9).any():
         return Verdict.EXTRA_PILE
     return Verdict.OK
 
