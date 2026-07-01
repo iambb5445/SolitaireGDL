@@ -11,6 +11,34 @@ from utility import get_seed
 from history import History
 
 seed_max = 1000000000
+max_retries = 50
+
+def generate_mutation(ind: int, filename: str) -> bool:
+    parent = GeneParser.from_file(os.path.join(dir, filename))
+    parent_hash = parent.get_hash()
+    for attempt in range(max_retries):
+        seed = get_seed(experiment_rnd, seed_max)
+        try:
+            if args.ensure_change:
+                mutated, seed = parent.mutate_until_change(Random(seed))
+            else:
+                mutated = parent.mutate(Random(seed))
+            gdl = mutated.get_gdl()
+            # validation
+            Parser.parse(gdl, None, False, True)
+            name = Parser.get_name(gdl)
+            hash = mutated.get_hash()
+            history.add(
+                timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.MUTATION,
+                parent_hash, None, prev_history.get_ancestor(parent_hash))
+            with open(os.path.join(outpath, f"{ind}_{name}_{hash}.sgdl"), "w") as f:
+                f.write(gdl)
+            return True
+        except Exception as e:
+            if not args.ignore_errors:
+                raise e
+            print(f"!!![ERROR] (attempt {attempt}/{max_retries}, seed: {seed}, parent: {filename}): {e}")
+    return False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -40,7 +68,7 @@ if __name__ == "__main__":
         base_index = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
     if len(filenames) < 1:
         print("Not enough files to mutate")
-        if args.ignore_errors:
+        if not args.ignore_errors:
             raise Exception("Not enough files to mutate")
         exit()
     if max_per_game is None:
@@ -49,25 +77,6 @@ if __name__ == "__main__":
         count = min(count, len(filenames * max_per_game))
         targets = experiment_rnd.sample(filenames, k=count, counts=[max_per_game]*len(filenames))
     for i, filename in enumerate(targets):
-        try:
-            ind = i + base_index
-            parent = GeneParser.from_file(os.path.join(dir, filename))
-            seed = get_seed(experiment_rnd, seed_max)
-            if args.ensure_change:
-                mutated, seed = parent.mutate_until_change(Random(seed))
-            else:
-                mutated = parent.mutate(Random(seed))
-            gdl = mutated.get_gdl()
-            name = Parser.get_name(gdl)
-            hash = mutated.get_hash()
-            parent_hash = parent.get_hash()
-            history.add(
-                timestamp, experiment_seed, seed, name, hash, History.GEN_METHOD.MUTATION,
-                parent_hash, None, prev_history.get_ancestor(parent_hash))
-            with open(os.path.join(outpath, f"{ind}_{name}_{hash}.sgdl"), "w") as f:
-                f.write(gdl)
-        except Exception as e:
-            if not args.ignore_errors:
-                raise e
-            print(f"!!![ERROR]: {e}")
+        ind = i + base_index
+        generate_mutation(ind, filename)
     history.to_csv(os.path.join(outpath, f"history.csv"), True)
