@@ -467,25 +467,22 @@ class SetupGene(GenoType):
         # will readjust setup for draw pile
         return SetupGene(self.draw if self.draw is None else self.draw.copy(), [pile.copy() for pile in self.piles])
     
-    def _adjust_card_count_(self, intended_card_count: int, rnd: Random) -> SetupGene: # TODO make it better
+    def _adjust_card_count_(self, intended_card_count: int, rnd: Random) -> SetupGene:
         self.card_count = sum([pile.card_count for pile in self.piles]) + (0 if self.draw is None else self.draw.card_count)
-        # add/expand piles if needed
-        while intended_card_count > self.card_count:
-            if self.draw is not None and coin_flip(rnd, len(self.piles) + 1):
-                self.draw.card_count += intended_card_count - self.card_count
-                self.card_count = intended_card_count
+        while self.card_count != intended_card_count:
+            if intended_card_count > self.card_count:
+                if self.draw is not None and coin_flip(rnd, len(self.piles) + 1):
+                    self.draw.card_count += intended_card_count - self.card_count
+                    self.card_count = intended_card_count
+                else:
+                    self.card_count += rnd.choice(self.piles).add_cards(rnd, intended_card_count - self.card_count)
             else:
-                self.card_count += rnd.choice(self.piles).add_cards(rnd, intended_card_count - self.card_count)
-        # remove/trim piles if needed
-        while intended_card_count < self.card_count:
-            if self.draw is not None and self.draw.card_count > 0 and coin_flip(rnd, len(self.piles) + 1):
-                remove_count = min(self.card_count - intended_card_count, self.draw.card_count)
-                self.draw.card_count -= remove_count
-                self.card_count -= remove_count
-                # TODO possibly remove draw if empty?
-            else:
-                self.card_count -= rnd.choice(self.piles).remove_cards(rnd, self.card_count - intended_card_count)
-        self.card_count = intended_card_count
+                if self.draw is not None and self.draw.card_count > 0 and coin_flip(rnd, len(self.piles) + 1):
+                    remove_count = min(self.card_count - intended_card_count, self.draw.card_count)
+                    self.draw.card_count -= remove_count
+                    self.card_count -= remove_count
+                else:
+                    self.card_count -= rnd.choice(self.piles).remove_cards(rnd, self.card_count - intended_card_count)
         return self
     
     @staticmethod
@@ -494,7 +491,7 @@ class SetupGene(GenoType):
         return [
             # will readjust setup for draw pile
             lambda me, other, rnd: SetupGene(other.draw._transform_pilenames_(rnd, me) if isinstance(other.draw, DealDrawDefGene) else other.draw, me.piles)._adjust_card_count_(me.card_count, rnd),
-            lambda me, other, rnd: SetupGene(me.draw, other.piles)._adjust_card_count_(me.card_count, rnd),
+            lambda me, other, rnd: SetupGene(me.draw._transform_pilenames_(rnd, other) if isinstance(me.draw, DealDrawDefGene) else me.draw, other.piles)._adjust_card_count_(me.card_count, rnd),
         ]
     
     @staticmethod
@@ -1310,7 +1307,7 @@ class SGDLGene(GenoType, Reducible):
         self.win = win
         self.win.set_setup(setup)
         # check
-        Parser.parse(self.get_gdl(), None, False, False)
+        Parser.parse(self.get_gdl(), None, False, True)
 
     def get_gdl_without_name(self) -> str:
         return self.deck.get_gdl() + self.setup.get_gdl() + self.moves.get_gdl() + self.win.get_gdl()
