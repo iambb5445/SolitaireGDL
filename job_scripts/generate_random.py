@@ -27,6 +27,7 @@ if __name__ == "__main__":
     outpath = args.outpath
     if args.until:
         existing = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
+        print(f"{existing} files already exists, generating {count - existing} instead of {count}.")
         count -= existing
     seeds = [get_seed(experiment_rnd, seed_max) for _ in range(count)]
     timestamp = int(time.time())

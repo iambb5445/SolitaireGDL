@@ -38,7 +38,7 @@ if __name__ == "__main__":
         base_index = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
     if len(filenames) < 2:
         print("Not enough files to crossover")
-        if args.ignore_errors:
+        if not args.ignore_errors:
             raise Exception("Not enough files to crossover")
         exit()
     game_usage: dict[str, int] = dict([(file, 0) for file in filenames])
