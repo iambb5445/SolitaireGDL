@@ -19,12 +19,16 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for creating the gdls.")
     parser.add_argument('--ignore-errors', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
+    parser.add_argument('--until', action="store_true", help="If true, generates until there are {{count}} sgdls available.")
     args = parser.parse_args(sys.argv[1:])
     count = args.count
     experiment_seed: int = args.seed if args.seed is not None else get_seed(None, seed_max)
     experiment_rnd = Random(experiment_seed)
-    seeds = [get_seed(experiment_rnd, seed_max) for _ in range(count)]
     outpath = args.outpath
+    if args.until:
+        existing = len([name for name in os.listdir(outpath) if name.split('.')[-1] == 'sgdl'])
+        count -= existing
+    seeds = [get_seed(experiment_rnd, seed_max) for _ in range(count)]
     timestamp = int(time.time())
     history = History()
     os.makedirs(outpath, exist_ok=True)
