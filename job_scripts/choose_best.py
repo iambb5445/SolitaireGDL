@@ -22,10 +22,10 @@ if __name__ == "__main__":
     dir = args.dir
     outpath = args.outpath
     ignore = args.ignore_non_existent
-    max_move_count = args.max_move_count
+    max_move_count = args.max_move_count # TODO remove max_move_count
 
     eval_results = pd.read_csv(filename)
-    verdicts = get_verdicts_from_results(eval_results, max_move_count)
+    verdicts = get_verdicts_from_results(eval_results)
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
     index = 0
     timestamp = int(time.time())

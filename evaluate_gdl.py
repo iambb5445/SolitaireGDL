@@ -8,6 +8,7 @@ import pandas as pd
 from typing import Callable
 from player import Player
 import time
+import math
 
 class Verdict(StrEnum):
     UNKNOWN = "UNKNOWN"
@@ -19,14 +20,14 @@ class Verdict(StrEnum):
     EXTRA_PILE = "EXTRA_PILE"
     OK = "OK"
 
-def get_verdicts_from_results(df: pd.DataFrame, max_move_count: int) -> dict[int, Verdict]:
+def get_verdicts_from_results(df: pd.DataFrame) -> dict[int, Verdict]:
     verdicts: dict[int, Verdict] = {}
     for hash_value, results in df.groupby("SGDL Hash"):
         assert isinstance(hash_value, int)
-        verdicts[hash_value] = get_verdict_from_results(results, max_move_count)
+        verdicts[hash_value] = get_verdict_from_results(results)
     return verdicts
 
-def get_verdict_from_results(df: pd.DataFrame, max_move_count: int):
+def get_verdict_from_results(df: pd.DataFrame):
     if len(df) < 10:
         return Verdict.ERROR
     if df["Win"].mean() < 0.1 and df["Exhausted"].mean() < 0.1: # all games ended without win or exhaustion of states
@@ -40,6 +41,20 @@ def get_verdict_from_results(df: pd.DataFrame, max_move_count: int):
     if (df[df["Win"]]["Pile Usage"] < 0.9).any():
         return Verdict.EXTRA_PILE
     return Verdict.OK
+
+def get_score_from_results(df: pd.DataFrame) -> float:
+    if df["Win"].mean() < 0.1:  # alternatively I can check len(won), but kept it as win_rate so it would be consistent with verdict
+        return 0.0
+    won = df[df["Win"]]
+    card_term = threshold_term(won["Card Usage"].min(), 0.9) # penalize below 0.9, higher is better
+    pile_term = threshold_term(won["Pile Usage"].min(), 0.9) # same
+    move_term = min(1.0, won["Move Count"].mean() / 70) # penalize below 70
+    return card_term * pile_term * move_term
+
+def threshold_term(value: float, threshold: float, bonus_weight: float = 0.1) -> float:
+    if value < threshold:
+        return value / threshold
+    return 1.0 + bonus_weight * math.log1p(value - threshold)
 
 def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int = 10, player_creator: Callable[[], Player] = lambda: players["dfs-heuristic"](None), should_log: bool = False, save_as: str|None = None, log_at: str|None = None, experiment_seed: int|None = None):
     logger = Logger(should_log, log_at)
@@ -55,7 +70,7 @@ def get_evaluation_results(gdl: str, max_move_count: int = 1000, game_count: int
     game_name = game_ends[0].name
     wins: list[bool] = [game.is_win() for game in game_ends]
     win_percentage = sum(wins)/len(wins)
-    exhausted_percentage = sum(stopped)/len(stopped)
+    exhausted_percentage = sum(stopped)/len(stopped) # win is impossible, all reachable states are exhauster
     card_usage = [get_card_usage(start, end, logger) for start, end in zip(game_starts, game_ends)]
     pile_usage = [get_pile_usage(game, trace, logger) for game, trace in zip(game_starts, traces)]
     df = pd.DataFrame({
