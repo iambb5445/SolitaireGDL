@@ -12,7 +12,7 @@ seed_max = 1000000000
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('dir', type=str, nargs='+', help="Path to the directory containing all SGDL files. Is searched recursively.")
+    parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files. Is searched recursively.")
     parser.add_argument('game_count', type=int, nargs="?", default=10, help="Number of games to simulate.")
     parser.add_argument('--seed', type=int, default=None, help="Integer seed to be used for shuffling the cards in games.")
     # disabled logging. since the calculation is super fast and doesn't make any decisions, logs are not very useful
@@ -26,7 +26,6 @@ if __name__ == "__main__":
     hash_as_seed = args.hash_as_seed
     ignore_errors = args.ignore_errors
 
-    outpath = os.path.join(dir, "bd.csv")
     experiment_seed: int|None = args.seed if args.seed is not None else get_seed(None, seed_max)
 
     filepaths: list[str] = []
@@ -53,4 +52,4 @@ if __name__ == "__main__":
 
     if len(dfs) > 0:
         all_df: pd.DataFrame = pd.concat(dfs, ignore_index=True)
-        all_df.to_csv(os.path.join(outpath, f"bd_metrics.csv"), index=False)
+        all_df.to_csv(os.path.join(dir, f"bd_metrics.csv"), index=False)
