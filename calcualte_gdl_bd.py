@@ -5,16 +5,55 @@ from game import Game
 import pandas as pd
 import os
 from diffs import Diffs
+from typing import Callable
 
-def get_map_buckets_from_results(df: pd.DataFrame) -> dict[int, int]:
+def apply_pile_count_bucket(df: pd.DataFrame, boundaries: list[float], prev_bucket) -> int:
+    assert df["Pile Count"].nunique() == 1
+    return find_multi_bucket(df["Pile Count"].iloc[0], boundaries, prev_bucket)
+
+def apply_omc_bucket(df: pd.DataFrame, boundaries: list[float], prev_bucket) -> int:
+    return find_multi_bucket(df["Opening Move Count"].mean(), boundaries, prev_bucket)
+
+def apply_min_familiarity_bucket(df: pd.DataFrame, boundaries: list[float], prev_bucket) -> int:
+    dist_cols = [c for c in df.columns if c.startswith("Distance to")]
+    assert (df[dist_cols].nunique() == 1).all()
+    min_dist = df[dist_cols].iloc[0].min()
+    return find_multi_bucket(min_dist, boundaries, prev_bucket)
+
+bucket_mapping: list[tuple[Callable[[pd.DataFrame, list[float], int], int], list[float]]] = [
+    (apply_min_familiarity_bucket, [0.2, 0.4]),
+    (apply_omc_bucket, [10]),
+    (apply_pile_count_bucket, [10]),
+]
+
+def get_map_buckets_from_results(df: pd.DataFrame, should_log: bool) -> dict[int, int]:
+    logger = Logger(should_log)
+    logger.info("Bucket calculation decided as:")
+    total_bucket_count = 1
+    for func, boundaries in bucket_mapping:
+        logger.info(f"\t{func.__name__} at boundaries {boundaries}")
+        total_bucket_count *= len(boundaries) + 1
+    logger.info(f"Total bucket count is {total_bucket_count}")
     bucket: dict[int, int] = {}
     for hash_value, results in df.groupby("SGDL Hash"):
         assert isinstance(hash_value, int)
         bucket[hash_value] = get_map_bucket_from_results(results)
     return bucket
 
-def get_map_bucket_from_results(df: pd.DataFrame):
-    return 0 # TODO
+def get_map_bucket_from_results(df: pd.DataFrame) -> int:
+    bucket = 0
+    for func, boundaries in bucket_mapping:
+        func(df, boundaries, bucket)
+    return bucket
+
+def find_multi_bucket(value, boundaries: list[float], bucket_so_far: int):
+    return bucket_so_far * (len(boundaries) + 1) + _find_bucket(boundaries, value)
+
+def _find_bucket(boundaries, value) -> int:
+    for i, boundary in enumerate(boundaries):
+        if value < boundary:
+            return i
+    return len(boundaries)
 
 _bd_reference_games_cache: dict[str, Game] | None = None
 
