@@ -41,6 +41,13 @@ def get_verdict_from_results(df: pd.DataFrame):
         return Verdict.EXTRA_PILE
     return Verdict.OK
 
+def get_scores_from_results(df: pd.DataFrame) -> dict[int, float]:
+    verdicts: dict[int, float] = {}
+    for hash_value, results in df.groupby("SGDL Hash"):
+        assert isinstance(hash_value, int)
+        verdicts[hash_value] = get_score_from_results(results)
+    return verdicts
+
 def get_score_from_results(df: pd.DataFrame) -> float:
     if df["Win"].mean() < 0.1:  # alternatively I can check len(won), but kept it as win_rate so it would be consistent with verdict
         return 0.0
