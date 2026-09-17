@@ -26,8 +26,8 @@ bucket_mapping: list[tuple[Callable[[pd.DataFrame, list[float], int], int], list
     (apply_pile_count_bucket, [10]),
 ]
 
-def get_map_buckets_from_results(df: pd.DataFrame, should_log: bool) -> dict[int, int]:
-    logger = Logger(should_log)
+def get_map_buckets_from_results(df: pd.DataFrame, should_log: bool, log_filename: str|None) -> dict[int, int]:
+    logger = Logger(should_log, log_filename)
     logger.info("Bucket calculation decided as:")
     total_bucket_count = 1
     for func, boundaries in bucket_mapping:

@@ -16,8 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('eval_filename', type=str, help="Evaluation csv file.")
     parser.add_argument('bd_filename', type=str, help="BD metrics csv file.")
     parser.add_argument('dir', type=str, help="Path to the directory containing all SGDL files.")
-    # TODO count per cell
     parser.add_argument('outpath', type=str, help="Path to save the sgdl results of choosing bests.")
+    # TODO count per cell
     parser.add_argument('--should-log', action="store_true", help="If true, also saves the bd log, reporting the metrics used for it.")
     parser.add_argument('--ignore-non-existent', action="store_true", help="If true, logs errors but continues operation. Useful for evaluating a batch of gdls that may be invalid.")
     parser.add_argument('--index-from-existing', action="store_true", help="If true, chooses index values for the file that continue from the existing number of files.")
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     eval_results = pd.read_csv(eval_filename)
     bd_results = pd.read_csv(bd_filename)
     scores = get_scores_from_results(eval_results)
-    buckets = get_map_buckets_from_results(bd_results, should_log)
+    buckets = get_map_buckets_from_results(bd_results, should_log, log_filename)
     filenames = [name for name in os.listdir(dir) if name.split('.')[-1] == 'sgdl']
     index = 0
     timestamp = int(time.time())
