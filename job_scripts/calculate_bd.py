@@ -5,7 +5,7 @@ import pandas as pd
 # need to add this because parser is an existing python module :|
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from parser import Parser
-from evaluate_gdl import get_bd_metrics
+from calcualte_gdl_bd import get_bd_metrics
 from utility import get_seed
 
 seed_max = 1000000000
