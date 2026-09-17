@@ -43,14 +43,14 @@ def get_map_buckets_from_results(df: pd.DataFrame, should_log: bool, log_filenam
 def get_map_bucket_from_results(df: pd.DataFrame) -> int:
     bucket = 0
     for func, boundaries in bucket_mapping:
-        func(df, boundaries, bucket)
+        bucket = func(df, boundaries, bucket)
     return bucket
 
 def find_multi_bucket(value, boundaries: list[float], bucket_so_far: int):
     return bucket_so_far * (len(boundaries) + 1) + _find_bucket(boundaries, value)
 
 def _find_bucket(boundaries, value) -> int:
-    for i, boundary in enumerate(boundaries):
+    for i, boundary in enumerate(sorted(boundaries)):
         if value < boundary:
             return i
     return len(boundaries)
