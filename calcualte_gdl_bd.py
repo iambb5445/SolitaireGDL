@@ -23,7 +23,7 @@ def apply_min_familiarity_bucket(df: pd.DataFrame, boundaries: list[float], prev
 bucket_mapping: list[tuple[Callable[[pd.DataFrame, list[float], int], int], list[float]]] = [
     (apply_min_familiarity_bucket, [0.2, 0.4]),
     (apply_omc_bucket, [10]),
-    (apply_pile_count_bucket, [10]),
+    (apply_pile_count_bucket, [8, 16]),
 ]
 
 def get_map_buckets_from_results(df: pd.DataFrame, should_log: bool, log_filename: str|None) -> dict[int, int]:
@@ -46,7 +46,7 @@ def get_map_bucket_from_results(df: pd.DataFrame) -> int:
         bucket = func(df, boundaries, bucket)
     return bucket
 
-def find_multi_bucket(value, boundaries: list[float], bucket_so_far: int):
+def find_multi_bucket(value, boundaries: list[float], bucket_so_far: int) -> int:
     return bucket_so_far * (len(boundaries) + 1) + _find_bucket(boundaries, value)
 
 def _find_bucket(boundaries, value) -> int:
